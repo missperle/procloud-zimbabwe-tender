@@ -1,10 +1,7 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-
 const CallToAction = () => {
-  return (
-    <section className="py-20 bg-procloud-black text-white relative overflow-hidden">
+  return <section className="py-20 bg-procloud-black text-white relative overflow-hidden">
       <div className="absolute inset-0 opacity-10">
         <div className="absolute h-96 w-96 rounded-full bg-procloud-green blur-3xl -top-20 -right-20" />
         <div className="absolute h-96 w-96 rounded-full bg-procloud-green blur-3xl -bottom-20 -left-20" />
@@ -12,7 +9,7 @@ const CallToAction = () => {
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="mb-6">Join the proCLOUD Community</h2>
+          <h2 className="mb-6">Join the Cloud Community</h2>
           <p className="text-xl mb-8 text-procloud-gray-300">
             Whether you're a talented creator or a business seeking quality work,
             proCLOUD connects you with Zimbabwe's best freelance marketplace.
@@ -32,8 +29,6 @@ const CallToAction = () => {
           </div>
         </div>
       </div>
-    </section>
-  );
+    </section>;
 };
-
 export default CallToAction;

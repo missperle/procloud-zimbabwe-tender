@@ -1,19 +1,16 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import FloatingShapes from "../ui/floating-shapes";
-
 const HeroSection = () => {
-  return (
-    <section className="relative overflow-hidden py-20 md:py-32 bg-procloud-black text-white">
+  return <section className="relative overflow-hidden py-20 md:py-32 bg-procloud-black text-white">
       <FloatingShapes density="medium" />
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="mb-6 leading-tight">
-            <span className="inline-block">Zimbabwe's Premier</span>
+            <span className="inline-block text-9xl text-indigo-500">Zimbabwe's Premier</span>
             <br />
-            <span className="text-outline-white text-procloud-green">Digital Tender</span>
+            <span className="text-outline-white text-[#434d42]/0">Digital Tender</span>
             <span className="inline-block"> Platform</span>
           </h1>
           
@@ -28,10 +25,7 @@ const HeroSection = () => {
               </Button>
             </Link>
             <Link to="/jobs">
-              <Button 
-                size="lg" 
-                className="text-lg w-full sm:w-auto border-2 border-procloud-green text-procloud-green bg-white hover:bg-procloud-green hover:text-white transition-colors font-medium"
-              >
+              <Button size="lg" className="text-lg w-full sm:w-auto border-2 border-procloud-green text-procloud-green bg-white hover:bg-procloud-green hover:text-white transition-colors font-medium">
                 Browse Jobs
               </Button>
             </Link>
@@ -40,8 +34,6 @@ const HeroSection = () => {
       </div>
       
       <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent" />
-    </section>
-  );
+    </section>;
 };
-
 export default HeroSection;

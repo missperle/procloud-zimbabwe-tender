@@ -1,15 +1,12 @@
-
 import { Link } from 'react-router-dom';
-
 const Footer = () => {
-  return (
-    <footer className="bg-procloud-gray-900 text-procloud-gray-200 py-12">
+  return <footer className="bg-procloud-gray-900 text-procloud-gray-200 py-12">
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <Link to="/" className="inline-block mb-4">
               <span className="text-2xl font-bold tracking-tighter text-white">
-                pro<span className="text-procloud-green">CLOUD</span>
+                pro<span className="text-procloud-green">Digital Cloud Agency</span>
               </span>
             </Link>
             <p className="text-sm mb-4">
@@ -60,8 +57,6 @@ const Footer = () => {
           </div>
         </div>
       </div>
-    </footer>
-  );
+    </footer>;
 };
-
 export default Footer;
