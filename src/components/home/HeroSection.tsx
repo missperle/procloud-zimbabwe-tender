@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import FloatingShapes from "../ui/floating-shapes";
 
 const HeroSection = () => {
-  return <section className="relative overflow-hidden py-20 md:py-32 bg-procloud-black text-white">
+  return <section className="hero relative overflow-hidden py-20 md:py-32 bg-procloud-black text-white">
       {/* Rotating Halo Effect */}
       <div className="absolute inset-0 w-[200%] h-[200%] top-[-50%] left-[-50%] animate-spin-slow">
         <div className="w-full h-full rounded-full bg-gradient-radial from-[rgba(30,58,138,0.15)] to-transparent" />
