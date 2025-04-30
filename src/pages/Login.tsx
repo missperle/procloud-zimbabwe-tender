@@ -5,9 +5,17 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Coins } from "lucide-react";
+import { useEffect } from "react";
+import { getAnalytics, logEvent } from "firebase/analytics";
 
 const Login = () => {
   const { currentUser, loading } = useAuth();
+  
+  // Log page view event
+  useEffect(() => {
+    const analytics = getAnalytics();
+    logEvent(analytics, 'page_view');
+  }, []);
 
   // Show loading state while auth initializes
   if (loading) {
