@@ -1,55 +1,67 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Eye, EyeOff, Mail } from "lucide-react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { LogIn } from "lucide-react";
+import { Link } from "react-router-dom";
 
-const loginSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  password: z.string().min(6, { message: "Password must be at least 6 characters" }),
+const formSchema = z.object({
+  email: z.string().email({
+    message: "Please enter a valid email address.",
+  }),
+  password: z.string().min(6, {
+    message: "Password must be at least 6 characters.",
+  }),
 });
 
-type LoginFormValues = z.infer<typeof loginSchema>;
+type FormData = z.infer<typeof formSchema>;
 
 const LoginForm = () => {
   const { login } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
-  
-  const form = useForm<LoginFormValues>({
-    resolver: zodResolver(loginSchema),
+  const navigate = useNavigate();
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
-  const onSubmit = async (data: LoginFormValues) => {
-    setLoading(true);
+  const onSubmit = async (data: FormData) => {
     try {
+      setError(null);
+      setIsLoading(true);
       await login(data.email, data.password);
-    } catch (error) {
-      console.error("Login error:", error);
+      navigate("/client-dashboard");
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "An error occurred during login.";
+      setError(errorMessage);
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
   return (
-    <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-lg">
-      <div className="text-center">
-        <h2 className="text-2xl font-bold">Welcome Back</h2>
-        <p className="mt-2 text-sm text-gray-600">Log in to your account</p>
+    <div className="login-card bg-white p-8 rounded-lg shadow-lg w-full max-w-md mx-auto">
+      <div className="text-center mb-6">
+        <h1 className="text-2xl font-bold">Client Login</h1>
+        <p className="text-sm text-gray-500 mt-1">Sign in to access your dashboard</p>
       </div>
 
       <Form {...form}>
@@ -61,16 +73,11 @@ const LoginForm = () => {
               <FormItem>
                 <FormLabel>Email</FormLabel>
                 <FormControl>
-                  <div className="relative">
-                    <Input 
-                      placeholder="your.email@example.com" 
-                      type="email" 
-                      className="pl-10" 
-                      disabled={loading}
-                      {...field} 
-                    />
-                    <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                  </div>
+                  <Input 
+                    placeholder="client@example.com" 
+                    {...field} 
+                    className="custom-input"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -84,48 +91,42 @@ const LoginForm = () => {
               <FormItem>
                 <FormLabel>Password</FormLabel>
                 <FormControl>
-                  <div className="relative">
-                    <Input 
-                      placeholder="••••••••" 
-                      type={showPassword ? "text" : "password"} 
-                      className="pl-10" 
-                      disabled={loading}
-                      {...field} 
-                    />
-                    <button 
-                      type="button"
-                      onClick={togglePasswordVisibility}
-                      className="absolute right-3 top-2.5 text-gray-400"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-5 w-5" />
-                      ) : (
-                        <Eye className="h-5 w-5" />
-                      )}
-                    </button>
-                  </div>
+                  <Input 
+                    type="password" 
+                    placeholder="••••••••" 
+                    {...field} 
+                    className="custom-input"
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
 
+          {error && <p className="text-destructive text-sm text-center">{error}</p>}
+
           <Button 
             type="submit" 
-            className="w-full" 
-            disabled={loading}
+            className="w-full accent-button"
+            disabled={isLoading}
           >
-            {loading ? "Logging in..." : "Log in"}
+            {isLoading ? (
+              <span>Logging in...</span>
+            ) : (
+              <>
+                <LogIn size={18} />
+                <span>Sign In</span>
+              </>
+            )}
           </Button>
+
+          <div className="text-center mt-4 pt-2 text-sm">
+            <Link to="/signup" className="text-accent hover:underline">
+              Don't have an account? Register
+            </Link>
+          </div>
         </form>
       </Form>
-
-      <div className="text-center text-sm">
-        <span className="text-gray-600">Don't have an account? </span>
-        <Link to="/register" className="text-procloud-green font-medium hover:underline">
-          Sign up
-        </Link>
-      </div>
     </div>
   );
 };
