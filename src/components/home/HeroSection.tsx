@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 const HeroSection = () => {
   return (
-    <section className="hero relative overflow-hidden py-20 md:py-32 bg-white">
+    <section className="hero relative overflow-hidden py-20 md:py-32 bg-white min-h-screen flex items-center">
       {/* Floating Thumbnails */}
       <div className="absolute inset-0 overflow-hidden">
         {/* Top-left thumbnail */}
