@@ -1,40 +1,32 @@
 
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { useLayoutEffect, useEffect } from "react";
+import { useEffect } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 // Register the ScrollTrigger plugin with GSAP
 gsap.registerPlugin(ScrollTrigger);
 
-// Create a custom hook to handle GSAP useEffect with SSR concerns
-const useIsomorphicLayoutEffect = typeof window !== 'undefined' ? useLayoutEffect : useEffect;
-
 const HeroSection = () => {
   // Set up GSAP scroll trigger effect
-  useIsomorphicLayoutEffect(() => {
+  useEffect(() => {
     // Get all sections within the hero-scroll-container
-    const sections = gsap.utils.toArray(".hero-scroll-container section");
+    const sections = gsap.utils.toArray<HTMLElement>(".hero-scroll-container .hero-section");
     
     // Set up scroll animations for each section
-    sections.forEach((sec, i) => {
-      const mask = sec.querySelector(".section-mask");
-      const panel = sec.querySelector(".section-content");
-
-      // Skip if any elements are missing or if it's the last section
-      if (!mask || !panel || i === sections.length - 1) return;
+    sections.forEach((section, i) => {
+      if (!section || i === sections.length - 1) return;
       
-      const next = sections[i + 1] as HTMLElement;
-      const nextPanel = next?.querySelector(".section-content");
+      const mask = section.querySelector<HTMLElement>(".section-mask");
+      const panel = section.querySelector<HTMLElement>(".section-content");
       
-      // Skip if next panel doesn't exist
-      if (!nextPanel) return;
+      if (!mask || !panel) return;
       
-      // Create a timeline for each section transition
+      // Create a timeline for section transition
       gsap.timeline({
         scrollTrigger: {
-          trigger: sec,
+          trigger: section,
           start: "bottom bottom",
           end: () => `+=${window.innerHeight}`,
           scrub: true,
@@ -47,12 +39,6 @@ const HeroSection = () => {
       .fromTo(mask,
         { height: 0 },
         { height: "100%", ease: "power2.out" }
-      )
-      // Slide the next section's content from y:100% to 0
-      .fromTo(nextPanel,
-        { y: "100%" },
-        { y: "0%", ease: "power2.out" },
-        0
       );
     });
     

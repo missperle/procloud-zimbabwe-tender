@@ -70,7 +70,7 @@
   /* Hero scroll container styles */
   .hero-scroll-container {
     height: 100vh;
-    overflow-y: scroll;
+    overflow-y: auto;
     scroll-snap-type: y mandatory;
   }
   
