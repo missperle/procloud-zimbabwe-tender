@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Heart, MoreHorizontal, Plus } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
@@ -12,7 +13,7 @@ const CATEGORIES = [
   "Web Development", "Mobile Apps", "Animation", "UI/UX", "3D"
 ];
 
-// Sample data for the feed with categories
+// Sample data for the feed with categories and assigned sizes
 const SAMPLE_FEED_ITEMS = [
   {
     id: 1,
@@ -21,7 +22,8 @@ const SAMPLE_FEED_ITEMS = [
     username: 'techexplorer',
     avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
     likes: 423,
-    categories: ['Design', 'UI/UX']
+    categories: ['Design', 'UI/UX'],
+    size: 'medium' as const
   },
   {
     id: 2,
@@ -30,7 +32,8 @@ const SAMPLE_FEED_ITEMS = [
     username: 'fitness_pro',
     avatar: 'https://randomuser.me/api/portraits/men/2.jpg',
     likes: 1287,
-    categories: ['Photography']
+    categories: ['Photography'],
+    size: 'large' as const
   },
   {
     id: 3,
@@ -39,7 +42,8 @@ const SAMPLE_FEED_ITEMS = [
     username: 'coding_genius',
     avatar: 'https://randomuser.me/api/portraits/women/3.jpg',
     likes: 876,
-    categories: ['Web Development']
+    categories: ['Web Development'],
+    size: 'small' as const
   },
   {
     id: 4,
@@ -48,7 +52,8 @@ const SAMPLE_FEED_ITEMS = [
     username: 'nature_love',
     avatar: 'https://randomuser.me/api/portraits/men/4.jpg',
     likes: 654,
-    categories: ['Photography']
+    categories: ['Photography'],
+    size: 'medium' as const
   },
   {
     id: 5,
@@ -57,7 +62,8 @@ const SAMPLE_FEED_ITEMS = [
     username: 'digital_nomad',
     avatar: 'https://randomuser.me/api/portraits/women/5.jpg',
     likes: 542,
-    categories: ['Mobile Apps', '3D']
+    categories: ['Mobile Apps', '3D'],
+    size: 'small' as const
   },
   {
     id: 6,
@@ -66,7 +72,8 @@ const SAMPLE_FEED_ITEMS = [
     username: 'shopaholic',
     avatar: 'https://randomuser.me/api/portraits/men/6.jpg',
     likes: 321,
-    categories: ['Branding']
+    categories: ['Branding'],
+    size: 'large' as const
   },
   {
     id: 7,
@@ -75,7 +82,8 @@ const SAMPLE_FEED_ITEMS = [
     username: 'cat_lover',
     avatar: 'https://randomuser.me/api/portraits/women/7.jpg',
     likes: 987,
-    categories: ['Animation', 'Illustration']
+    categories: ['Animation', 'Illustration'],
+    size: 'medium' as const
   },
   {
     id: 8,
@@ -84,7 +92,8 @@ const SAMPLE_FEED_ITEMS = [
     username: 'matrix_fan',
     avatar: 'https://randomuser.me/api/portraits/men/8.jpg',
     likes: 432,
-    categories: ['Design', 'Web Development']
+    categories: ['Design', 'Web Development'],
+    size: 'small' as const
   }
 ];
 
@@ -96,6 +105,7 @@ interface FeedItem {
   avatar: string;
   likes: number;
   categories: string[];
+  size: 'small' | 'medium' | 'large';
 }
 
 const Feed = () => {
@@ -191,6 +201,13 @@ const Feed = () => {
     };
   }, [loading]);
 
+  // Generate a random size for new items
+  const getRandomSize = (): 'small' | 'medium' | 'large' => {
+    const sizes: ('small' | 'medium' | 'large')[] = ['small', 'medium', 'large'];
+    const randomIndex = Math.floor(Math.random() * sizes.length);
+    return sizes[randomIndex];
+  };
+
   // Load more items for infinite scroll
   const loadMoreItems = useCallback(() => {
     setLoading(true);
@@ -201,7 +218,8 @@ const Feed = () => {
       const newItems: FeedItem[] = SAMPLE_FEED_ITEMS.map(item => ({
         ...item,
         id: item.id + feedItems.length,
-        likes: Math.floor(Math.random() * 1000)
+        likes: Math.floor(Math.random() * 1000),
+        size: getRandomSize() // Assign random sizes to new items
       }));
       
       setFeedItems(prev => [...prev, ...newItems]);
@@ -229,7 +247,8 @@ const Feed = () => {
       username: 'current_user', // In a real app, this would be the current user
       avatar: 'https://randomuser.me/api/portraits/women/10.jpg', // Placeholder
       likes: 0,
-      categories: selectedCategories === 'All' ? CATEGORIES : selectedCategories
+      categories: selectedCategories === 'All' ? CATEGORIES : selectedCategories,
+      size: getRandomSize() // Assign a random size to the new item
     };
     
     // Add the new item to the feed
@@ -245,11 +264,11 @@ const Feed = () => {
   return (
     <>
       <div className="feed-container">
-        <div id="feed" className={activeCategory !== "All" ? "filtered-feed" : ""}>
+        <div id="feed" className="masonry">
           {filteredItems.length > 0 ? (
             filteredItems.map(item => (
               <div 
-                className="card" 
+                className={`card size-${item.size}`}
                 key={item.id}
                 data-categories={item.categories.join(',')}
               >
