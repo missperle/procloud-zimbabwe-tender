@@ -44,4 +44,16 @@ const HeroSection = () => {
     </section>;
 };
 
+export default HeroSection;// src/components/home/HeroSection.tsx
+import React from 'react';
+
+const HeroSection = () => (
+  <div className="hero">            {/* ← add this */}
+    <div className="hero-content">  {/* ← and wrap your existing content in this */}
+      {/* Your existing H1, subheading, buttons, etc. */}
+    </div>
+  </div>
+);
+
 export default HeroSection;
+
