@@ -1,0 +1,115 @@
+
+// This file contains the Firebase Cloud Functions code that would be implemented
+// for the token purchase feature. These functions would be deployed to Firebase.
+
+// 1. Cloud Function to handle new token purchases
+/**
+ * Triggered when a new document is created in the tokenPurchases collection
+ * Sends a confirmation email to the client
+ */
+/*
+exports.onTokenPurchaseCreated = functions.firestore
+  .document('tokenPurchases/{purchaseId}')
+  .onCreate(async (snap, context) => {
+    const purchaseData = snap.data();
+    const { clientId, tokens, amount, method } = purchaseData;
+    
+    // Get user data to fetch email
+    const userSnapshot = await admin.firestore().collection('users').doc(clientId).get();
+    const userData = userSnapshot.data();
+    
+    // Send confirmation email
+    await sendConfirmationEmail(userData.email, {
+      purchaseId: context.params.purchaseId,
+      tokens,
+      amount,
+      method,
+      referenceCode: `PD-${clientId.substring(0, 6)}`
+    });
+    
+    // Create a notification in Firestore
+    await admin.firestore().collection('notifications').add({
+      userId: clientId,
+      type: 'token_purchase_created',
+      title: 'Token Purchase Request Received',
+      message: `Your request to purchase ${tokens} tokens ($${amount}) is being processed.`,
+      read: false,
+      createdAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    
+    return null;
+  });
+*/
+
+// 2. Cloud Function to handle token purchase status updates
+/**
+ * Triggered when a token purchase document is updated
+ * If status changes to 'completed', credit tokens to user's account
+ */
+/*
+exports.onTokenPurchaseUpdated = functions.firestore
+  .document('tokenPurchases/{purchaseId}')
+  .onUpdate(async (change, context) => {
+    const beforeData = change.before.data();
+    const afterData = change.after.data();
+    
+    // Check if status changed to 'completed'
+    if (beforeData.status !== 'completed' && afterData.status === 'completed') {
+      const { clientId, tokens } = afterData;
+      
+      // Update user's token balance
+      await admin.firestore().collection('users').doc(clientId).update({
+        tokenBalance: admin.firestore.FieldValue.increment(tokens)
+      });
+      
+      // Create a notification
+      await admin.firestore().collection('notifications').add({
+        userId: clientId,
+        type: 'token_purchase_completed',
+        title: 'Tokens Credited',
+        message: `${tokens} tokens have been added to your account.`,
+        read: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+    }
+    
+    return null;
+  });
+*/
+
+// 3. Firestore Security Rules for tokenPurchases collection
+/*
+match /tokenPurchases/{purchaseId} {
+  // Clients can create purchase requests and read their own purchases
+  allow create: if request.auth != null && 
+                request.resource.data.clientId == request.auth.uid &&
+                request.resource.data.status == 'pending';
+                
+  allow read: if request.auth != null && 
+              resource.data.clientId == request.auth.uid;
+              
+  // Only admins can update status
+  allow update: if request.auth != null && 
+                (request.auth.token.admin == true || resource.data.clientId == request.auth.uid) &&
+                request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+}
+*/
+
+// 4. Admin approval function (stub)
+// This would be implemented in an admin dashboard
+/*
+const approveTokenPurchase = async (purchaseId) => {
+  if (!currentUser.isAdmin) {
+    throw new Error('Unauthorized. Only admins can approve purchases.');
+  }
+  
+  // Update the purchase status to 'completed'
+  await admin.firestore().collection('tokenPurchases').doc(purchaseId).update({
+    status: 'completed',
+    approvedBy: currentUser.uid,
+    approvedAt: admin.firestore.FieldValue.serverTimestamp()
+  });
+  
+  return { success: true };
+};
+*/

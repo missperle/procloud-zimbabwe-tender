@@ -14,6 +14,7 @@ import Dashboard from "./pages/Dashboard";
 import ExploreFeed from "./pages/ExploreFeed";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import BuyTokens from "./pages/BuyTokens";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => {
               <Route path="/explore" element={<ExploreFeed />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Register />} />
+              <Route path="/buy-tokens" element={<BuyTokens />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
