@@ -8,6 +8,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Camera } from "lucide-react";
+import WhatsAppSettings from "./WhatsAppSettings";
 
 const AccountSettings = () => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -35,6 +36,7 @@ const AccountSettings = () => {
         <TabsList className="mb-6">
           <TabsTrigger value="profile">Company Profile</TabsTrigger>
           <TabsTrigger value="security">Security</TabsTrigger>
+          <TabsTrigger value="notifications">Notifications</TabsTrigger>
         </TabsList>
         
         <TabsContent value="profile">
@@ -193,6 +195,17 @@ const AccountSettings = () => {
                 
                 <Button type="submit">Update Security Settings</Button>
               </form>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="notifications">
+          <Card>
+            <CardHeader>
+              <CardTitle>Notification Preferences</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <WhatsAppSettings />
             </CardContent>
           </Card>
         </TabsContent>
