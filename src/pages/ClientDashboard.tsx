@@ -8,6 +8,7 @@ import ReviewProposals from "@/components/client/ReviewProposals";
 import PaymentsPage from "@/components/client/PaymentsPage";
 import AnalyticsPage from "@/components/client/AnalyticsPage";
 import AccountSettings from "@/components/client/AccountSettings";
+import BuyTokensPage from "@/pages/BuyTokens";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Coins } from "lucide-react";
@@ -29,12 +30,13 @@ const ClientDashboard = () => {
         </div>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 mb-8">
+          <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-2 mb-8">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="briefs">My Briefs</TabsTrigger>
             <TabsTrigger value="proposals">Review Proposals</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="tokens">Buy Tokens</TabsTrigger>
             <TabsTrigger value="account">Account</TabsTrigger>
           </TabsList>
           
@@ -56,6 +58,12 @@ const ClientDashboard = () => {
           
           <TabsContent value="analytics">
             <AnalyticsPage />
+          </TabsContent>
+          
+          <TabsContent value="tokens">
+            <div className="max-w-4xl mx-auto">
+              <BuyTokensPage />
+            </div>
           </TabsContent>
           
           <TabsContent value="account">

@@ -4,7 +4,7 @@ import LoginForm from "@/components/auth/LoginForm";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { CreditCard } from "lucide-react";
+import { CreditCard, Coins } from "lucide-react";
 
 const Login = () => {
   const { currentUser, loading } = useAuth();
@@ -44,6 +44,12 @@ const Login = () => {
               <Link to="/buy-tokens">
                 <CreditCard className="mr-2 h-4 w-4" />
                 Buy Tokens
+              </Link>
+            </Button>
+            <Button asChild variant="outline">
+              <Link to="/client-dashboard?tab=tokens">
+                <Coins className="mr-2 h-4 w-4" />
+                Dashboard Tokens Tab
               </Link>
             </Button>
           </div>
