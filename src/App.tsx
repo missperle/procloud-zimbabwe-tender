@@ -10,6 +10,7 @@ import Jobs from "./pages/Jobs";
 import Freelancers from "./pages/Freelancers";
 import FreelancerProfile from "./pages/FreelancerProfile";
 import ClientDashboard from "./pages/ClientDashboard";
+import Dashboard from "./pages/Dashboard";
 import ExploreFeed from "./pages/ExploreFeed";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -30,7 +31,8 @@ const App = () => {
               <Route path="/jobs" element={<Jobs />} />
               <Route path="/freelancers" element={<Freelancers />} />
               <Route path="/freelancers/:id" element={<FreelancerProfile />} />
-              <Route path="/dashboard" element={<ClientDashboard />} />
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/client-dashboard" element={<ClientDashboard />} />
               <Route path="/explore" element={<ExploreFeed />} />
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Register />} />

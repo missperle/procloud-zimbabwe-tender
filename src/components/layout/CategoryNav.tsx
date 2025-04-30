@@ -2,20 +2,17 @@
 import { useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
-const categories = [
+export const categories = [
   "All", "Design", "Illustration", "Branding", "Photography", 
   "Web Development", "Mobile Apps", "Animation", "UI/UX", "3D"
 ];
-
-// Export categories for reuse
-export { categories };
 
 interface CategoryNavProps {
   activeCategory?: string;
   onCategoryChange?: (category: string) => void;
 }
 
-const CategoryNav = ({ activeCategory = "All", onCategoryChange }: CategoryNavProps = {}) => {
+const CategoryNav = ({ activeCategory = "All", onCategoryChange }: CategoryNavProps) => {
   const [localActiveCategory, setLocalActiveCategory] = useState(activeCategory);
   const location = useLocation();
   

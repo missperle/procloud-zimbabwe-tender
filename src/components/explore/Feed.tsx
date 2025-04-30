@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Heart, MoreHorizontal, Plus } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
@@ -6,12 +5,8 @@ import { AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from "@/components/ui/use-toast";
 import UploadModal from './UploadModal';
 import '../../styles/feed.css';
-
-// Category list
-const CATEGORIES = [
-  "All", "Design", "Illustration", "Branding", "Photography", 
-  "Web Development", "Mobile Apps", "Animation", "UI/UX", "3D"
-];
+import { useAuth } from '@/contexts/AuthContext';
+import { categories } from '@/components/layout/CategoryNav';
 
 // Sample data for the feed with categories and assigned sizes
 const SAMPLE_FEED_ITEMS = [
@@ -108,15 +103,15 @@ interface FeedItem {
   size: 'small' | 'medium' | 'large';
 }
 
-const Feed = () => {
+const Feed = ({ activeCategory }: { activeCategory: string }) => {
   // State
   const [feedItems, setFeedItems] = useState<FeedItem[]>(SAMPLE_FEED_ITEMS);
   const [filteredItems, setFilteredItems] = useState<FeedItem[]>(SAMPLE_FEED_ITEMS);
   const [loading, setLoading] = useState(false);
   const [likedItems, setLikedItems] = useState<Record<number, boolean>>({});
-  const [activeCategory, setActiveCategory] = useState("All");
   const [modalOpen, setModalOpen] = useState(false);
   const [page, setPage] = useState(1);
+  const { currentUser } = useAuth();
   
   // Refs
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -132,11 +127,6 @@ const Feed = () => {
       );
     }
   }, [activeCategory, feedItems]);
-
-  // Handle category change
-  const handleCategoryChange = (category: string) => {
-    setActiveCategory(category);
-  };
 
   // Handle liking a post
   const handleLike = (id: number) => {
@@ -244,10 +234,10 @@ const Feed = () => {
       id: Date.now(),
       type: file.type.startsWith('video/') ? 'video' as const : 'image' as const,
       src: URL.createObjectURL(file),
-      username: 'current_user', // In a real app, this would be the current user
+      username: currentUser?.email?.split('@')[0] || 'anonymous_user',
       avatar: 'https://randomuser.me/api/portraits/women/10.jpg', // Placeholder
       likes: 0,
-      categories: selectedCategories === 'All' ? CATEGORIES : selectedCategories,
+      categories: selectedCategories === 'All' ? categories : selectedCategories,
       size: getRandomSize() // Assign a random size to the new item
     };
     
@@ -342,7 +332,7 @@ const Feed = () => {
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
         onSubmit={handleSubmit}
-        categories={CATEGORIES}
+        categories={categories}
       />
     </>
   );
