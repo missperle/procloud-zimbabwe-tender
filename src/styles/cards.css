@@ -30,12 +30,13 @@
   .tender-card-3d {
     transform-style: preserve-3d;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    border-left: 4px solid #3F51B5; /* Indigo Ink */
-    border-right: 4px solid #FFC107; /* Amber Burst */
+    border: 2px solid transparent;
     transform: perspective(1000px) rotateY(0deg) scale(1);
     transform-origin: center center;
     will-change: transform;
     transition: all 0.3s ease;
+    border-radius: 12px !important;
+    overflow: hidden;
   }
   
   /* Apply perspective based on carousel position */
@@ -49,9 +50,10 @@
   }
   
   .tender-card-3d-hover {
-    transform: perspective(1000px) rotateY(0deg) scale(1.02) translateY(-5px) !important;
+    transform: perspective(1000px) rotateY(0deg) scale(1.02) translateY(-4px) !important;
     box-shadow: 0 12px 24px rgba(0,0,0,0.15);
     z-index: 10;
+    border-color: var(--accent, #F05A28) !important;
   }
   
   /* Custom carousel arrow styles */
@@ -66,6 +68,39 @@
   .carousel-arrow:hover {
     opacity: 1;
     transform: scale(1.1);
-    box-shadow: 0 0 12px rgba(255, 193, 7, 0.5);
+    box-shadow: 0 0 12px rgba(240, 90, 40, 0.5);
+  }
+
+  /* Client logo hover effect */
+  .client-logo {
+    position: relative;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+  
+  .client-logo:hover {
+    transform: scale(1.15);
+  }
+  
+  .client-logo:active {
+    transform: scale(0.95);
+  }
+
+  /* Grid layout for cards */
+  .grid-cards {
+    display: grid !important;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 24px;
+  }
+  
+  @media (min-width: 640px) {
+    .grid-cards {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    .grid-cards {
+      grid-template-columns: repeat(3, 1fr);
+    }
   }
 }
