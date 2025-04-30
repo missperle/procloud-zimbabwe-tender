@@ -11,14 +11,7 @@ const Navbar = () => {
     <header className="bg-white border-b border-procloud-gray-200">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          <Link to="/" className="flex items-center px-4">
-            {/* Logo Image */}
-            <img 
-              src="/logo.svg" 
-              alt="Proverb Digital Cloud Agency" 
-              className="navbar-logo h-8 md:h-10" 
-            />
-          </Link>
+          {/* Logo has been removed */}
           
           <nav className="hidden md:flex items-center space-x-3 navbar">
             <Link to="/jobs" className="text-sm font-medium hover:text-procloud-green transition-colors px-6">

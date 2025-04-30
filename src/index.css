@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -109,15 +108,6 @@
     z-index: 100;
   }
   
-  .sidenav-logo { 
-    writing-mode: vertical-rl; 
-    text-orientation: mixed; 
-    font-family: 'Space Grotesk', 'Neue Haas Grotesk Display', sans-serif; 
-    font-weight: 700; 
-    font-size: 14px; 
-    text-align: center;
-  }
-  
   .sidenav-footer {
     display: flex;
     flex-direction: column;
@@ -131,14 +121,6 @@
     font-size: 14px;
     color: hsl(var(--primary));
     text-decoration: none;
-  }
-
-  /* Added sidenav icon hover effect */
-  .sidenav-icon {
-    transition: transform .2s;
-  }
-  .sidenav-icon:hover {
-    transform: scale(1.05);
   }
   
   .main-content { 
@@ -155,8 +137,8 @@
     right: 0;
     z-index: 900;
   }
-
-  /* Hide header on hero page */
+  
+  /* Hide header on hero */
   .hide-header header {
     display: none;
   }
@@ -191,7 +173,7 @@
     animation: drift2 80s linear infinite;
   }
   
-  /* Darkened hero panel */
+  /* Hero panel floating component */
   .hero-panel {
     position: relative;
     z-index: 1;
@@ -199,31 +181,25 @@
     margin: auto;
     top: 50%;
     transform: translateY(-50%);
-    background: rgba(0, 0, 0, 0.15);
+    background: rgba(0,0,0,0.05);
     border-radius: 12px;
     padding: 40px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
     animation: fadeIn 1s ease-out forwards;
+    backdrop-filter: blur(2px);
   }
-
-  /* Featured tender accent */
-  .tender-card.featured {
-    border-left: 4px solid #FF6F61;
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-40%) scale(0.98); }
+    to { opacity: 1; transform: translateY(-50%) scale(1); }
   }
-
-  /* Switch primary CTA to Coral-Orange */
-  .btn-primary {
-    background: #FF6F61;
-    color: #FFFFFF;
-    transition: transform .2s, background .2s, box-shadow .2s;
+  
+  /* Existing navbar styles */
+  .navbar-logo { 
+    max-height: 40px; 
+    margin-right: 24px; 
   }
-  .btn-primary:hover {
-    background: #FF8A3D;
-    box-shadow: 0 4px 12px rgba(255, 111, 97, 0.4);
-    transform: scale(1.05);
-  }
-
-  /* Existing navbar and hero logo styles */
+  
   .navbar { 
     display: flex; 
     align-items: center; 
@@ -280,10 +256,4 @@
   50% {
     transform: translate3d(-50%, -50%, 50px) rotateY(15deg) translateX(-20px);
   }
-}
-
-/* Fade in animation for hero-panel */
-@keyframes fadeIn {
-  from { opacity: 0 }
-  to { opacity: 1 }
 }
