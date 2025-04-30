@@ -15,68 +15,13 @@
     transition: all 0.3s ease;
   }
   
-  /* Instagram-style grid cards */
-  .tender-grid-card {
-    position: relative;
-    aspect-ratio: 1/1;
-    overflow: hidden;
-    border-radius: 4px;
-    cursor: pointer;
-    transform: scale(1);
-    transition: all 0.3s ease-in-out;
-  }
-  
-  .tender-grid-card:hover {
-    transform: scale(1.02);
-    z-index: 10;
-    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-  }
-  
-  .tender-grid-card-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(30, 58, 138, 0);
-    transition: background 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 1rem;
-  }
-  
-  .tender-grid-card:hover .tender-grid-card-overlay {
-    background: rgba(30, 58, 138, 0.3);
-  }
-  
-  .tender-grid-card-title {
-    color: white;
-    font-weight: bold;
-    text-align: center;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    font-family: 'Montserrat', sans-serif;
-  }
-  
-  .tender-grid-card:hover .tender-grid-card-title {
-    opacity: 1;
-  }
-  
-  .tender-grid-card-budget {
-    background: #FFC107;
-    color: black;
-    font-weight: bold;
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 0.875rem;
-    align-self: flex-start;
-  }
-  
-  /* Existing styles */
+  /* Existing navbar and hero logo styles */
   .navbar { 
     display: flex; 
     align-items: center; 
   }
   
-  /* 3D Carousel Styles (kept for reference but not used in grid layout) */
+  /* 3D Carousel Styles */
   .carousel-3d-container {
     perspective: 1200px;
     position: relative;
