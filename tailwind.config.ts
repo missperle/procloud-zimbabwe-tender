@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -19,6 +18,9 @@ export default {
 			}
 		},
 		extend: {
+			backgroundImage: {
+				'hero-image': "url('/src/assets/images/zimbabwe-landscape.jpg')",
+			},
 			fontFamily: {
 				sans: ['Graphik', 'sans-serif'],
 				montserrat: ['Montserrat', 'sans-serif'],
