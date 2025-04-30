@@ -36,7 +36,7 @@ const HeroSection = () => {
       <div className="container mx-auto px-4 relative z-10">
         <div className="hero-content max-w-4xl mx-auto text-center">
           <h1 className="font-montserrat font-extrabold text-4xl md:text-5xl lg:text-6xl mb-6 text-[#111]">
-            The World's <span className="highlight text-indigo-ink">Best Creators</span> Are On ProCloud
+            Zimbabwe's <span className="highlight text-indigo-ink">Best Creators</span> Are On The ProCloud Agency
           </h1>
           
           <p className="subhead text-lg md:text-xl text-[#555] max-w-2xl mx-auto mb-10">
