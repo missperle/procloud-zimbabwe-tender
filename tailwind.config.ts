@@ -20,9 +20,9 @@ export default {
 		},
 		extend: {
 			fontFamily: {
-				sans: ['Inter', 'sans-serif'],
+				sans: ['Graphik', 'sans-serif'],
 				montserrat: ['Montserrat', 'sans-serif'],
-				'space': ['Space Grotesk', 'sans-serif']
+				'neue-haas': ['Neue Haas Grotesk Display', 'sans-serif']
 			},
 			colors: {
 				border: 'hsl(var(--border))',
