@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -120,6 +121,16 @@
   .main-content { 
     margin-left: 64px; 
     width: calc(100% - 64px);
+    padding-top: 64px; /* Add padding to account for fixed header height */
+  }
+  
+  /* Header Styles */
+  header {
+    position: fixed;
+    top: 0;
+    left: 64px;  /* Match sidenav width */
+    right: 0;
+    z-index: 900;
   }
   
   /* Existing navbar and hero logo styles */
