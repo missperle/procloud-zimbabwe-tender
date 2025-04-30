@@ -10,7 +10,7 @@ const HeroSection = () => {
           <h1 className="mb-6 leading-tight">
             <span className="inline-block text-9xl text-indigo-500">Zimbabwe's Premier</span>
             <br />
-            <span className="text-outline-white text-[#434d42]/0">Digital Tender</span>
+            <span className="text-outline-white text-slate-50">Digital Tender</span>
             <span className="inline-block"> Platform</span>
           </h1>
           
