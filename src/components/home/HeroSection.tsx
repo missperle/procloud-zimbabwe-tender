@@ -4,11 +4,51 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ChevronUp } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+// Register ScrollTrigger plugin
+gsap.registerPlugin(ScrollTrigger);
 
 const HeroSection = () => {
   const [scrollProgress, setScrollProgress] = useState(0);
   const [hasScrolled, setHasScrolled] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const heroHeadlineRef = useRef<HTMLDivElement>(null);
+  const heroMaskRef = useRef<HTMLDivElement>(null);
+  
+  // Setup GSAP ScrollTrigger animations
+  useEffect(() => {
+    const timeline = gsap.timeline({
+      scrollTrigger: {
+        trigger: ".hero",
+        start: "top top",
+        end: "bottom top",
+        scrub: true,
+        pin: ".hero-headline"
+      }
+    });
+    
+    // Animate headline (scale down, move up, fade)
+    timeline.fromTo(
+      ".hero-headline h1", 
+      { scale: 1, y: 0, opacity: 1 }, 
+      { scale: 0.8, y: -50, opacity: 0.5, ease: "none" }
+    );
+    
+    // Animate mask to reveal next section
+    timeline.fromTo(
+      ".section-mask", 
+      { height: "0%" }, 
+      { height: "100%", ease: "none" }, 
+      0 // Start at the same time as headline animation
+    );
+    
+    return () => {
+      // Cleanup ScrollTrigger when component unmounts
+      ScrollTrigger.getAll().forEach(trigger => trigger.kill());
+    };
+  }, []);
   
   // Handle scroll events to update our progress and animations
   useEffect(() => {
@@ -72,12 +112,7 @@ const HeroSection = () => {
           <div className="container mx-auto px-4 relative z-10">
             <div className="hero-content max-w-4xl mx-auto text-center">
               {/* Pinned Header that slides out on scroll */}
-              <div className={`sticky-header ${scrollProgress > 0 ? 'transforming' : ''}`} 
-                   style={{ 
-                     transform: `scale(${Math.max(0.8, 1 - scrollProgress/100*0.2)}) 
-                                translateY(${-scrollProgress}px)`,
-                     opacity: Math.max(0, 1 - scrollProgress/50)
-                   }}>
+              <div className="hero-headline" ref={heroHeadlineRef}>
                 <h1 className="font-montserrat font-extrabold text-4xl md:text-5xl lg:text-6xl mb-6 text-[#111]">
                   Zimbabwe's <span className="highlight text-indigo-ink">Best Creators</span> Are On ProCloud
                 </h1>
@@ -139,7 +174,7 @@ const HeroSection = () => {
       </div>
       
       {/* Gradient Mask That Reveals on Scroll */}
-      <div className="section-mask" 
+      <div className="section-mask" ref={heroMaskRef}
            style={{ 
              height: `${scrollProgress}%`,
              background: `linear-gradient(135deg, #1E3A8A ${100-scrollProgress}%, #3949AB ${Math.min(100, 120-scrollProgress)}%)` 
