@@ -1,5 +1,6 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import DashboardOverview from "@/components/client/DashboardOverview";
@@ -15,6 +16,16 @@ import { Coins } from "lucide-react";
 
 const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const location = useLocation();
+
+  useEffect(() => {
+    // Check for tab parameter in URL
+    const searchParams = new URLSearchParams(location.search);
+    const tabParam = searchParams.get('tab');
+    if (tabParam && ['dashboard', 'briefs', 'proposals', 'payments', 'analytics', 'tokens', 'account'].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [location]);
 
   return (
     <Layout>
@@ -22,7 +33,7 @@ const ClientDashboard = () => {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Client Dashboard</h1>
           <Button asChild>
-            <Link to="/buy-tokens">
+            <Link to="/client-dashboard?tab=tokens">
               <Coins className="mr-2 h-4 w-4" />
               Buy Tokens
             </Link>

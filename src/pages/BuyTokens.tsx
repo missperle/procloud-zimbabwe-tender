@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { auth } from "@/lib/firebase";
 import { Badge } from "@/components/ui/badge";
-import { CreditCard, Coins, QrCode, Check } from "lucide-react";
+import { CreditCard, Coins, QrCode, Check, AlertTriangle, InfoIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 
 interface TokenBundle {
@@ -17,6 +17,7 @@ interface TokenBundle {
   tokens: number;
   price: number;
   savings?: string;
+  commission: number;
 }
 
 interface PaymentMethod {
@@ -26,19 +27,51 @@ interface PaymentMethod {
   instructions: React.ReactNode;
 }
 
+interface PurchaseHistory {
+  today: number;
+  total: number;
+  lastPurchase: Date | null;
+}
+
+const MAX_DAILY_PURCHASES = 2;
+const COMMISSION_RATE = 0.05; // 5%
+
 const BuyTokens = () => {
   const [currentBalance, setCurrentBalance] = useState<number>(100); // Placeholder - would fetch from Firebase
   const [selectedBundle, setSelectedBundle] = useState<TokenBundle | null>(null);
   const [paymentMethod, setPaymentMethod] = useState<string>("");
   const [showConfirmation, setShowConfirmation] = useState<boolean>(false);
+  const [confirmPurchase, setConfirmPurchase] = useState<boolean>(false);
+  const [purchaseHistory, setPurchaseHistory] = useState<PurchaseHistory>({
+    today: 0,
+    total: 0,
+    lastPurchase: null
+  });
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  // Token bundle options
+  // High-value token bundle options
   const tokenBundles: TokenBundle[] = [
-    { id: "basic", tokens: 10, price: 5 },
-    { id: "popular", tokens: 50, price: 20, savings: "20% savings" },
-    { id: "pro", tokens: 100, price: 35, savings: "30% savings" },
+    { 
+      id: "standard", 
+      tokens: 100, 
+      price: 1000,
+      commission: 1000 * COMMISSION_RATE
+    },
+    { 
+      id: "premium", 
+      tokens: 250, 
+      price: 2400, 
+      savings: "4% savings",
+      commission: 2400 * COMMISSION_RATE 
+    },
+    { 
+      id: "enterprise", 
+      tokens: 500, 
+      price: 4500, 
+      savings: "10% savings",
+      commission: 4500 * COMMISSION_RATE 
+    },
   ];
 
   // Payment method options
@@ -55,7 +88,7 @@ const BuyTokens = () => {
             <li>Select option 3: "Payments"</li>
             <li>Select option 1: "Pay Merchant"</li>
             <li>Enter merchant code: <span className="font-mono bg-gray-100 px-1 rounded">151001</span></li>
-            <li>Enter amount: <span className="font-mono bg-gray-100 px-1 rounded">${selectedBundle?.price || 0}</span></li>
+            <li>Enter amount: <span className="font-mono bg-gray-100 px-1 rounded">${selectedBundle ? (selectedBundle.price + selectedBundle.commission).toFixed(2) : 0}</span></li>
             <li>Enter reference: <span className="font-mono bg-gray-100 px-1 rounded">PD-{auth.currentUser?.uid.substring(0, 6) || "TOKEN"}</span></li>
             <li>Confirm payment with your EcoCash PIN</li>
           </ol>
@@ -73,7 +106,7 @@ const BuyTokens = () => {
           <ol className="list-decimal list-inside text-sm space-y-1">
             <li>Visit your nearest Mukuru agent location</li>
             <li>Provide the agent with the following reference code: <span className="font-mono bg-gray-100 px-1 rounded">PD-{auth.currentUser?.uid.substring(0, 8) || "PDTOKEN"}</span></li>
-            <li>Pay the amount of <span className="font-mono bg-gray-100 px-1 rounded">${selectedBundle?.price || 0}</span></li>
+            <li>Pay the amount of <span className="font-mono bg-gray-100 px-1 rounded">${selectedBundle ? (selectedBundle.price + selectedBundle.commission).toFixed(2) : 0}</span></li>
             <li>Keep the receipt as proof of payment</li>
           </ol>
           <p className="text-sm font-semibold mt-2">Agent Network: All registered Mukuru agents nationwide</p>
@@ -91,7 +124,7 @@ const BuyTokens = () => {
             <li>Open your InnBucks app</li>
             <li>Select "Scan to Pay"</li>
             <li>Scan the QR code below</li>
-            <li>Enter the amount: <span className="font-mono bg-gray-100 px-1 rounded">${selectedBundle?.price || 0}</span></li>
+            <li>Enter the amount: <span className="font-mono bg-gray-100 px-1 rounded">${selectedBundle ? (selectedBundle.price + selectedBundle.commission).toFixed(2) : 0}</span></li>
             <li>Add the reference: <span className="font-mono bg-gray-100 px-1 rounded">PD-{auth.currentUser?.uid.substring(0, 6) || "TOKEN"}</span></li>
             <li>Confirm the payment</li>
           </ol>
@@ -105,6 +138,36 @@ const BuyTokens = () => {
       ),
     },
   ];
+
+  // Simulate fetching purchase history from Firestore
+  useEffect(() => {
+    // In a real app, this would be a Firestore query:
+    // const today = new Date();
+    // today.setHours(0, 0, 0, 0);
+    // 
+    // const purchasesRef = collection(db, "tokenPurchases");
+    // const purchasesQuery = query(
+    //   purchasesRef,
+    //   where("clientId", "==", auth.currentUser.uid),
+    //   where("createdAt", ">=", today),
+    //   orderBy("createdAt", "desc")
+    // );
+    // 
+    // getDocs(purchasesQuery).then((snapshot) => {
+    //   setPurchaseHistory({
+    //     today: snapshot.docs.length,
+    //     total: snapshot.docs.length, // would need a separate query for all-time
+    //     lastPurchase: snapshot.docs[0]?.data().createdAt.toDate() || null
+    //   });
+    // });
+
+    // For demo purposes:
+    setPurchaseHistory({
+      today: 1, // Simulate one purchase already made today
+      total: 5,
+      lastPurchase: new Date(Date.now() - 3600000) // 1 hour ago
+    });
+  }, []);
 
   const handleBundleSelect = (bundle: TokenBundle) => {
     setSelectedBundle(bundle);
@@ -124,31 +187,60 @@ const BuyTokens = () => {
       return;
     }
 
+    // Check purchase limits
+    if (purchaseHistory.today >= MAX_DAILY_PURCHASES) {
+      toast({
+        title: "Daily Purchase Limit Reached",
+        description: `You can only purchase ${MAX_DAILY_PURCHASES} bundles per day.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Show confirmation dialog
+    setConfirmPurchase(true);
+  };
+
+  const confirmPurchaseAction = () => {
+    setConfirmPurchase(false);
+
     // This would normally write to Firestore:
     /* 
     const purchaseRef = collection(db, "tokenPurchases");
     addDoc(purchaseRef, {
       clientId: auth.currentUser.uid,
-      tokens: selectedBundle.tokens,
-      amount: selectedBundle.price,
+      bundleTokens: selectedBundle.tokens,
+      grossAmount: selectedBundle.price,
+      commissionAmount: selectedBundle.commission,
+      netTokens: selectedBundle.tokens,
       method: paymentMethod,
       status: 'pending',
       createdAt: serverTimestamp()
     });
     */
 
-    // Show confirmation dialog
+    // Show payment instructions dialog
     setShowConfirmation(true);
     
     // Log the purchase request (for demo purposes)
     console.log("Token purchase request:", {
       clientId: auth.currentUser?.uid || "user-id",
-      tokens: selectedBundle.tokens,
-      amount: selectedBundle.price,
+      bundleTokens: selectedBundle?.tokens,
+      grossAmount: selectedBundle?.price,
+      commissionAmount: selectedBundle?.commission,
+      netTokens: selectedBundle?.tokens,
       method: paymentMethod,
       status: 'pending',
       createdAt: new Date().toISOString()
     });
+
+    // Update purchase history for demo
+    setPurchaseHistory(prev => ({
+      ...prev,
+      today: prev.today + 1,
+      total: prev.total + 1,
+      lastPurchase: new Date()
+    }));
 
     toast({
       title: "Purchase request submitted",
@@ -159,6 +251,8 @@ const BuyTokens = () => {
   const handleConfirmationClose = () => {
     setShowConfirmation(false);
   };
+
+  const canPurchase = purchaseHistory.today < MAX_DAILY_PURCHASES;
 
   return (
     <Layout>
@@ -179,6 +273,25 @@ const BuyTokens = () => {
           </div>
         </div>
 
+        {/* Purchase limits warning */}
+        {purchaseHistory.today > 0 && (
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-6 flex items-start">
+            <AlertTriangle className="h-5 w-5 text-amber-500 mr-2 mt-0.5 flex-shrink-0" />
+            <div>
+              <h3 className="font-medium text-amber-800">Purchase Limits</h3>
+              <p className="text-sm text-amber-700">
+                You've made {purchaseHistory.today} of {MAX_DAILY_PURCHASES} allowed purchases today.
+                {purchaseHistory.today >= MAX_DAILY_PURCHASES && " You've reached your daily limit."}
+              </p>
+              {purchaseHistory.lastPurchase && (
+                <p className="text-xs text-amber-600 mt-1">
+                  Last purchase: {purchaseHistory.lastPurchase.toLocaleString()}
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Token bundles */}
         <h2 className="text-xl font-semibold mb-4">Select a Token Bundle</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
@@ -194,16 +307,30 @@ const BuyTokens = () => {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold">${bundle.price}</p>
-                <p className="text-sm text-gray-500">
-                  ${(bundle.price / bundle.tokens).toFixed(2)} per token
-                </p>
+                <div className="space-y-2">
+                  <p className="text-3xl font-bold">${bundle.price.toLocaleString()}</p>
+                  <div className="text-sm text-gray-500 space-y-1">
+                    <div className="flex justify-between">
+                      <span>Base price:</span>
+                      <span>${bundle.price.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Commission ({(COMMISSION_RATE * 100)}%):</span>
+                      <span>${bundle.commission.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between font-medium border-t pt-1 mt-1">
+                      <span>Total:</span>
+                      <span>${(bundle.price + bundle.commission).toLocaleString()}</span>
+                    </div>
+                  </div>
+                </div>
               </CardContent>
               <CardFooter>
                 <Button 
                   onClick={() => handleBundleSelect(bundle)} 
                   className="w-full"
                   variant={selectedBundle?.id === bundle.id ? "default" : "outline"}
+                  disabled={!canPurchase}
                 >
                   {selectedBundle?.id === bundle.id ? (
                     <><Check className="mr-1" /> Selected</>
@@ -216,8 +343,17 @@ const BuyTokens = () => {
           ))}
         </div>
 
+        {!canPurchase && (
+          <div className="mb-6 text-center p-4 bg-gray-50 rounded-lg">
+            <p className="text-gray-500">
+              You've reached your daily purchase limit of {MAX_DAILY_PURCHASES} bundles.
+              Try again tomorrow or contact support for special arrangements.
+            </p>
+          </div>
+        )}
+
         {/* Payment methods */}
-        {selectedBundle && (
+        {selectedBundle && canPurchase && (
           <div id="payment-methods" className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Select a Payment Method</h2>
             <Card>
@@ -243,14 +379,63 @@ const BuyTokens = () => {
               </CardContent>
               <CardFooter className="flex justify-end border-t pt-4">
                 <Button onClick={handlePurchase} disabled={!paymentMethod}>
-                  Purchase {selectedBundle.tokens} Tokens for ${selectedBundle.price}
+                  Purchase {selectedBundle.tokens} Tokens
                 </Button>
               </CardFooter>
             </Card>
           </div>
         )}
 
-        {/* Confirmation dialog */}
+        {/* Purchase confirmation dialog */}
+        <Dialog open={confirmPurchase} onOpenChange={setConfirmPurchase}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm Your Purchase</DialogTitle>
+            </DialogHeader>
+            <div className="py-4">
+              <div className="rounded-lg bg-gray-50 p-4 mb-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>Bundle:</span>
+                    <span>{selectedBundle?.tokens} Tokens</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Base Price:</span>
+                    <span>${selectedBundle?.price.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Commission ({COMMISSION_RATE * 100}%):</span>
+                    <span>${selectedBundle?.commission.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between font-medium border-t border-gray-200 pt-2 mt-1">
+                    <span>Total Amount:</span>
+                    <span>${selectedBundle ? (selectedBundle.price + selectedBundle.commission).toLocaleString() : 0}</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex items-start mb-4">
+                <InfoIcon className="text-blue-500 h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+                <p className="text-sm">
+                  You will be charged <strong>${selectedBundle?.price.toLocaleString()}</strong> + 
+                  <strong> ${selectedBundle?.commission.toFixed(2)}</strong> commission = 
+                  <strong> ${selectedBundle ? (selectedBundle.price + selectedBundle.commission).toLocaleString() : 0}</strong>. 
+                  You will receive <strong>{selectedBundle?.tokens} tokens</strong>.
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setConfirmPurchase(false)}>
+                Cancel
+              </Button>
+              <Button onClick={confirmPurchaseAction}>
+                Proceed with Purchase
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Payment instructions dialog */}
         <Dialog open={showConfirmation} onOpenChange={handleConfirmationClose}>
           <DialogContent>
             <DialogHeader>
@@ -268,8 +453,16 @@ const BuyTokens = () => {
                     <span>{selectedBundle?.tokens}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span>Price:</span>
-                    <span>${selectedBundle?.price}</span>
+                    <span>Base Price:</span>
+                    <span>${selectedBundle?.price.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Commission ({COMMISSION_RATE * 100}%):</span>
+                    <span>${selectedBundle?.commission.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span>Total Amount:</span>
+                    <span>${selectedBundle ? (selectedBundle.price + selectedBundle.commission).toLocaleString() : 0}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span>Payment Method:</span>

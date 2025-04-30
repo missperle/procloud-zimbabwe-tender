@@ -5,14 +5,59 @@
 // 1. Cloud Function to handle new token purchases
 /**
  * Triggered when a new document is created in the tokenPurchases collection
- * Sends a confirmation email to the client
+ * Calculates commission, validates purchase limits, and sends confirmation
  */
 /*
 exports.onTokenPurchaseCreated = functions.firestore
   .document('tokenPurchases/{purchaseId}')
   .onCreate(async (snap, context) => {
     const purchaseData = snap.data();
-    const { clientId, tokens, amount, method } = purchaseData;
+    const { clientId, bundleTokens, grossAmount, method } = purchaseData;
+    
+    // Calculate commission amount (5%)
+    const commissionAmount = grossAmount * 0.05;
+    
+    // Calculate final values
+    const totalAmount = grossAmount + commissionAmount;
+    const netTokens = bundleTokens; // In this model, commission doesn't reduce tokens
+    
+    // Update the purchase document with calculated values
+    await snap.ref.update({
+      commissionAmount,
+      totalAmount,
+      netTokens
+    });
+    
+    // Check purchase limits (max 2 per day)
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const purchasesRef = admin.firestore().collection('tokenPurchases');
+    const purchasesQuery = purchasesRef.where('clientId', '==', clientId)
+                                      .where('createdAt', '>=', today)
+                                      .where('status', 'in', ['pending', 'completed']);
+    
+    const purchasesToday = await purchasesQuery.get();
+    
+    // If this purchase exceeds the daily limit, mark it as rejected
+    if (purchasesToday.size > 2) {
+      await snap.ref.update({
+        status: 'rejected',
+        rejectionReason: 'Daily purchase limit exceeded'
+      });
+      
+      // Create a notification about the rejection
+      await admin.firestore().collection('notifications').add({
+        userId: clientId,
+        type: 'token_purchase_rejected',
+        title: 'Token Purchase Rejected',
+        message: 'Your purchase has been rejected because you have exceeded the daily limit of 2 purchases.',
+        read: false,
+        createdAt: admin.firestore.FieldValue.serverTimestamp()
+      });
+      
+      return null;
+    }
     
     // Get user data to fetch email
     const userSnapshot = await admin.firestore().collection('users').doc(clientId).get();
@@ -21,8 +66,10 @@ exports.onTokenPurchaseCreated = functions.firestore
     // Send confirmation email
     await sendConfirmationEmail(userData.email, {
       purchaseId: context.params.purchaseId,
-      tokens,
-      amount,
+      bundleTokens,
+      grossAmount,
+      commissionAmount,
+      totalAmount,
       method,
       referenceCode: `PD-${clientId.substring(0, 6)}`
     });
@@ -32,7 +79,7 @@ exports.onTokenPurchaseCreated = functions.firestore
       userId: clientId,
       type: 'token_purchase_created',
       title: 'Token Purchase Request Received',
-      message: `Your request to purchase ${tokens} tokens ($${amount}) is being processed.`,
+      message: `Your request to purchase ${bundleTokens} tokens ($${grossAmount} + $${commissionAmount.toFixed(2)} commission) is being processed.`,
       read: false,
       createdAt: admin.firestore.FieldValue.serverTimestamp()
     });
@@ -44,7 +91,7 @@ exports.onTokenPurchaseCreated = functions.firestore
 // 2. Cloud Function to handle token purchase status updates
 /**
  * Triggered when a token purchase document is updated
- * If status changes to 'completed', credit tokens to user's account
+ * If status changes to 'completed', credit tokens to user's account and track commissions
  */
 /*
 exports.onTokenPurchaseUpdated = functions.firestore
@@ -55,19 +102,26 @@ exports.onTokenPurchaseUpdated = functions.firestore
     
     // Check if status changed to 'completed'
     if (beforeData.status !== 'completed' && afterData.status === 'completed') {
-      const { clientId, tokens } = afterData;
+      const { clientId, netTokens, commissionAmount } = afterData;
       
       // Update user's token balance
       await admin.firestore().collection('users').doc(clientId).update({
-        tokenBalance: admin.firestore.FieldValue.increment(tokens)
+        tokenBalance: admin.firestore.FieldValue.increment(netTokens)
       });
+      
+      // Record commission in platform stats
+      const statsRef = admin.firestore().collection('platform').doc('commissions');
+      await statsRef.set({
+        totalCommission: admin.firestore.FieldValue.increment(commissionAmount),
+        lastUpdated: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
       
       // Create a notification
       await admin.firestore().collection('notifications').add({
         userId: clientId,
         type: 'token_purchase_completed',
         title: 'Tokens Credited',
-        message: `${tokens} tokens have been added to your account.`,
+        message: `${netTokens} tokens have been added to your account.`,
         read: false,
         createdAt: admin.firestore.FieldValue.serverTimestamp()
       });
@@ -95,9 +149,9 @@ match /tokenPurchases/{purchaseId} {
 }
 */
 
-// 4. Admin approval function (stub)
-// This would be implemented in an admin dashboard
+// 4. Admin stub for approving purchases and viewing commissions
 /*
+// Admin dashboard component for approving token purchases
 const approveTokenPurchase = async (purchaseId) => {
   if (!currentUser.isAdmin) {
     throw new Error('Unauthorized. Only admins can approve purchases.');
@@ -112,4 +166,104 @@ const approveTokenPurchase = async (purchaseId) => {
   
   return { success: true };
 };
+
+// Admin dashboard component for viewing total commissions
+const fetchPlatformCommissions = async () => {
+  if (!currentUser.isAdmin) {
+    throw new Error('Unauthorized. Only admins can view platform commissions.');
+  }
+  
+  const commissionsDoc = await admin.firestore().collection('platform').doc('commissions').get();
+  const commissionsData = commissionsDoc.data() || { totalCommission: 0 };
+  
+  // You could also get historical data by time period
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  
+  const thisMonthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  
+  const purchasesRef = admin.firestore().collection('tokenPurchases');
+  const completedPurchasesThisMonth = await purchasesRef
+    .where('status', '==', 'completed')
+    .where('approvedAt', '>=', thisMonthStart)
+    .get();
+  
+  let monthlyCommission = 0;
+  completedPurchasesThisMonth.forEach(doc => {
+    monthlyCommission += doc.data().commissionAmount || 0;
+  });
+  
+  return {
+    totalCommission: commissionsData.totalCommission,
+    monthlyCommission,
+    lastUpdated: commissionsData.lastUpdated
+  };
+};
+*/
+
+// 5. Structure for Commissions Analytics Component in the Admin Dashboard
+/*
+import React, { useState, useEffect } from 'react';
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Sparkline } from "@/components/ui/sparkline";
+
+const CommissionsAnalytics = () => {
+  const [commissionData, setCommissionData] = useState({
+    total: 0,
+    monthly: 0,
+    history: []
+  });
+  
+  useEffect(() => {
+    const loadCommissionData = async () => {
+      try {
+        const data = await fetchPlatformCommissions();
+        setCommissionData({
+          total: data.totalCommission,
+          monthly: data.monthlyCommission,
+          history: data.history || []
+        });
+      } catch (err) {
+        console.error("Error loading commission data:", err);
+      }
+    };
+    
+    loadCommissionData();
+  }, []);
+  
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Total Platform Commission</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">${commissionData.total.toLocaleString()}</div>
+          <p className="text-sm text-muted-foreground">
+            Lifetime platform revenue from token purchases
+          </p>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Monthly Commission</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-3xl font-bold">${commissionData.monthly.toLocaleString()}</div>
+          <p className="text-sm text-muted-foreground">
+            Commission earned this month
+          </p>
+          {commissionData.history.length > 0 && (
+            <div className="h-[60px] mt-4">
+              <Sparkline data={commissionData.history} />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default CommissionsAnalytics;
 */
