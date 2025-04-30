@@ -1,10 +1,8 @@
-
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Heart, MoreHorizontal, Plus } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import { AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from "@/components/ui/use-toast";
-import TabBar from './TabBar';
 import UploadModal from './UploadModal';
 import '../../styles/feed.css';
 
@@ -246,12 +244,6 @@ const Feed = () => {
 
   return (
     <>
-      <TabBar 
-        categories={CATEGORIES}
-        activeCategory={activeCategory}
-        onCategoryChange={handleCategoryChange}
-      />
-      
       <div className="feed-container">
         <div id="feed" className={activeCategory !== "All" ? "filtered-feed" : ""}>
           {filteredItems.length > 0 ? (
