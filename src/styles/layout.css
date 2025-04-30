@@ -1,5 +1,4 @@
 
-
 @layer components {
   /* Hide scrollbar for category nav */
   .hide-scrollbar {
@@ -166,5 +165,38 @@
     background-color: #FF6F61;
     transform: scale(1.2);
   }
-}
 
+  /* Authentication Modal Styles */
+  .auth-modal-client .header {
+    background-color: rgba(30, 58, 138, 0.2); /* Indigo Ink at 20% opacity */
+  }
+  
+  .auth-modal-business .header {
+    background-color: rgba(255, 193, 7, 0.2); /* Amber Burst at 20% opacity */
+  }
+  
+  /* Auth buttons style */
+  .client-login-btn {
+    background-color: #1E3A8A; /* Indigo Ink */
+    color: white;
+    padding: 12px 20px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+  }
+  
+  .client-login-btn:hover {
+    background-color: #17307A; /* Darker shade of Indigo Ink */
+  }
+  
+  .business-login-btn {
+    background-color: #FFC107; /* Amber Burst */
+    color: black;
+    padding: 12px 20px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+  }
+  
+  .business-login-btn:hover {
+    background-color: #FFB300; /* Darker shade of Amber Burst */
+  }
+}
