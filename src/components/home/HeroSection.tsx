@@ -19,10 +19,6 @@ const HeroSection = () => {
       
       <div className="container mx-auto px-4 relative z-10">
         <div className="hero-panel">
-          <div className="hero-logo">
-            <img src="/logo.svg" alt="Proverb Digital Cloud Agency" />
-          </div>
-          
           <h1 className="mb-6 leading-tight">
             <span className="inline-block text-9xl text-indigo-500">Zimbabwe's Premier</span>
             <br />

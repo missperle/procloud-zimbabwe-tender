@@ -11,10 +11,6 @@ const SideNav = () => {
         </Link>
       </div>
       
-      <div className="sidenav-logo py-8">
-        Proverb Digital Cloud Agency
-      </div>
-      
       <div className="sidenav-footer">
         <Link to="/subscribe" className="hover:text-procloud-gold transition-colors">
           Subscribe
