@@ -4,18 +4,53 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: "AIzaSyDOCAbC123dEf456GhI789jKl01-MnO",
-  authDomain: "your-project-id.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project-id.appspot.com",
-  messagingSenderId: "1234567890",
-  appId: "1:1234567890:web:abc123def456"
+  apiKey: "AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY",
+  authDomain: "proverb-digital.firebaseapp.com",
+  projectId: "proverb-digital",
+  storageBucket: "proverb-digital.appspot.com",
+  messagingSenderId: "123456789012",
+  appId: "1:123456789012:web:abc123def456"
 };
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
+
+// For testing purposes, create a test user
+// Note: In a real app, you should create users through Firebase console or registration
+const createTestUser = async () => {
+  // This import is only used in development
+  const { createUserWithEmailAndPassword } = await import("firebase/auth");
+  
+  try {
+    // Check if we're in development mode
+    if (import.meta.env.DEV) {
+      const testEmail = "test@proverb.digital";
+      const testPassword = "password123";
+      
+      // Try to create the test user
+      await createUserWithEmailAndPassword(auth, testEmail, testPassword)
+        .then(() => {
+          console.log("Test user created successfully");
+        })
+        .catch((err) => {
+          // If error is because user already exists, that's fine
+          if (err.code === 'auth/email-already-in-use') {
+            console.log("Test user already exists, ready to use");
+          } else {
+            console.error("Error creating test user:", err.message);
+          }
+        });
+    }
+  } catch (error) {
+    console.error("Error setting up test user:", error);
+  }
+};
+
+// Call this function on development environment initialization
+if (import.meta.env.DEV) {
+  createTestUser();
+}
 
 export { auth };

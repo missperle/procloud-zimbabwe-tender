@@ -17,6 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -32,14 +33,15 @@ type FormData = z.infer<typeof formSchema>;
 const LoginForm = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: import.meta.env.DEV ? "test@proverb.digital" : "",
+      password: import.meta.env.DEV ? "password123" : "",
     },
   });
 
@@ -47,15 +49,28 @@ const LoginForm = () => {
     try {
       setError(null);
       setIsLoading(true);
+      console.log("Attempting login with:", data.email);
       await login(data.email, data.password);
+      toast({
+        title: "Login successful",
+        description: "Redirecting to your dashboard...",
+      });
       navigate("/client-dashboard");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "An error occurred during login.";
+      console.error("Login error:", errorMessage);
       setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // For development convenience
+  const devLoginMessage = import.meta.env.DEV ? (
+    <p className="text-xs text-gray-400 mt-2">
+      DEV MODE: Use test@proverb.digital / password123
+    </p>
+  ) : null;
 
   return (
     <div className="login-card bg-white p-8 rounded-lg shadow-lg w-full max-w-md mx-auto">
@@ -125,6 +140,8 @@ const LoginForm = () => {
               Don't have an account? Register
             </Link>
           </div>
+          
+          {devLoginMessage}
         </form>
       </Form>
     </div>

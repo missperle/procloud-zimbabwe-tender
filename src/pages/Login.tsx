@@ -7,8 +7,9 @@ import { Navigate } from "react-router-dom";
 const Login = () => {
   const { currentUser } = useAuth();
 
+  // If user is already logged in, redirect to dashboard
   if (currentUser) {
-    return <Navigate to="/client-dashboard" />;
+    return <Navigate to="/client-dashboard" replace />;
   }
 
   return (
