@@ -85,3 +85,11 @@
     letter-spacing: 0.5px;
   }
 }
+
+/* Override the CSS variable for accent color specific to our explore feed */
+.feed-container, 
+.tabs-container,
+#upload-btn,
+.like-btn.liked {
+  --accent: #F05A28;
+}

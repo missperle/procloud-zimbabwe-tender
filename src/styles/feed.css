@@ -11,16 +11,29 @@
   background: var(--feed-bg);
   font-family: var(--font);
   width: 100%;
-  max-width: 600px;
+  max-width: 1200px;
   margin: 0 auto;
   padding-bottom: 80px; /* Space for the upload button */
 }
 
 #feed {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(1, 1fr);
+  gap: 24px;
   padding: 16px;
+}
+
+/* Responsive grid layout */
+@media (min-width: 640px) {
+  #feed {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  #feed {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 .card {
@@ -30,8 +43,13 @@
   background: var(--card-bg);
   overflow: hidden;
   border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
 }
 
 .feed-media {
@@ -41,6 +59,11 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.card:hover .feed-media {
+  transform: scale(1.05);
 }
 
 .overlay {
@@ -142,6 +165,7 @@
   display: flex;
   justify-content: center;
   padding: 20px 0;
+  grid-column: 1 / -1;
 }
 
 .loading-spinner {
@@ -157,13 +181,54 @@
   to { transform: rotate(360deg); }
 }
 
-/* Media queries for responsive design */
-@media (max-width: 768px) {
-  .feed-container {
-    max-width: 100%;
-  }
-  
-  #feed {
-    padding: 8px;
-  }
+/* Category tabs */
+.tabs-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.tab-item {
+  position: relative;
+  outline: none;
+}
+
+.tab-item::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+}
+
+/* Empty state */
+.empty-state {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 40px 0;
+  color: #888;
+}
+
+/* Adding masonry effect with staggered items */
+#feed.filtered-feed {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-auto-rows: 0;
+  grid-gap: 24px;
+}
+
+#feed.filtered-feed .card {
+  grid-row-end: span 1;
+  padding-top: 100%;
+}
+
+/* Focus styles for accessibility */
+button:focus-visible, 
+.tab-item:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
