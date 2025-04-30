@@ -1,6 +1,6 @@
 
 import { Link } from 'react-router-dom';
-import { LayoutGrid } from 'lucide-react';
+import { LayoutGrid, Instagram, Mail } from 'lucide-react';
 
 const SideNav = () => {
   return (
@@ -15,13 +15,14 @@ const SideNav = () => {
         Proverb Digital Cloud Agency
       </div>
       
-      <div className="pb-6 flex flex-row gap-6 items-center justify-center">
-        <Link to="/subscribe" className="text-sm font-medium hover:text-procloud-green transition-colors">
+      <div className="sidenav-footer">
+        <Link to="/subscribe" className="hover:text-procloud-gold transition-colors">
           Subscribe
         </Link>
-        <Link to="/instagram" className="text-sm font-medium hover:text-procloud-green transition-colors">
-          IG
-        </Link>
+        <a href="https://instagram.com/proverbdigital" target="_blank" rel="noopener noreferrer" className="hover:text-procloud-gold transition-colors">
+          <Instagram size={18} className="inline mr-1" />
+          <span className="sr-only">Instagram</span>
+        </a>
       </div>
     </div>
   );

@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -116,6 +115,21 @@
     font-weight: 700; 
     font-size: 14px; 
     text-align: center;
+  }
+  
+  .sidenav-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding-bottom: 24px;
+    width: 100%;
+    align-items: center;
+  }
+  
+  .sidenav-footer a {
+    font-size: 14px;
+    color: hsl(var(--primary));
+    text-decoration: none;
   }
   
   .main-content { 
