@@ -55,7 +55,7 @@ const HowItWorks = () => {
         <div className="grid gap-8 md:grid-cols-2">
           <div>
             <h3 className="mb-6 inline-flex items-center">
-              <span className="w-8 h-8 rounded-full bg-procloud-green text-black flex items-center justify-center text-sm mr-2">
+              <span className="w-8 h-8 rounded-full bg-procloud-green text-white flex items-center justify-center text-sm mr-2">
                 <CheckCircle className="w-5 h-5" />
               </span>
               For Businesses
@@ -83,7 +83,7 @@ const HowItWorks = () => {
           
           <div>
             <h3 className="mb-6 inline-flex items-center">
-              <span className="w-8 h-8 rounded-full bg-procloud-green text-black flex items-center justify-center text-sm mr-2">
+              <span className="w-8 h-8 rounded-full bg-procloud-green text-white flex items-center justify-center text-sm mr-2">
                 <CheckCircle className="w-5 h-5" />
               </span>
               For Freelancers

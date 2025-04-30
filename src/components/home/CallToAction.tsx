@@ -20,7 +20,7 @@ const CallToAction = () => {
           
           <div className="flex flex-col sm:flex-row justify-center gap-6">
             <Link to="/signup?type=freelancer">
-              <Button size="lg" className="w-full sm:w-auto text-lg bg-procloud-green hover:bg-procloud-green-dark text-black">
+              <Button size="lg" className="w-full sm:w-auto text-lg bg-procloud-green hover:bg-procloud-gold hover:text-black">
                 Join as a Freelancer
               </Button>
             </Link>

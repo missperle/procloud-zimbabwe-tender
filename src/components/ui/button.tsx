@@ -10,7 +10,7 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-procloud-green text-white hover:bg-procloud-green-dark",
+        default: "bg-procloud-green text-white hover:bg-amber-burst hover:text-black",
         destructive:
           "bg-destructive text-destructive-foreground hover:bg-destructive/90",
         outline:
@@ -19,7 +19,7 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-procloud-green underline-offset-4 hover:underline",
-        pill: "rounded-pill bg-procloud-green text-white hover:bg-procloud-green-dark",
+        pill: "rounded-pill bg-procloud-green text-white hover:bg-amber-burst hover:text-black",
       },
       size: {
         default: "h-10 px-4 py-2",

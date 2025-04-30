@@ -23,7 +23,7 @@ const HeroSection = () => {
           
           <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
             <Link to="/post-job">
-              <Button size="lg" className="text-lg w-full sm:w-auto bg-procloud-green hover:bg-procloud-green-dark text-black font-medium">
+              <Button size="lg" className="text-lg w-full sm:w-auto bg-procloud-green hover:bg-procloud-gold hover:text-black font-medium">
                 Post a Brief
               </Button>
             </Link>

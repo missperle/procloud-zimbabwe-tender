@@ -69,11 +69,11 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				procloud: {
-					green: '#00B3A4', // Updated to Teal Pulse
-					'green-dark': '#009B8E', // Slightly darker teal for hover
+					green: '#3F51B5', // Updated to Indigo Ink from Teal Pulse
+					'green-dark': '#303F9F', // Darker Indigo for hover
 					black: '#000000',
 					white: '#FFFFFF',
-					gold: '#D4AF37', // Gold Standard for featured items
+					gold: '#FFC107', // Updated to Amber Burst from Gold Standard
 					'charcoal-gray': '#403E43', // Charcoal Gray for text
 					'soft-ash': '#F5F5F5', // Soft Ash for dividers
 					gray: {
@@ -89,7 +89,14 @@ export default {
 					}
 				},
 				teal: {
-					pulse: '#00B3A4',
+					pulse: '#3F51B5', // Updated to Indigo Ink
+				},
+				indigo: {
+					ink: '#3F51B5',
+					dark: '#303F9F',
+				},
+				amber: {
+					burst: '#FFC107',
 				}
 			},
 			borderRadius: {
@@ -138,7 +145,7 @@ export default {
 				'float': 'float 6s ease-in-out infinite',
 				'pulse-slow': 'pulse-slow 4s ease-in-out infinite',
 				'gradient-shift': 'gradient-shift 15s ease infinite',
-				'button-press': 'button-press 0.1s ease-in-out',
+				'button-press': 'button-press 0.1s ease-out',
 				'hover-up': 'hover-up 0.2s ease-out forwards'
 			}
 		}
