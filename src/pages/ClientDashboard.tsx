@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
@@ -12,10 +11,12 @@ import AccountSettings from "@/components/client/AccountSettings";
 import BuyTokensPage from "@/pages/BuyTokens";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Coins } from "lucide-react";
+import { Coins, Bell } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 
 const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
   const location = useLocation();
 
   useEffect(() => {
@@ -26,18 +27,48 @@ const ClientDashboard = () => {
       setActiveTab(tabParam);
     }
   }, [location]);
+  
+  // Mock notification count - in a real app, this would come from Firestore
+  useEffect(() => {
+    // Simulate fetching notification count
+    // In a real app, this would be a Firestore query:
+    // const notificationsRef = collection(db, "notifications");
+    // const q = query(notificationsRef, 
+    //                 where("userId", "==", auth.currentUser.uid),
+    //                 where("read", "==", false));
+    // const unreadSnapshot = await getDocs(q);
+    // setUnreadNotifications(unreadSnapshot.size);
+    
+    // For demo purposes:
+    setUnreadNotifications(3);
+  }, []);
 
   return (
     <Layout>
       <div className="p-6 client-dashboard">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Client Dashboard</h1>
-          <Button asChild>
-            <Link to="/client-dashboard?tab=tokens">
-              <Coins className="mr-2 h-4 w-4" />
-              Buy Tokens
-            </Link>
-          </Button>
+          <div className="flex items-center space-x-3">
+            <div className="relative">
+              <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+                <Bell className="h-5 w-5" />
+                {unreadNotifications > 0 && (
+                  <Badge 
+                    variant="destructive" 
+                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
+                  >
+                    {unreadNotifications}
+                  </Badge>
+                )}
+              </Button>
+            </div>
+            <Button asChild>
+              <Link to="/client-dashboard?tab=tokens">
+                <Coins className="mr-2 h-4 w-4" />
+                Buy Tokens
+              </Link>
+            </Button>
+          </div>
         </div>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

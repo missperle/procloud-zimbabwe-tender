@@ -267,3 +267,590 @@ const CommissionsAnalytics = () => {
 
 export default CommissionsAnalytics;
 */
+
+// NEW ADDITIONS - Payment Provider Webhook Endpoints
+
+// 6. Webhook Handler for EcoCash Payments
+/* 
+exports.ecocashWebhook = functions.https.onRequest(async (req, res) => {
+  // Validate request is from EcoCash (would use proper validation in production)
+  if (!isValidEcoCashRequest(req)) {
+    console.error('Invalid EcoCash webhook request');
+    return res.status(403).send('Unauthorized');
+  }
+  
+  try {
+    // Parse the webhook payload
+    const { 
+      transactionId, 
+      merchantReference, 
+      amount, 
+      status, 
+      phoneNumber,
+      timestamp 
+    } = req.body;
+    
+    // Validate the reference code format (PD-xxxxxx)
+    if (!merchantReference || !merchantReference.startsWith('PD-')) {
+      console.error('Invalid merchant reference format');
+      return res.status(400).send('Invalid reference format');
+    }
+    
+    // Extract client ID from reference (assuming format is PD-{clientId})
+    const clientIdPrefix = merchantReference.substring(3);
+    
+    // Find the matching pending purchase
+    const purchasesRef = admin.firestore().collection('tokenPurchases');
+    const pendingPurchases = await purchasesRef
+      .where('status', '==', 'pending')
+      .where('method', '==', 'ecocash')
+      .get();
+    
+    let matchedPurchase = null;
+    
+    pendingPurchases.forEach(doc => {
+      const purchaseData = doc.data();
+      // Match by client ID prefix and amount
+      const purchaseRefCode = `PD-${purchaseData.clientId.substring(0, 6)}`;
+      const totalAmount = purchaseData.grossAmount + purchaseData.commissionAmount;
+      
+      if (purchaseRefCode === merchantReference && 
+          Math.abs(totalAmount - parseFloat(amount)) < 0.01) {
+        matchedPurchase = { id: doc.id, ...purchaseData };
+      }
+    });
+    
+    if (!matchedPurchase) {
+      console.error('No matching purchase found for EcoCash payment');
+      return res.status(404).send('No matching purchase found');
+    }
+    
+    // Update the purchase status
+    await purchasesRef.doc(matchedPurchase.id).update({
+      status: status === 'successful' ? 'completed' : 'failed',
+      paymentDetails: {
+        transactionId,
+        phoneNumber,
+        timestamp: new Date(timestamp),
+        providerResponse: req.body
+      },
+      processedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    
+    console.log(`Updated purchase ${matchedPurchase.id} status to ${status === 'successful' ? 'completed' : 'failed'}`);
+    return res.status(200).send('Webhook processed');
+  } catch (error) {
+    console.error('Error processing EcoCash webhook:', error);
+    return res.status(500).send('Internal server error');
+  }
+});
+
+// Helper function to validate EcoCash requests
+function isValidEcoCashRequest(req) {
+  // In production, would verify signatures, API keys, etc.
+  // This is a simplified example
+  const ecocashIps = ['123.456.789.0']; // Example IPs - replace with actual EcoCash IPs
+  const apiKey = req.headers['x-api-key'];
+  const signature = req.headers['x-signature'];
+  
+  // Basic validation
+  const requestIp = req.ip || req.connection.remoteAddress;
+  const validIp = ecocashIps.includes(requestIp);
+  const validMethod = req.method === 'POST';
+  const validContentType = req.headers['content-type'] === 'application/json';
+  const validApiKey = apiKey === process.env.ECOCASH_API_KEY;
+  
+  // In production, would verify signature with crypto
+  // For now, just check that it exists
+  const hasSignature = !!signature;
+  
+  return validIp && validMethod && validContentType && validApiKey && hasSignature;
+}
+*/
+
+// 7. Webhook Handler for Mukuru Payments
+/*
+exports.mukuruWebhook = functions.https.onRequest(async (req, res) => {
+  // Validate request is from Mukuru (would use proper validation in production)
+  if (!isValidMukuruRequest(req)) {
+    console.error('Invalid Mukuru webhook request');
+    return res.status(403).send('Unauthorized');
+  }
+  
+  try {
+    // Parse the webhook payload
+    const { 
+      paymentId, 
+      referenceCode, 
+      amountPaid, 
+      status, 
+      customerDetails,
+      timestamp 
+    } = req.body;
+    
+    // Validate the reference code format
+    if (!referenceCode || !referenceCode.startsWith('PD-')) {
+      console.error('Invalid reference code format');
+      return res.status(400).send('Invalid reference format');
+    }
+    
+    // Find the matching pending purchase
+    const purchasesRef = admin.firestore().collection('tokenPurchases');
+    const pendingPurchases = await purchasesRef
+      .where('status', '==', 'pending')
+      .where('method', '==', 'mukuru')
+      .get();
+    
+    let matchedPurchase = null;
+    
+    pendingPurchases.forEach(doc => {
+      const purchaseData = doc.data();
+      // Match by reference code and amount
+      const purchaseRefCode = `PD-${purchaseData.clientId.substring(0, 8)}`;
+      const totalAmount = purchaseData.grossAmount + purchaseData.commissionAmount;
+      
+      if (purchaseRefCode === referenceCode && 
+          Math.abs(totalAmount - parseFloat(amountPaid)) < 0.01) {
+        matchedPurchase = { id: doc.id, ...purchaseData };
+      }
+    });
+    
+    if (!matchedPurchase) {
+      console.error('No matching purchase found for Mukuru payment');
+      return res.status(404).send('No matching purchase found');
+    }
+    
+    // Update the purchase status
+    await purchasesRef.doc(matchedPurchase.id).update({
+      status: status === 'success' ? 'completed' : 'failed',
+      paymentDetails: {
+        paymentId,
+        customerDetails,
+        timestamp: new Date(timestamp),
+        providerResponse: req.body
+      },
+      processedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    
+    console.log(`Updated purchase ${matchedPurchase.id} status to ${status === 'success' ? 'completed' : 'failed'}`);
+    return res.status(200).send('Webhook processed');
+  } catch (error) {
+    console.error('Error processing Mukuru webhook:', error);
+    return res.status(500).send('Internal server error');
+  }
+});
+
+// Helper function to validate Mukuru requests
+function isValidMukuruRequest(req) {
+  // In production, would verify signatures, API keys, etc.
+  const mukuruIps = ['123.456.789.0']; // Example IPs - replace with actual Mukuru IPs
+  const apiKey = req.headers['x-mukuru-key'];
+  const signature = req.headers['x-mukuru-signature'];
+  
+  // Basic validation
+  const requestIp = req.ip || req.connection.remoteAddress;
+  const validIp = mukuruIps.includes(requestIp);
+  const validMethod = req.method === 'POST';
+  const validContentType = req.headers['content-type'] === 'application/json';
+  const validApiKey = apiKey === process.env.MUKURU_API_KEY;
+  
+  // In production, would verify signature
+  const hasSignature = !!signature;
+  
+  return validIp && validMethod && validContentType && validApiKey && hasSignature;
+}
+*/
+
+// 8. Webhook Handler for InnBucks Payments
+/*
+exports.innbucksWebhook = functions.https.onRequest(async (req, res) => {
+  // Validate request is from InnBucks (would use proper validation in production)
+  if (!isValidInnBucksRequest(req)) {
+    console.error('Invalid InnBucks webhook request');
+    return res.status(403).send('Unauthorized');
+  }
+  
+  try {
+    // Parse the webhook payload
+    const { 
+      transactionId, 
+      reference, 
+      amount, 
+      status, 
+      sender,
+      timestamp 
+    } = req.body;
+    
+    // Validate the reference code format
+    if (!reference || !reference.startsWith('PD-')) {
+      console.error('Invalid reference format');
+      return res.status(400).send('Invalid reference format');
+    }
+    
+    // Find the matching pending purchase
+    const purchasesRef = admin.firestore().collection('tokenPurchases');
+    const pendingPurchases = await purchasesRef
+      .where('status', '==', 'pending')
+      .where('method', '==', 'innbucks')
+      .get();
+    
+    let matchedPurchase = null;
+    
+    pendingPurchases.forEach(doc => {
+      const purchaseData = doc.data();
+      // Match by reference code and amount
+      const purchaseRefCode = `PD-${purchaseData.clientId.substring(0, 6)}`;
+      const totalAmount = purchaseData.grossAmount + purchaseData.commissionAmount;
+      
+      if (purchaseRefCode === reference && 
+          Math.abs(totalAmount - parseFloat(amount)) < 0.01) {
+        matchedPurchase = { id: doc.id, ...purchaseData };
+      }
+    });
+    
+    if (!matchedPurchase) {
+      console.error('No matching purchase found for InnBucks payment');
+      return res.status(404).send('No matching purchase found');
+    }
+    
+    // Update the purchase status
+    await purchasesRef.doc(matchedPurchase.id).update({
+      status: status === 'completed' ? 'completed' : 'failed',
+      paymentDetails: {
+        transactionId,
+        sender,
+        timestamp: new Date(timestamp),
+        providerResponse: req.body
+      },
+      processedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    
+    console.log(`Updated purchase ${matchedPurchase.id} status to ${status === 'completed' ? 'completed' : 'failed'}`);
+    return res.status(200).send('Webhook processed');
+  } catch (error) {
+    console.error('Error processing InnBucks webhook:', error);
+    return res.status(500).send('Internal server error');
+  }
+});
+
+// Helper function to validate InnBucks requests
+function isValidInnBucksRequest(req) {
+  // In production, would verify signatures, API keys, etc.
+  const innbucksIps = ['123.456.789.0']; // Example IPs - replace with actual InnBucks IPs
+  const apiKey = req.headers['x-innbucks-key'];
+  const signature = req.headers['x-innbucks-signature'];
+  
+  // Basic validation
+  const requestIp = req.ip || req.connection.remoteAddress;
+  const validIp = innbucksIps.includes(requestIp);
+  const validMethod = req.method === 'POST';
+  const validContentType = req.headers['content-type'] === 'application/json';
+  const validApiKey = apiKey === process.env.INNBUCKS_API_KEY;
+  
+  // In production, would verify signature
+  const hasSignature = !!signature;
+  
+  return validIp && validMethod && validContentType && validApiKey && hasSignature;
+}
+*/
+
+// 9. Function to handle failed payments (scheduled to run daily)
+/*
+exports.checkStalePayments = functions.pubsub.schedule('every 24 hours').onRun(async (context) => {
+  // Find payments that are over 24 hours old and still pending
+  const oneDayAgo = new Date();
+  oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+  
+  const purchasesRef = admin.firestore().collection('tokenPurchases');
+  const stalePurchases = await purchasesRef
+    .where('status', '==', 'pending')
+    .where('createdAt', '<=', oneDayAgo)
+    .get();
+  
+  // Mark stale purchases as failed
+  const batch = admin.firestore().batch();
+  let count = 0;
+  
+  stalePurchases.forEach(doc => {
+    const purchaseRef = purchasesRef.doc(doc.id);
+    batch.update(purchaseRef, {
+      status: 'failed',
+      failureReason: 'Payment timed out after 24 hours',
+      updatedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+    count++;
+  });
+  
+  if (count > 0) {
+    await batch.commit();
+    console.log(`Marked ${count} stale payments as failed`);
+  }
+  
+  return null;
+});
+*/
+
+// 10. Function to send notifications via Firebase Cloud Messaging (FCM)
+/*
+exports.sendPushNotification = functions.firestore
+  .document('notifications/{notificationId}')
+  .onCreate(async (snap, context) => {
+    const notification = snap.data();
+    const { userId, title, message } = notification;
+    
+    // Get user's FCM token
+    const userDoc = await admin.firestore().collection('users').doc(userId).get();
+    const userData = userDoc.data();
+    
+    if (!userData || !userData.fcmToken) {
+      console.log(`No FCM token found for user ${userId}`);
+      return null;
+    }
+    
+    // Prepare notification
+    const payload = {
+      notification: {
+        title,
+        body: message,
+        click_action: 'OPEN_APP'
+      },
+      data: {
+        notificationId: context.params.notificationId,
+        type: notification.type
+      }
+    };
+    
+    try {
+      // Send via FCM
+      await admin.messaging().sendToDevice(userData.fcmToken, payload);
+      console.log(`Push notification sent to user ${userId}`);
+      return null;
+    } catch (error) {
+      console.error(`Error sending push notification to user ${userId}:`, error);
+      return null;
+    }
+  });
+*/
+
+// 11. Enhanced Firestore security rules with KYC and admin permissions
+/*
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+    
+    function isCurrentUser(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function isKycVerified() {
+      return isAuthenticated() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.kycVerified == true;
+    }
+    
+    function isHighValuePurchase(data) {
+      return data.grossAmount >= 2000;
+    }
+    
+    // Users collection
+    match /users/{userId} {
+      allow read: if isCurrentUser(userId) || isAdmin();
+      allow create: if isAuthenticated();
+      allow update: if isCurrentUser(userId) || isAdmin();
+      allow delete: if isAdmin();
+      
+      // Sub-collection for KYC documents
+      match /kycDocuments/{docId} {
+        allow read: if isCurrentUser(userId) || isAdmin();
+        allow create: if isCurrentUser(userId);
+        allow update: if isAdmin();
+        allow delete: if isAdmin();
+      }
+    }
+    
+    // Token purchases
+    match /tokenPurchases/{purchaseId} {
+      // Allow users to create their own purchases
+      allow create: if isAuthenticated() && 
+                   request.resource.data.clientId == request.auth.uid &&
+                   request.resource.data.status == 'pending' &&
+                   (!isHighValuePurchase(request.resource.data) || isKycVerified());
+      
+      // Users can read their own purchases, admins can read all
+      allow read: if isAuthenticated() && 
+                 (resource.data.clientId == request.auth.uid || isAdmin());
+      
+      // Only admins can update status to completed/rejected
+      // Users can cancel their own pending purchases
+      allow update: if isAuthenticated() && 
+                   ((resource.data.clientId == request.auth.uid && 
+                    request.resource.data.status == 'cancelled' &&
+                    resource.data.status == 'pending') ||
+                   (isAdmin() && 
+                    (request.resource.data.status == 'completed' || 
+                     request.resource.data.status == 'rejected')));
+    }
+    
+    // Platform stats - admin only
+    match /platform/{docId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+    
+    // Notifications - users can read their own, admin can read all
+    match /notifications/{notificationId} {
+      allow read: if isAuthenticated() && 
+                 (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAdmin();
+      // Allow users to mark their notifications as read
+      allow update: if isAuthenticated() && 
+                   resource.data.userId == request.auth.uid &&
+                   request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow delete: if isAdmin();
+    }
+  }
+}
+*/
+
+// 12. Admin Dashboard Functions for Managing Tokenomics
+/*
+// Fetch pending purchases for admin approval
+const fetchPendingPurchases = async () => {
+  if (!currentUser.isAdmin) {
+    throw new Error('Unauthorized. Only admins can view pending purchases.');
+  }
+  
+  const purchasesRef = admin.firestore().collection('tokenPurchases');
+  const pendingQuery = purchasesRef
+    .where('status', '==', 'pending')
+    .orderBy('createdAt', 'desc')
+    .limit(50);
+    
+  const snapshot = await pendingQuery.get();
+  
+  const pendingPurchases = [];
+  snapshot.forEach(doc => {
+    pendingPurchases.push({
+      id: doc.id,
+      ...doc.data(),
+      createdAt: doc.data().createdAt.toDate()
+    });
+  });
+  
+  return pendingPurchases;
+};
+
+// Approve a purchase
+const approvePurchase = async (purchaseId, adminNote = '') => {
+  if (!currentUser.isAdmin) {
+    throw new Error('Unauthorized. Only admins can approve purchases.');
+  }
+  
+  await admin.firestore().collection('tokenPurchases').doc(purchaseId).update({
+    status: 'completed',
+    adminNote,
+    approvedBy: currentUser.uid,
+    approvedAt: admin.firestore.FieldValue.serverTimestamp()
+  });
+  
+  return { success: true, message: 'Purchase approved successfully' };
+};
+
+// Reject a purchase
+const rejectPurchase = async (purchaseId, adminNote = '') => {
+  if (!currentUser.isAdmin) {
+    throw new Error('Unauthorized. Only admins can reject purchases.');
+  }
+  
+  if (!adminNote) {
+    throw new Error('Rejection reason is required');
+  }
+  
+  await admin.firestore().collection('tokenPurchases').doc(purchaseId).update({
+    status: 'rejected',
+    adminNote,
+    rejectedBy: currentUser.uid,
+    rejectedAt: admin.firestore.FieldValue.serverTimestamp()
+  });
+  
+  return { success: true, message: 'Purchase rejected successfully' };
+};
+
+// Fetch token analytics data
+const fetchTokenAnalytics = async () => {
+  if (!currentUser.isAdmin) {
+    throw new Error('Unauthorized. Only admins can view analytics.');
+  }
+  
+  const purchasesRef = admin.firestore().collection('tokenPurchases');
+  
+  // Get completed purchases for analysis
+  const completedQuery = purchasesRef
+    .where('status', '==', 'completed')
+    .orderBy('createdAt', 'desc')
+    .limit(1000); // Limit for performance
+    
+  const snapshot = await completedQuery.get();
+  
+  // Initialize analytics data structures
+  const bundleData = {
+    100: { count: 0, tokens: 0, revenue: 0 },
+    250: { count: 0, tokens: 0, revenue: 0 },
+    500: { count: 0, tokens: 0, revenue: 0 }
+  };
+  
+  const paymentMethodData = {
+    ecocash: { count: 0, amount: 0 },
+    mukuru: { count: 0, amount: 0 },
+    innbucks: { count: 0, amount: 0 }
+  };
+  
+  // Daily data for time series
+  const dailyData = {};
+  
+  snapshot.forEach(doc => {
+    const purchase = doc.data();
+    const { bundleTokens, grossAmount, commissionAmount, method, createdAt } = purchase;
+    
+    // Bundle analytics
+    if (bundleData[bundleTokens]) {
+      bundleData[bundleTokens].count++;
+      bundleData[bundleTokens].tokens += bundleTokens;
+      bundleData[bundleTokens].revenue += grossAmount;
+    }
+    
+    // Payment method analytics
+    if (paymentMethodData[method]) {
+      paymentMethodData[method].count++;
+      paymentMethodData[method].amount += grossAmount;
+    }
+    
+    // Daily analytics
+    const date = createdAt.toDate().toISOString().split('T')[0];
+    if (!dailyData[date]) {
+      dailyData[date] = { tokens: 0, revenue: 0, count: 0 };
+    }
+    dailyData[date].tokens += bundleTokens;
+    dailyData[date].revenue += grossAmount;
+    dailyData[date].count++;
+  });
+  
+  return {
+    bundleData,
+    paymentMethodData,
+    dailyData: Object.entries(dailyData).map(([date, data]) => ({
+      date,
+      ...data
+    })).sort((a, b) => a.date.localeCompare(b.date))
+  };
+};
+*/
+
