@@ -10,16 +10,15 @@ import ProjectGrid from "@/components/projects/ProjectGrid";
 const Index = () => {
   return (
     <Layout>
-      {/* Hero Section with Scroll Effects */}
-      <HeroSection />
+      {/* Hero and Tender Spotlight with Scroll-Snap */}
+      <div className="scroll-container">
+        <HeroSection />
+        <TenderSpotlight />
+      </div>
       
-      {/* Regular Sections */}
+      {/* Regular Sections (outside scroll container) */}
       <section>
         <ProjectGrid />
-      </section>
-      
-      <section>
-        <TenderSpotlight />
       </section>
       
       <section>
