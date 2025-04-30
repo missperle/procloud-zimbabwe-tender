@@ -7,12 +7,16 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "react-router-dom";
 
-// Mock data
+// Define the allowed status types to match component props
+type JobStatusType = "active" | "completed" | "expired";
+type SubmissionStatusType = "selected" | "pending" | "rejected";
+
+// Mock data with proper type annotations
 const mockJobs = [
   {
     id: "job1",
     title: "Brand Identity Design for Local Restaurant",
-    status: "active",
+    status: "active" as JobStatusType,
     budget: "$150-200",
     deadline: "May 15, 2025",
     submissionsCount: 5,
@@ -21,7 +25,7 @@ const mockJobs = [
   {
     id: "job2",
     title: "E-commerce Website Development",
-    status: "active",
+    status: "active" as JobStatusType,
     budget: "$300-500",
     deadline: "May 20, 2025",
     submissionsCount: 3,
@@ -30,7 +34,7 @@ const mockJobs = [
   {
     id: "job3",
     title: "Social Media Content Creation",
-    status: "completed",
+    status: "completed" as JobStatusType,
     budget: "$100-150",
     deadline: "April 10, 2025",
     submissionsCount: 8,
@@ -38,7 +42,7 @@ const mockJobs = [
   {
     id: "job4",
     title: "Copywriting for Company Website",
-    status: "expired",
+    status: "expired" as JobStatusType,
     budget: "$80-120",
     deadline: "April 5, 2025",
     submissionsCount: 2,
@@ -54,7 +58,7 @@ const mockSubmissions = [
     submittedAt: "2 days ago",
     files: ["logo.png", "brand-guide.pdf"],
     note: "I've created a modern identity that reflects the restaurant's fusion concept while maintaining a connection to local traditions.",
-    status: "pending",
+    status: "pending" as SubmissionStatusType,
   },
   {
     id: "sub2",
@@ -64,7 +68,7 @@ const mockSubmissions = [
     submittedAt: "3 days ago",
     files: ["logo-concepts.pdf"],
     note: "Here are 3 concepts to choose from. I focused on creating a warm, inviting brand identity that would appeal to your target audience.",
-    status: "pending",
+    status: "pending" as SubmissionStatusType,
   },
   {
     id: "sub3",
@@ -74,18 +78,16 @@ const mockSubmissions = [
     submittedAt: "4 days ago",
     files: ["branding-package.zip"],
     note: "I've developed a comprehensive brand identity package including logo variations, color palette, typography, and application examples.",
-    status: "pending",
+    status: "pending" as SubmissionStatusType,
   }
 ];
-
-type JobStatus = "active" | "completed" | "expired";
 
 const ClientDashboard = () => {
   const [selectedJob, setSelectedJob] = useState<string | null>(null);
   const [viewingSubmissions, setViewingSubmissions] = useState(false);
   
   // Filter jobs by status
-  const filterJobsByStatus = (status: JobStatus) => {
+  const filterJobsByStatus = (status: JobStatusType) => {
     return mockJobs.filter(job => job.status === status);
   };
   
