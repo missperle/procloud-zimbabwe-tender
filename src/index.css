@@ -53,10 +53,13 @@
 
   body {
     @apply bg-background text-foreground font-sans;
+    letter-spacing: 0.2px;
+    line-height: 1.6;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    @apply font-bold tracking-tight;
+    @apply font-space font-bold tracking-tight;
+    letter-spacing: -0.5px;
   }
 
   h1 {
@@ -69,6 +72,11 @@
 
   h3 {
     @apply text-2xl md:text-3xl;
+  }
+
+  p, label, input, textarea, select, button {
+    @apply font-sans;
+    letter-spacing: 0.2px;
   }
 }
 
