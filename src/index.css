@@ -147,6 +147,11 @@
     z-index: 900;
   }
   
+  /* Hide header on hero */
+  .hide-header header {
+    display: none;
+  }
+  
   /* Hero section with 3D perspective effects */
   .hero {
     perspective: 800px;
@@ -175,6 +180,27 @@
   .hero::after {
     transform: translate3d(-50%, -50%, 50px) rotateY(15deg);
     animation: drift2 80s linear infinite;
+  }
+  
+  /* Hero panel floating component */
+  .hero-panel {
+    position: relative;
+    z-index: 1;
+    max-width: 700px;
+    margin: auto;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.05);
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    animation: fadeIn 1s ease-out forwards;
+    backdrop-filter: blur(2px);
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-40%) scale(0.98); }
+    to { opacity: 1; transform: translateY(-50%) scale(1); }
   }
   
   /* Existing navbar and hero logo styles */
