@@ -72,7 +72,7 @@ const TenderSpotlight = () => {
                 <CarouselItem key={tender.id} className="md:basis-1/2 lg:basis-1/3 pl-6">
                   <div 
                     className={`
-                      relative h-full bg-white text-procloud-black rounded-lg overflow-hidden shadow-card
+                      tender-card featured relative h-full bg-white text-procloud-black rounded-lg overflow-hidden shadow-card
                       transition-transform duration-300 ${hoveredIndex === index ? 'scale-[1.02]' : ''}
                     `}
                     onMouseEnter={() => setHoveredIndex(index)}
@@ -80,7 +80,7 @@ const TenderSpotlight = () => {
                   >
                     {/* Featured ribbon */}
                     <div className="absolute top-6 -right-12 rotate-45 z-10">
-                      <div className="bg-procloud-gold text-black font-medium px-12 py-1">
+                      <div className="bg-[#FF6F61] text-black font-medium px-12 py-1">
                         Featured Tender
                       </div>
                     </div>
@@ -106,7 +106,7 @@ const TenderSpotlight = () => {
                     <div className="p-6 pt-0">
                       <Link to={`/jobs/${tender.slug}`}>
                         <Button 
-                          className="w-full bg-procloud-black text-white hover:bg-procloud-green hover:text-black transition-colors"
+                          className="w-full bg-procloud-black text-white hover:bg-[#FF6F61] hover:text-white transition-colors"
                         >
                           See Details
                         </Button>

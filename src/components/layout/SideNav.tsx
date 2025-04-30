@@ -7,7 +7,7 @@ const SideNav = () => {
     <div className="sidenav">
       <div className="pt-6">
         <Link to="/">
-          <LayoutGrid size={24} className="text-procloud-black hover:text-procloud-green transition-colors" />
+          <LayoutGrid size={24} className="sidenav-icon text-procloud-black hover:text-procloud-green transition-colors" />
         </Link>
       </div>
       
@@ -19,7 +19,7 @@ const SideNav = () => {
         <Link to="/subscribe" className="hover:text-procloud-gold transition-colors">
           Subscribe
         </Link>
-        <a href="https://instagram.com/proverbdigital" target="_blank" rel="noopener noreferrer" className="hover:text-procloud-gold transition-colors">
+        <a href="https://instagram.com/proverbdigital" target="_blank" rel="noopener noreferrer" className="sidenav-icon hover:text-procloud-gold transition-colors">
           <Instagram size={18} className="inline mr-1" />
           <span className="sr-only">Instagram</span>
         </a>

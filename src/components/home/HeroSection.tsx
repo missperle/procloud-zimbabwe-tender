@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import FloatingShapes from "../ui/floating-shapes";
 
 const HeroSection = () => {
-  return <section className="hero relative overflow-hidden py-20 md:py-32 bg-procloud-black text-white">
+  return <section className="hero hide-header relative overflow-hidden py-20 md:py-32 bg-procloud-black text-white">
       {/* Rotating Halo Effect */}
       <div className="absolute inset-0 w-[200%] h-[200%] top-[-50%] left-[-50%] animate-spin-slow">
         <div className="w-full h-full rounded-full bg-gradient-radial from-[rgba(30,58,138,0.15)] to-transparent" />
@@ -13,11 +13,7 @@ const HeroSection = () => {
       <FloatingShapes density="medium" />
       
       <div className="container mx-auto px-4 relative z-10">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="hero-logo">
-            <img src="/logo.svg" alt="Proverb Digital Cloud Agency" />
-          </div>
-          
+        <div className="hero-panel">
           <h1 className="mb-6 leading-tight">
             <span className="inline-block text-9xl text-indigo-500">Zimbabwe's Premier</span>
             <br />
@@ -31,7 +27,7 @@ const HeroSection = () => {
           
           <div className="flex flex-col sm:flex-row justify-center gap-4 mt-10">
             <Link to="/post-job">
-              <Button size="lg" className="text-lg w-full sm:w-auto bg-procloud-green hover:bg-procloud-gold hover:text-black font-medium">
+              <Button size="lg" className="btn-primary text-lg w-full sm:w-auto font-medium">
                 Post a Brief
               </Button>
             </Link>

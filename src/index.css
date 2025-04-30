@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -131,6 +132,14 @@
     color: hsl(var(--primary));
     text-decoration: none;
   }
+
+  /* Added sidenav icon hover effect */
+  .sidenav-icon {
+    transition: transform .2s;
+  }
+  .sidenav-icon:hover {
+    transform: scale(1.05);
+  }
   
   .main-content { 
     margin-left: 64px; 
@@ -145,6 +154,11 @@
     left: 64px;  /* Match sidenav width */
     right: 0;
     z-index: 900;
+  }
+
+  /* Hide header on hero page */
+  .hide-header header {
+    display: none;
   }
   
   /* Hero section with 3D perspective effects */
@@ -177,25 +191,42 @@
     animation: drift2 80s linear infinite;
   }
   
-  /* Existing navbar and hero logo styles */
-  .navbar-logo { 
-    max-height: 40px; 
-    margin-right: 24px; 
+  /* Darkened hero panel */
+  .hero-panel {
+    position: relative;
+    z-index: 1;
+    max-width: 700px;
+    margin: auto;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.15);
+    border-radius: 12px;
+    padding: 40px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    animation: fadeIn 1s ease-out forwards;
   }
-  
+
+  /* Featured tender accent */
+  .tender-card.featured {
+    border-left: 4px solid #FF6F61;
+  }
+
+  /* Switch primary CTA to Coral-Orange */
+  .btn-primary {
+    background: #FF6F61;
+    color: #FFFFFF;
+    transition: transform .2s, background .2s, box-shadow .2s;
+  }
+  .btn-primary:hover {
+    background: #FF8A3D;
+    box-shadow: 0 4px 12px rgba(255, 111, 97, 0.4);
+    transform: scale(1.05);
+  }
+
+  /* Existing navbar and hero logo styles */
   .navbar { 
     display: flex; 
     align-items: center; 
-  }
-  
-  .hero-logo { 
-    text-align: center; 
-    margin-bottom: 24px; 
-  }
-  
-  .hero-logo img { 
-    max-width: 220px; 
-    height: auto; 
   }
 }
 
@@ -249,4 +280,10 @@
   50% {
     transform: translate3d(-50%, -50%, 50px) rotateY(15deg) translateX(-20px);
   }
+}
+
+/* Fade in animation for hero-panel */
+@keyframes fadeIn {
+  from { opacity: 0 }
+  to { opacity: 1 }
 }
