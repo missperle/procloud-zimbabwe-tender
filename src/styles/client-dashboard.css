@@ -1,0 +1,90 @@
+
+:root {
+  /* Theme colors */
+  --bg: #fafafa;
+  --text: #222;
+  --accent: #F05A28;
+  --font: 'Inter', system-ui, sans-serif;
+  
+  /* For consistent UI */
+  --card-radius: 8px;
+  --transition-speed: 0.2s;
+}
+
+/* Custom styling for the client dashboard */
+.client-dashboard {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+}
+
+/* Card hover effects */
+.project-card {
+  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+  border-radius: var(--card-radius);
+}
+
+.project-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom button styles */
+.accent-button {
+  background-color: var(--accent);
+  color: white;
+  transition: all var(--transition-speed);
+}
+
+.accent-button:hover {
+  filter: brightness(1.1);
+}
+
+/* Notification badge */
+.notification-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  background-color: var(--accent);
+  color: white;
+  border-radius: 50%;
+  height: 16px;
+  width: 16px;
+  font-size: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Form elements styling */
+.custom-input {
+  border: 1px solid #e2e8f0;
+  border-radius: var(--card-radius);
+  padding: 0.5rem 1rem;
+  font-family: var(--font);
+  transition: border-color var(--transition-speed);
+}
+
+.custom-input:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(240, 90, 40, 0.2);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 640px) {
+  .dashboard-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Animation for load indicators */
+@keyframes pulse {
+  0% { opacity: 0.6; }
+  50% { opacity: 1; }
+  100% { opacity: 0.6; }
+}
+
+.loading-pulse {
+  animation: pulse 1.5s infinite;
+}
