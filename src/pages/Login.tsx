@@ -7,14 +7,20 @@ import { Button } from "@/components/ui/button";
 import { CreditCard, Coins } from "lucide-react";
 import { useEffect } from "react";
 import { getAnalytics, logEvent } from "firebase/analytics";
+import { auth } from "@/lib/firebase";
 
 const Login = () => {
   const { currentUser, loading } = useAuth();
   
   // Log page view event
   useEffect(() => {
-    const analytics = getAnalytics();
-    logEvent(analytics, 'page_view');
+    try {
+      // Get analytics instance from the same app that auth is using
+      const analytics = getAnalytics(auth.app);
+      logEvent(analytics, 'page_view');
+    } catch (error) {
+      console.error("Analytics error:", error);
+    }
   }, []);
 
   // Show loading state while auth initializes
