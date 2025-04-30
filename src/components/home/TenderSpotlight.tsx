@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ChevronLeft, ChevronRight, ArrowDownCircle, XCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Award, XCircle } from "lucide-react";
 import { 
   Carousel,
   CarouselContent,
@@ -81,7 +81,7 @@ const TenderSpotlight = () => {
         <div className="mb-10 text-center">
           <h2 className="mb-4">Tender Spotlight</h2>
           <p className="text-lg text-procloud-gray-300 max-w-2xl mx-auto">
-            Featured opportunities with our unique reverse-bidding model
+            Featured opportunities with our unique best-value selection model
           </p>
         </div>
         
@@ -132,7 +132,7 @@ const TenderSpotlight = () => {
                         {tender.isNew ? (
                           <Badge variant="default" className="bg-[#FF6F61] animate-pulse">New Bid</Badge>
                         ) : (
-                          <Badge variant="default" className="bg-amber-burst text-black">Lowest Bidder</Badge>
+                          <Badge variant="default" className="bg-amber-burst text-black">Competitive Offer</Badge>
                         )}
                       </div>
                       
@@ -140,8 +140,8 @@ const TenderSpotlight = () => {
                       <div className="mb-6 text-center">
                         <div className="text-5xl font-bold text-indigo-ink">{tender.budget}</div>
                         <div className="text-sm text-procloud-gray-600 flex items-center justify-center gap-1 mt-1">
-                          <ArrowDownCircle className="h-4 w-4 text-amber-burst" />
-                          <span>Reverse Bid</span>
+                          <Award className="h-4 w-4 text-amber-burst" />
+                          <span>Best-Value Offer</span>
                         </div>
                       </div>
                       
@@ -195,12 +195,12 @@ const TenderSpotlight = () => {
             ))}
           </div>
 
-          {/* Reverse Bidding Legend */}
+          {/* Best-Value Offers Legend */}
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-2 text-center">
             <div className="flex items-center gap-1 text-procloud-gray-300 text-sm">
-              <ArrowDownCircle className="h-5 w-5 text-amber-burst" />
-              <span className="font-medium text-white">Reverse Bid:</span> 
-              <span>Freelancers submit bids, client picks the lowest.</span>
+              <Award className="h-5 w-5 text-amber-burst" />
+              <span className="font-medium text-white">Best-Value Offers:</span> 
+              <span>Freelancers submit their price, and clients choose the most competitive and highest-value proposal.</span>
             </div>
           </div>
         </div>
