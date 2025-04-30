@@ -3,13 +3,9 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
-import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import ClientLoginModal from '@/components/auth/ClientLoginModal';
-import BusinessLoginModal from '@/components/auth/BusinessLoginModal';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [activeDialog, setActiveDialog] = useState<'client' | 'business' | null>(null);
 
   return (
     <header className="bg-white border-b border-procloud-gray-200">
@@ -37,38 +33,11 @@ const Navbar = () => {
           </nav>
           
           <div className="hidden md:flex items-center space-x-3">
-            <Dialog open={activeDialog === 'client'} onOpenChange={(open) => setActiveDialog(open ? 'client' : null)}>
-              <DialogTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="bg-indigo-ink text-white hover:bg-indigo-dark px-5 py-3 rounded-md"
-                  aria-label="Client Login"
-                >
-                  Client Login
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <ClientLoginModal />
-              </DialogContent>
-            </Dialog>
-            
-            <Dialog open={activeDialog === 'business'} onOpenChange={(open) => setActiveDialog(open ? 'business' : null)}>
-              <DialogTrigger asChild>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="bg-amber-burst text-black hover:bg-amber-burst/90 px-5 py-3 rounded-md"
-                  aria-label="Business Login"
-                >
-                  Business Login
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <BusinessLoginModal />
-              </DialogContent>
-            </Dialog>
-            
+            <Link to="/login">
+              <Button variant="outline" size="sm">
+                Log in
+              </Button>
+            </Link>
             <Link to="/signup">
               <Button size="sm" className="text-white">
                 Sign up
@@ -111,36 +80,11 @@ const Navbar = () => {
                 How It Works
               </Link>
               <div className="pt-2 flex flex-col space-y-2">
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      className="w-full bg-indigo-ink text-white hover:bg-indigo-dark"
-                      aria-label="Client Login"
-                    >
-                      Client Login
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <ClientLoginModal />
-                  </DialogContent>
-                </Dialog>
-
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button 
-                      variant="outline" 
-                      className="w-full bg-amber-burst text-black hover:bg-amber-burst/90"
-                      aria-label="Business Login"
-                    >
-                      Business Login
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <BusinessLoginModal />
-                  </DialogContent>
-                </Dialog>
-                
+                <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                  <Button variant="outline" className="w-full">
+                    Log in
+                  </Button>
+                </Link>
                 <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
                   <Button className="w-full text-white">
                     Sign up
