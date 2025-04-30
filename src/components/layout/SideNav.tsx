@@ -15,7 +15,7 @@ const SideNav = () => {
         Proverb Digital Cloud Agency
       </div>
       
-      <div className="pb-6 flex flex-col gap-4 items-center">
+      <div className="pb-6 flex flex-row gap-6 items-center justify-center">
         <Link to="/subscribe" className="text-sm font-medium hover:text-procloud-green transition-colors">
           Subscribe
         </Link>
