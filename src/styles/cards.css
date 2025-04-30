@@ -1,0 +1,71 @@
+
+@layer components {
+  /* New focused and blurred card styles */
+  .tender-card-focused {
+    transform: perspective(1000px) rotateY(0deg) scale(1.05) translateY(-8px) !important;
+    box-shadow: 0 16px 32px rgba(0,0,0,0.25);
+    z-index: 20;
+  }
+  
+  .tender-card-blurred {
+    filter: blur(4px) grayscale(50%);
+    opacity: 0.6;
+    transform: perspective(1000px) scale(0.85) !important;
+    pointer-events: none;
+    transition: all 0.3s ease;
+  }
+  
+  /* Existing navbar and hero logo styles */
+  .navbar { 
+    display: flex; 
+    align-items: center; 
+  }
+  
+  /* 3D Carousel Styles */
+  .carousel-3d-container {
+    perspective: 1200px;
+    position: relative;
+  }
+  
+  .tender-card-3d {
+    transform-style: preserve-3d;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border-left: 4px solid #3F51B5; /* Indigo Ink */
+    border-right: 4px solid #FFC107; /* Amber Burst */
+    transform: perspective(1000px) rotateY(0deg) scale(1);
+    transform-origin: center center;
+    will-change: transform;
+    transition: all 0.3s ease;
+  }
+  
+  /* Apply perspective based on carousel position */
+  .embla__slide:not(.embla__slide--selected) .tender-card-3d {
+    transform: perspective(1000px) rotateY(15deg) scale(0.9);
+  }
+  
+  .embla__slide:not(.embla__slide--selected):first-child .tender-card-3d,
+  .embla__slide:not(.embla__slide--selected):nth-child(3n) .tender-card-3d {
+    transform: perspective(1000px) rotateY(-15deg) scale(0.9);
+  }
+  
+  .tender-card-3d-hover {
+    transform: perspective(1000px) rotateY(0deg) scale(1.02) translateY(-5px) !important;
+    box-shadow: 0 12px 24px rgba(0,0,0,0.15);
+    z-index: 10;
+  }
+  
+  /* Custom carousel arrow styles */
+  .carousel-arrow {
+    width: 40px !important;
+    height: 40px !important;
+    border-radius: 50% !important;
+    opacity: 0.9;
+    transition: all 0.3s ease;
+  }
+  
+  .carousel-arrow:hover {
+    opacity: 1;
+    transform: scale(1.1);
+    box-shadow: 0 0 12px rgba(255, 193, 7, 0.5);
+  }
+}

@@ -1,0 +1,49 @@
+
+@layer components {
+  /* Updated button styles to match Behance-inspired design */
+  .btn-primary {
+    background: #1E3A8A;
+    color: #FFFFFF;
+    padding: 12px 24px;
+    border-radius: 6px;
+    transition: transform .2s, background .2s, box-shadow .2s, opacity .2s;
+  }
+  
+  .btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.3);
+  }
+  
+  .btn-outline {
+    background: #fff;
+    border: 2px solid #1E3A8A;
+    color: #1E3A8A;
+    padding: 12px 24px;
+    border-radius: 6px;
+    transition: transform .2s, background .2s, box-shadow .2s, opacity .2s;
+  }
+  
+  .btn-outline:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(30, 58, 138, 0.1);
+  }
+
+  /* Featured tender accent */
+  .tender-card.featured {
+    border-left: 4px solid #FF6F61;
+  }
+
+  /* Switch primary CTA to Coral-Orange */
+  .btn-primary {
+    background: #FF6F61;
+    color: #FFFFFF;
+    transition: transform .2s, background .2s, box-shadow .2s;
+  }
+  .btn-primary:hover {
+    background: #FF8A3D;
+    box-shadow: 0 4px 12px rgba(255, 111, 97, 0.4);
+    transform: scale(1.05);
+  }
+}

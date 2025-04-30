@@ -1,0 +1,69 @@
+
+@layer components {
+  /* Hide scrollbar for category nav */
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* Internet Explorer and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
+
+  /* Category chip styles */
+  .category-chip {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  /* Project card styles */
+  .project-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .project-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+  .project-card.featured {
+    border-left: 4px solid #FF6F61;
+  }
+  
+  /* Header Styles */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 900;
+  }
+  
+  /* Hide header on hero page */
+  .hide-header header {
+    display: none;
+  }
+  
+  /* Behance-inspired Hero section styles */
+  .hero {
+    position: relative;
+    overflow: hidden;
+    background: white;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 10;
+    animation: fadeIn 1s ease-out forwards;
+  }
+  
+  .hero .highlight {
+    color: #1E3A8A;
+    font-weight: 800;
+  }
+  
+  .hero .subhead {
+    font-family: 'Inter', sans-serif;
+    font-size: 1.25rem;
+    color: #555;
+    text-align: center;
+    max-width: 600px;
+    margin: 16px auto;
+  }
+}
