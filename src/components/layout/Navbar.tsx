@@ -11,10 +11,19 @@ const Navbar = () => {
     <header className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-procloud-gray-200">
       <div className="container mx-auto px-4">
         <div className="flex justify-between items-center h-16">
-          <Link to="/" className="flex items-center">
-            <span className="text-2xl font-bold tracking-tighter">
-              pro<span className="text-procloud-green">CLOUD</span>
-            </span>
+          <Link to="/" className="flex items-center px-4">
+            {/* Desktop Logo */}
+            <div className="hidden md:block font-montserrat font-bold tracking-tight leading-none">
+              <span className="text-black uppercase">PROVERB </span>
+              <span className="text-teal-pulse uppercase">DIGITAL CLOUD AGENCY</span>
+            </div>
+            
+            {/* Mobile Logo */}
+            <div className="md:hidden font-montserrat font-bold tracking-tight text-xs leading-tight">
+              <div className="text-black uppercase">PROVERB</div>
+              <div className="text-teal-pulse uppercase">DIGITAL CLOUD</div>
+              <div className="text-teal-pulse uppercase">AGENCY</div>
+            </div>
           </Link>
           
           <nav className="hidden md:flex items-center space-x-6">

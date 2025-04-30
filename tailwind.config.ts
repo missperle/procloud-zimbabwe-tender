@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -19,6 +18,10 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Inter', 'sans-serif'],
+				montserrat: ['Montserrat', 'sans-serif']
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -79,6 +82,9 @@ export default {
 						800: '#262626',
 						900: '#171717',
 					}
+				},
+				teal: {
+					pulse: '#00B3A4',
 				}
 			},
 			borderRadius: {
