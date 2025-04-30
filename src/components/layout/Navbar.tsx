@@ -3,9 +3,12 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+import LogoutButton from '@/components/auth/LogoutButton';
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { currentUser } = useAuth();
 
   return (
     <header className="bg-white border-b border-procloud-gray-200">
@@ -36,16 +39,27 @@ const Navbar = () => {
           </nav>
           
           <div className="hidden md:flex items-center space-x-3">
-            <Link to="/login">
-              <Button variant="outline" size="sm">
-                Log in
-              </Button>
-            </Link>
-            <Link to="/signup">
-              <Button size="sm" className="text-white">
-                Sign up
-              </Button>
-            </Link>
+            {currentUser ? (
+              <div className="flex items-center space-x-4">
+                <span className="text-sm font-medium">
+                  {currentUser.email}
+                </span>
+                <LogoutButton />
+              </div>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="outline" size="sm">
+                    Log in
+                  </Button>
+                </Link>
+                <Link to="/signup">
+                  <Button size="sm" className="text-white">
+                    Sign up
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
           
           <button 
@@ -89,18 +103,30 @@ const Navbar = () => {
               >
                 How It Works
               </Link>
-              <div className="pt-2 flex flex-col space-y-2">
-                <Link to="/login" onClick={() => setIsMenuOpen(false)}>
-                  <Button variant="outline" className="w-full">
-                    Log in
-                  </Button>
-                </Link>
-                <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
-                  <Button className="w-full text-white">
-                    Sign up
-                  </Button>
-                </Link>
-              </div>
+              
+              {currentUser ? (
+                <div className="pt-2 flex flex-col space-y-2">
+                  <div className="px-4 py-2 text-sm font-medium">
+                    {currentUser.email}
+                  </div>
+                  <div onClick={() => setIsMenuOpen(false)}>
+                    <LogoutButton />
+                  </div>
+                </div>
+              ) : (
+                <div className="pt-2 flex flex-col space-y-2">
+                  <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="outline" className="w-full">
+                      Log in
+                    </Button>
+                  </Link>
+                  <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
+                    <Button className="w-full text-white">
+                      Sign up
+                    </Button>
+                  </Link>
+                </div>
+              )}
             </nav>
           </div>
         )}
