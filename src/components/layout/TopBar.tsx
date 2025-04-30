@@ -1,5 +1,5 @@
 
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
@@ -7,6 +7,7 @@ import LogoutButton from '@/components/auth/LogoutButton';
 
 const TopBar = () => {
   const { currentUser } = useAuth();
+  const location = useLocation();
 
   return (
     <header className="top-bar sticky top-0 z-50 bg-white border-b border-procloud-gray-200 px-6 h-16 flex items-center justify-between">
@@ -28,10 +29,20 @@ const TopBar = () => {
       </div>
       
       <nav className="flex items-center space-x-6">
-        <Link to="/discover" className="text-sm font-medium hover:text-procloud-green transition-colors">
-          Discover
+        <Link 
+          to="/explore" 
+          className={`text-sm font-medium transition-colors ${
+            location.pathname === '/explore' ? 'text-procloud-green' : 'hover:text-procloud-green'
+          }`}
+        >
+          Explore
         </Link>
-        <Link to="/jobs" className="text-sm font-medium hover:text-procloud-green transition-colors">
+        <Link 
+          to="/jobs" 
+          className={`text-sm font-medium transition-colors ${
+            location.pathname === '/jobs' ? 'text-procloud-green' : 'hover:text-procloud-green'
+          }`}
+        >
           Jobs
         </Link>
         

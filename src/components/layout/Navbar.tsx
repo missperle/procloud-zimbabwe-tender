@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
@@ -9,7 +9,8 @@ import LogoutButton from '@/components/auth/LogoutButton';
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { currentUser } = useAuth();
-
+  const location = useLocation();
+  
   return (
     <header className="bg-white border-b border-procloud-gray-200">
       <div className="container mx-auto px-4">
@@ -24,17 +25,21 @@ const Navbar = () => {
           </Link>
           
           <nav className="hidden md:flex items-center space-x-3 navbar">
-            <Link to="/jobs" className="text-sm font-medium hover:text-procloud-green transition-colors px-6">
-              Find Jobs
-            </Link>
-            <Link to="/freelancers" className="text-sm font-medium hover:text-procloud-green transition-colors px-6">
-              Freelancers
-            </Link>
-            <Link to="/explore" className="text-sm font-medium hover:text-procloud-green transition-colors px-6">
+            <Link 
+              to="/explore" 
+              className={`text-sm font-medium transition-colors px-6 ${
+                location.pathname === '/explore' ? 'text-procloud-green' : 'hover:text-procloud-green'
+              }`}
+            >
               Explore
             </Link>
-            <Link to="/how-it-works" className="text-sm font-medium hover:text-procloud-green transition-colors px-6">
-              How It Works
+            <Link 
+              to="/jobs" 
+              className={`text-sm font-medium transition-colors px-6 ${
+                location.pathname === '/jobs' ? 'text-procloud-green' : 'hover:text-procloud-green'
+              }`}
+            >
+              Jobs
             </Link>
           </nav>
           
@@ -76,32 +81,22 @@ const Navbar = () => {
           <div className="md:hidden py-4 border-t border-procloud-gray-200">
             <nav className="flex flex-col space-y-4">
               <Link 
-                to="/jobs" 
-                className="px-4 py-2 text-sm font-medium hover:bg-procloud-gray-100 rounded-md"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Find Jobs
-              </Link>
-              <Link 
-                to="/freelancers" 
-                className="px-4 py-2 text-sm font-medium hover:bg-procloud-gray-100 rounded-md"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Freelancers
-              </Link>
-              <Link 
                 to="/explore" 
-                className="px-4 py-2 text-sm font-medium hover:bg-procloud-gray-100 rounded-md"
+                className={`px-4 py-2 text-sm font-medium hover:bg-procloud-gray-100 rounded-md ${
+                  location.pathname === '/explore' ? 'text-procloud-green' : ''
+                }`}
                 onClick={() => setIsMenuOpen(false)}
               >
                 Explore
               </Link>
               <Link 
-                to="/how-it-works" 
-                className="px-4 py-2 text-sm font-medium hover:bg-procloud-gray-100 rounded-md"
+                to="/jobs" 
+                className={`px-4 py-2 text-sm font-medium hover:bg-procloud-gray-100 rounded-md ${
+                  location.pathname === '/jobs' ? 'text-procloud-green' : ''
+                }`}
                 onClick={() => setIsMenuOpen(false)}
               >
-                How It Works
+                Jobs
               </Link>
               
               {currentUser ? (

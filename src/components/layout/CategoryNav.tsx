@@ -1,5 +1,6 @@
 
 import { useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 const categories = [
   "All", "Design", "Illustration", "Branding", "Photography", 
@@ -8,6 +9,12 @@ const categories = [
 
 const CategoryNav = () => {
   const [activeCategory, setActiveCategory] = useState("All");
+  const location = useLocation();
+  
+  // Only show the category nav on the explore page
+  if (location.pathname !== '/explore') {
+    return null;
+  }
 
   return (
     <div className="category-nav border-b border-procloud-gray-200 overflow-x-auto hide-scrollbar">
