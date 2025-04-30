@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Layout from "@/components/layout/Layout";
 import JobCard from "@/components/jobs/JobCard";
 import JobsFilter from "@/components/jobs/JobsFilter";
@@ -13,7 +13,8 @@ const mockJobs = [
     budget: "$150-200",
     deadline: "May 15, 2025",
     categories: ["Design", "Branding"],
-    brief: "Looking for a talented designer to create a brand identity for our new restaurant in Harare. We need a logo, color palette, and basic brand guidelines."
+    brief: "Looking for a talented designer to create a brand identity for our new restaurant in Harare. We need a logo, color palette, and basic brand guidelines.",
+    featured: true
   },
   {
     id: "job2",
@@ -31,7 +32,8 @@ const mockJobs = [
     budget: "$100-150",
     deadline: "May 10, 2025",
     categories: ["Marketing", "Social Media"],
-    brief: "Looking for a content creator to develop social media posts for our tourism company. Need 20 engaging posts with images for Instagram and Facebook."
+    brief: "Looking for a content creator to develop social media posts for our tourism company. Need 20 engaging posts with images for Instagram and Facebook.",
+    featured: true
   },
   {
     id: "job4",
@@ -64,6 +66,20 @@ const mockJobs = [
 
 const Jobs = () => {
   const [filteredJobs, setFilteredJobs] = useState(mockJobs);
+  const [isMobile, setIsMobile] = useState(false);
+  
+  useEffect(() => {
+    const checkIfMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    
+    checkIfMobile();
+    window.addEventListener('resize', checkIfMobile);
+    
+    return () => {
+      window.removeEventListener('resize', checkIfMobile);
+    };
+  }, []);
   
   const handleFilter = (filters: any) => {
     let results = [...mockJobs];
@@ -76,15 +92,15 @@ const Jobs = () => {
     
     if (filters.budget) {
       // Simple budget filtering logic - could be improved
-      const [min, max] = filters.budget.split('-').map(Number);
+      const [min, max] = filters.budget.split('-').map((val: string) => parseInt(val));
       if (max) {
         results = results.filter(job => {
-          const jobBudgetAvg = parseInt(job.budget.replace(/[^0-9-]/g, '').split('-').reduce((a, b) => (parseInt(a) + parseInt(b)) / 2, 0));
+          const jobBudgetAvg = parseInt(job.budget.replace(/[^0-9-]/g, '').split('-').reduce((a: string, b: string) => String((parseInt(a) + parseInt(b)) / 2), '0'));
           return jobBudgetAvg >= min && jobBudgetAvg <= max;
         });
       } else {
         results = results.filter(job => {
-          const jobBudgetAvg = parseInt(job.budget.replace(/[^0-9-]/g, '').split('-').reduce((a, b) => (parseInt(a) + parseInt(b)) / 2, 0));
+          const jobBudgetAvg = parseInt(job.budget.replace(/[^0-9-]/g, '').split('-').reduce((a: string, b: string) => String((parseInt(a) + parseInt(b)) / 2), '0'));
           return jobBudgetAvg >= min;
         });
       }
@@ -132,7 +148,10 @@ const Jobs = () => {
               {filteredJobs.length > 0 ? (
                 <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredJobs.map((job) => (
-                    <JobCard key={job.id} {...job} />
+                    <JobCard 
+                      key={job.id} 
+                      {...job} 
+                    />
                   ))}
                 </div>
               ) : (

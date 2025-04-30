@@ -3,10 +3,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Clock, DollarSign, FileText, Users } from "lucide-react";
+import { Calendar, DollarSign, FileText, Users } from "lucide-react";
 import { Link } from "react-router-dom";
 
-interface JobStatusCardProps {
+export interface JobStatusCardProps {
   id: string;
   title: string;
   status: "active" | "completed" | "expired";
@@ -26,13 +26,13 @@ const JobStatusCard = ({
   daysLeft,
 }: JobStatusCardProps) => {
   return (
-    <Card className="h-full flex flex-col">
+    <Card className="h-full flex flex-col shadow-card">
       <CardHeader>
         <div className="flex justify-between items-start">
-          <h3 className="font-bold text-lg line-clamp-2">{title}</h3>
+          <h3 className="font-bold text-lg line-clamp-2 font-montserrat">{title}</h3>
           <Badge
             className={`
-              ${status === "active" ? "bg-procloud-green text-black" : 
+              ${status === "active" ? "bg-procloud-green text-white" : 
                 status === "completed" ? "bg-procloud-gray-800 text-white" : 
                 "bg-procloud-gray-300 text-procloud-gray-800"}
             `}
@@ -54,7 +54,7 @@ const JobStatusCard = ({
           </div>
           <div>
             <div className="text-sm text-procloud-gray-600 mb-1 flex items-center">
-              <Clock className="h-3.5 w-3.5 mr-1" />
+              <Calendar className="h-3.5 w-3.5 mr-1" />
               Deadline
             </div>
             <div className="font-medium">{deadline}</div>
@@ -90,7 +90,7 @@ const JobStatusCard = ({
       
       <CardFooter>
         <Link to={`/dashboard/jobs/${id}`} className="w-full">
-          <Button className="w-full">
+          <Button className="w-full bg-procloud-green hover:bg-procloud-green-dark text-white">
             {status === "active" ? "View Submissions" : 
              status === "completed" ? "View Results" : 
              "View Details"}

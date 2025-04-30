@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -67,10 +68,13 @@ export default {
 					ring: 'hsl(var(--sidebar-ring))'
 				},
 				procloud: {
-					green: '#00FF7F',
-					'green-dark': '#00CC66',
+					green: '#00B3A4', // Updated to Teal Pulse
+					'green-dark': '#009B8E', // Slightly darker teal for hover
 					black: '#000000',
 					white: '#FFFFFF',
+					gold: '#D4AF37', // Gold Standard for featured items
+					'charcoal-gray': '#403E43', // Charcoal Gray for text
+					'soft-ash': '#F5F5F5', // Soft Ash for dividers
 					gray: {
 						100: '#F7F7F7',
 						200: '#E5E5E5',
@@ -90,7 +94,11 @@ export default {
 			borderRadius: {
 				lg: 'var(--radius)',
 				md: 'calc(var(--radius) - 2px)',
-				sm: 'calc(var(--radius) - 4px)'
+				sm: 'calc(var(--radius) - 4px)',
+				'pill': '9999px',
+			},
+			boxShadow: {
+				'card': '0 2px 8px rgba(0, 0, 0, 0.08)',
 			},
 			keyframes: {
 				'accordion-down': {
@@ -113,6 +121,14 @@ export default {
 					'0%': { backgroundPosition: '0% 50%' },
 					'50%': { backgroundPosition: '100% 50%' },
 					'100%': { backgroundPosition: '0% 50%' }
+				},
+				'button-press': {
+					'0%, 100%': { transform: 'scale(1)' },
+					'50%': { transform: 'scale(0.97)' }
+				},
+				'hover-up': {
+					'0%': { transform: 'translateY(0)' },
+					'100%': { transform: 'translateY(-3px)' }
 				}
 			},
 			animation: {
@@ -120,7 +136,9 @@ export default {
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'float': 'float 6s ease-in-out infinite',
 				'pulse-slow': 'pulse-slow 4s ease-in-out infinite',
-				'gradient-shift': 'gradient-shift 15s ease infinite'
+				'gradient-shift': 'gradient-shift 15s ease infinite',
+				'button-press': 'button-press 0.1s ease-in-out',
+				'hover-up': 'hover-up 0.2s ease-out forwards'
 			}
 		}
 	},

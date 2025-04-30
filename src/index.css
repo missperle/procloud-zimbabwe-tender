@@ -14,8 +14,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 10%;
 
-    --primary: 151 100% 50%;
-    --primary-foreground: 0 0% 0%;
+    --primary: 174 100% 35%; /* Updated to Teal Pulse */
+    --primary-foreground: 0 0% 100%; /* White text on teal */
 
     --secondary: 0 0% 96%;
     --secondary-foreground: 0 0% 10%;
@@ -23,7 +23,7 @@
     --muted: 0 0% 96%;
     --muted-foreground: 0 0% 45%;
 
-    --accent: 151 100% 50%;
+    --accent: 174 100% 35%; /* Updated to Teal Pulse */
     --accent-foreground: 0 0% 10%;
 
     --destructive: 0 84% 60%;
@@ -31,18 +31,18 @@
 
     --border: 0 0% 90%;
     --input: 0 0% 90%;
-    --ring: 151 100% 50%;
+    --ring: 174 100% 35%; /* Updated to Teal Pulse */
 
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 0 0% 10%;
-    --sidebar-primary: 151 100% 50%;
-    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-primary: 174 100% 35%; /* Updated to Teal Pulse */
+    --sidebar-primary-foreground: 0 0% 100%; /* White text on teal */
     --sidebar-accent: 0 0% 96%;
     --sidebar-accent-foreground: 0 0% 10%;
     --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 151 100% 50%;
+    --sidebar-ring: 174 100% 35%; /* Updated to Teal Pulse */
   }
 }
 
@@ -72,6 +72,20 @@
   }
 }
 
+@layer components {
+  .btn-press {
+    @apply active:animate-button-press;
+  }
+  
+  .featured-badge {
+    @apply bg-procloud-gold text-black font-medium px-2 py-0.5 rounded-sm text-xs uppercase;
+  }
+
+  .filter-group {
+    @apply py-4 border-b border-procloud-soft-ash last:border-b-0;
+  }
+}
+
 @layer utilities {
   .animation-delay-200 {
     animation-delay: 200ms;
@@ -98,5 +112,9 @@
   
   .animation-paused {
     animation-play-state: paused;
+  }
+  
+  .hover-up {
+    @apply transition-transform hover:animate-hover-up;
   }
 }

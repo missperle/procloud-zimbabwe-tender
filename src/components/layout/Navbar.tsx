@@ -26,14 +26,14 @@ const Navbar = () => {
             </div>
           </Link>
           
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/jobs" className="text-sm font-medium hover:text-procloud-green transition-colors">
+          <nav className="hidden md:flex items-center space-x-3">
+            <Link to="/jobs" className="text-sm font-medium hover:text-procloud-green transition-colors px-6">
               Find Jobs
             </Link>
-            <Link to="/freelancers" className="text-sm font-medium hover:text-procloud-green transition-colors">
+            <Link to="/freelancers" className="text-sm font-medium hover:text-procloud-green transition-colors px-6">
               Freelancers
             </Link>
-            <Link to="/how-it-works" className="text-sm font-medium hover:text-procloud-green transition-colors">
+            <Link to="/how-it-works" className="text-sm font-medium hover:text-procloud-green transition-colors px-6">
               How It Works
             </Link>
           </nav>
@@ -45,7 +45,7 @@ const Navbar = () => {
               </Button>
             </Link>
             <Link to="/signup">
-              <Button size="sm" className="bg-procloud-green hover:bg-procloud-green-dark text-black">
+              <Button size="sm" className="text-white">
                 Sign up
               </Button>
             </Link>
@@ -92,7 +92,7 @@ const Navbar = () => {
                   </Button>
                 </Link>
                 <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
-                  <Button className="w-full bg-procloud-green hover:bg-procloud-green-dark text-black">
+                  <Button className="w-full text-white">
                     Sign up
                   </Button>
                 </Link>

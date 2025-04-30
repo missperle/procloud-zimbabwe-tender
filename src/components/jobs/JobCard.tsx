@@ -3,7 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { Clock, DollarSign } from "lucide-react";
+import { Calendar, DollarSign } from "lucide-react";
 
 interface JobCardProps {
   id: string;
@@ -13,6 +13,7 @@ interface JobCardProps {
   deadline: string;
   categories: string[];
   brief: string;
+  featured?: boolean;
 }
 
 const JobCard = ({
@@ -23,16 +24,26 @@ const JobCard = ({
   deadline,
   categories,
   brief,
+  featured = false,
 }: JobCardProps) => {
   return (
-    <Card className="h-full flex flex-col hover:border-procloud-green transition-colors">
-      <CardHeader>
+    <Card 
+      className={`h-full flex flex-col hover:border-procloud-green transition-colors shadow-card hover:bg-gray-50 ${
+        featured ? 'border-procloud-gold' : ''
+      }`}
+    >
+      <CardHeader className="relative">
+        {featured && (
+          <div className="absolute -top-1 -right-1 rotate-12 z-10">
+            <Badge className="bg-procloud-gold text-black">Featured</Badge>
+          </div>
+        )}
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="text-xl font-bold">{title}</h3>
+            <h3 className="text-xl font-montserrat font-semibold">{title}</h3>
             <p className="text-procloud-gray-600">{company}</p>
           </div>
-          <Badge className="bg-procloud-green text-black hover:bg-procloud-green-dark">
+          <Badge className="bg-procloud-green text-white hover:bg-procloud-green-dark">
             Open
           </Badge>
         </div>
@@ -55,7 +66,7 @@ const JobCard = ({
             <span className="text-sm font-medium">{budget}</span>
           </div>
           <div className="flex items-center">
-            <Clock className="h-4 w-4 mr-1 text-procloud-green" />
+            <Calendar className="h-4 w-4 mr-1 text-procloud-green" />
             <span className="text-sm">Due: {deadline}</span>
           </div>
         </div>
@@ -63,7 +74,9 @@ const JobCard = ({
       
       <CardFooter>
         <Link to={`/jobs/${id}`} className="w-full">
-          <Button className="w-full bg-black hover:bg-procloud-gray-800 text-white">
+          <Button 
+            className="w-full bg-black hover:bg-procloud-gray-800 text-white hover-up"
+          >
             View Details
           </Button>
         </Link>

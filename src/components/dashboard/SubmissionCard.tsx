@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { CheckCircle, Clock, User } from "lucide-react";
 
-interface SubmissionCardProps {
+export interface SubmissionCardProps {
   id: string;
   freelancerName: string;
   freelancerId: string;
@@ -46,7 +46,7 @@ const SubmissionCard = ({
           
           <Badge
             className={`
-              ${status === "selected" ? "bg-procloud-green text-black" : 
+              ${status === "selected" ? "bg-procloud-green text-white" : 
                 status === "rejected" ? "bg-procloud-gray-300 text-procloud-gray-600" : 
                 "bg-procloud-gray-200 text-procloud-gray-800"}
             `}
@@ -87,7 +87,7 @@ const SubmissionCard = ({
         {status === "pending" && (
           <Button
             onClick={onSelect}
-            className="w-full bg-procloud-green hover:bg-procloud-green-dark text-black"
+            className="w-full bg-procloud-green hover:bg-procloud-green-dark text-white"
           >
             <CheckCircle className="h-4 w-4 mr-2" />
             Select This Submission
