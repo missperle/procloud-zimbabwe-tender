@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Heart, MoreHorizontal, Plus } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
@@ -9,7 +8,7 @@ import '../../styles/feed.css';
 const SAMPLE_FEED_ITEMS = [
   {
     id: 1,
-    type: 'image',
+    type: 'image' as const,
     src: 'https://images.unsplash.com/photo-1518770660439-4636190af475',
     username: 'techexplorer',
     avatar: 'https://randomuser.me/api/portraits/women/1.jpg',
@@ -17,7 +16,7 @@ const SAMPLE_FEED_ITEMS = [
   },
   {
     id: 2,
-    type: 'video',
+    type: 'video' as const,
     src: 'https://assets.mixkit.co/videos/preview/mixkit-woman-running-above-the-camera-on-a-running-machine-32807-large.mp4',
     username: 'fitness_pro',
     avatar: 'https://randomuser.me/api/portraits/men/2.jpg',
@@ -25,7 +24,7 @@ const SAMPLE_FEED_ITEMS = [
   },
   {
     id: 3,
-    type: 'image',
+    type: 'image' as const,
     src: 'https://images.unsplash.com/photo-1581091226825-a6a2a5aee158',
     username: 'coding_genius',
     avatar: 'https://randomuser.me/api/portraits/women/3.jpg',
@@ -33,7 +32,7 @@ const SAMPLE_FEED_ITEMS = [
   },
   {
     id: 4,
-    type: 'video',
+    type: 'video' as const,
     src: 'https://assets.mixkit.co/videos/preview/mixkit-clouds-moving-in-the-sky-field-1467-large.mp4',
     username: 'nature_love',
     avatar: 'https://randomuser.me/api/portraits/men/4.jpg',
@@ -41,7 +40,7 @@ const SAMPLE_FEED_ITEMS = [
   },
   {
     id: 5,
-    type: 'image',
+    type: 'image' as const,
     src: 'https://images.unsplash.com/photo-1605810230434-7631ac76ec81',
     username: 'digital_nomad',
     avatar: 'https://randomuser.me/api/portraits/women/5.jpg',
@@ -49,7 +48,7 @@ const SAMPLE_FEED_ITEMS = [
   },
   {
     id: 6,
-    type: 'video',
+    type: 'video' as const,
     src: 'https://assets.mixkit.co/videos/preview/mixkit-young-woman-with-shopping-bags-35534-large.mp4',
     username: 'shopaholic',
     avatar: 'https://randomuser.me/api/portraits/men/6.jpg',
@@ -57,7 +56,7 @@ const SAMPLE_FEED_ITEMS = [
   },
   {
     id: 7,
-    type: 'image',
+    type: 'image' as const,
     src: 'https://images.unsplash.com/photo-1582562124811-c09040d0a901',
     username: 'cat_lover',
     avatar: 'https://randomuser.me/api/portraits/women/7.jpg',
@@ -151,7 +150,7 @@ const Feed = () => {
     // Simulate loading delay
     setTimeout(() => {
       // Clone and modify some of the existing items for simplicity
-      const newItems = SAMPLE_FEED_ITEMS.map(item => ({
+      const newItems: FeedItem[] = SAMPLE_FEED_ITEMS.map(item => ({
         ...item,
         id: item.id + feedItems.length,
         likes: Math.floor(Math.random() * 1000)
