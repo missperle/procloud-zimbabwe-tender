@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import DashboardOverview from "@/components/client/DashboardOverview";
@@ -8,47 +8,9 @@ import ReviewProposals from "@/components/client/ReviewProposals";
 import PaymentsPage from "@/components/client/PaymentsPage";
 import AnalyticsPage from "@/components/client/AnalyticsPage";
 import AccountSettings from "@/components/client/AccountSettings";
-import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
-import { useToast } from "@/hooks/use-toast";
 
 const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
-  const { currentUser, loading } = useAuth();
-  const navigate = useNavigate();
-  const { toast } = useToast();
-
-  useEffect(() => {
-    // Only redirect after auth has initialized
-    if (!loading && !currentUser) {
-      console.log("No authenticated user, redirecting to login");
-      toast({
-        title: "Access denied",
-        description: "Please login to view the dashboard",
-        variant: "destructive",
-      });
-      navigate("/login");
-    } else if (currentUser) {
-      console.log("Authenticated as:", currentUser.email);
-    }
-  }, [currentUser, loading, navigate, toast]);
-
-  // Show loading state while auth is initializing
-  if (loading) {
-    return (
-      <Layout>
-        <div className="flex items-center justify-center h-[calc(100vh-200px)]">
-          <div className="text-center">
-            <div className="h-8 w-8 border-4 border-t-accent rounded-full animate-spin mx-auto mb-4"></div>
-            <p className="text-gray-500">Loading dashboard...</p>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
-
-  // If not logged in, don't render anything (the useEffect will redirect)
-  if (!currentUser) return null;
 
   return (
     <Layout>
