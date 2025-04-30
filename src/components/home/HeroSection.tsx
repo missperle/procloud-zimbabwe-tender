@@ -28,8 +28,11 @@ const HeroSection = () => {
               </Button>
             </Link>
             <Link to="/jobs">
-              <Button size="lg" variant="outline" className="text-lg w-full sm:w-auto border-white text-white hover:bg-white/10 font-medium">
-                Submit Work
+              <Button 
+                size="lg" 
+                className="text-lg w-full sm:w-auto border-2 border-procloud-green text-procloud-green bg-white hover:bg-procloud-green hover:text-white transition-colors font-medium"
+              >
+                Browse Jobs
               </Button>
             </Link>
           </div>
