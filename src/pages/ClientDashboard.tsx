@@ -21,12 +21,15 @@ const ClientDashboard = () => {
   useEffect(() => {
     // Only redirect after auth has initialized
     if (!loading && !currentUser) {
+      console.log("No authenticated user, redirecting to login");
       toast({
         title: "Access denied",
         description: "Please login to view the dashboard",
         variant: "destructive",
       });
       navigate("/login");
+    } else if (currentUser) {
+      console.log("Authenticated as:", currentUser.email);
     }
   }, [currentUser, loading, navigate, toast]);
 

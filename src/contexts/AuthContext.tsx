@@ -34,7 +34,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log("Setting up auth state listener");
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log("Auth state changed:", user ? `User: ${user.email}` : "No user");
       setCurrentUser(user);
       setLoading(false);
     });
@@ -61,6 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const login = async (email: string, password: string) => {
+    console.log("Login attempt with:", email);
     try {
       await signInWithEmailAndPassword(auth, email, password);
       toast({
@@ -68,6 +71,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         description: "You have been logged in successfully.",
       });
     } catch (error) {
+      console.error("Login error:", error);
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
       toast({
         title: "Login failed",

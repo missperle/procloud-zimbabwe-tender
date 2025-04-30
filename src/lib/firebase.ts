@@ -4,6 +4,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 
 // Your web app's Firebase configuration
+// Use environment variables in production
 const firebaseConfig = {
   apiKey: "AIzaSyD-9tSrke72PouQMnMX-a7eZSW0jkFMBWY",
   authDomain: "proverb-digital.firebaseapp.com",
@@ -13,8 +14,8 @@ const firebaseConfig = {
   appId: "1:123456789012:web:abc123def456"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
+// Initialize Firebase - with a named instance to avoid duplicate app error
+const app = initializeApp(firebaseConfig, "proverb-digital-client");
 const auth = getAuth(app);
 
 // For testing purposes, create a test user
@@ -26,6 +27,7 @@ const createTestUser = async () => {
   try {
     // Check if we're in development mode
     if (import.meta.env.DEV) {
+      console.log("Setting up test user for development environment");
       const testEmail = "test@proverb.digital";
       const testPassword = "password123";
       
