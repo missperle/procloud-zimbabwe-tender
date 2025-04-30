@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -144,18 +143,51 @@
   .main-content { 
     margin-left: 64px; 
     width: calc(100% - 64px);
-    padding-top: 64px; /* Add padding to account for fixed header height */
+  }
+  
+  /* TopBar & CategoryNav Styles */
+  .top-bar {
+    background: #fff;
+    height: 64px;
+    width: calc(100% - 64px);
+    margin-left: 64px;
+  }
+  
+  /* Hide scrollbar for category nav */
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* Internet Explorer and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;  /* Chrome, Safari and Opera */
+  }
+
+  /* Category chip styles */
+  .category-chip {
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  /* Project card styles */
+  .project-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+  .project-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+  }
+  .project-card.featured {
+    border-left: 4px solid #FF6F61;
   }
   
   /* Header Styles */
   header {
-    position: fixed;
+    position: sticky;
     top: 0;
-    left: 64px;  /* Match sidenav width */
-    right: 0;
     z-index: 900;
   }
-
+  
   /* Hide header on hero page */
   .hide-header header {
     display: none;
