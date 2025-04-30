@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -13,10 +12,14 @@ const Navbar = () => {
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center px-4">
             {/* Logo Image */}
-            <img src="/logo.svg" alt="Proverb Digital Cloud Agency" className="h-8 md:h-10" />
+            <img 
+              src="/logo.svg" 
+              alt="Proverb Digital Cloud Agency" 
+              className="navbar-logo h-8 md:h-10" 
+            />
           </Link>
           
-          <nav className="hidden md:flex items-center space-x-3">
+          <nav className="hidden md:flex items-center space-x-3 navbar">
             <Link to="/jobs" className="text-sm font-medium hover:text-procloud-green transition-colors px-6">
               Find Jobs
             </Link>
