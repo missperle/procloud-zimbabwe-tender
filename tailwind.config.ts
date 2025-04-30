@@ -94,8 +94,8 @@ export default {
 					pulse: '#3F51B5', // Updated to Indigo Ink
 				},
 				indigo: {
-					ink: '#3F51B5',
-					dark: '#303F9F',
+					ink: '#1E3A8A',  // Updated to match your request
+					dark: '#17307A',
 				},
 				amber: {
 					burst: '#FFC107',
