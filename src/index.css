@@ -232,6 +232,21 @@
     transform: scale(1.05);
   }
 
+  /* New focused and blurred card styles */
+  .tender-card-focused {
+    transform: perspective(1000px) rotateY(0deg) scale(1.05) translateY(-8px) !important;
+    box-shadow: 0 16px 32px rgba(0,0,0,0.25);
+    z-index: 20;
+  }
+  
+  .tender-card-blurred {
+    filter: blur(4px) grayscale(50%);
+    opacity: 0.6;
+    transform: perspective(1000px) scale(0.85) !important;
+    pointer-events: none;
+    transition: all 0.3s ease;
+  }
+  
   /* Existing navbar and hero logo styles */
   .navbar { 
     display: flex; 
@@ -252,6 +267,7 @@
     transform: perspective(1000px) rotateY(0deg) scale(1);
     transform-origin: center center;
     will-change: transform;
+    transition: all 0.3s ease;
   }
   
   /* Apply perspective based on carousel position */

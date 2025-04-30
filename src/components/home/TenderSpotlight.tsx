@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ChevronLeft, ChevronRight, ArrowDownCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, ArrowDownCircle, XCircle } from "lucide-react";
 import { 
   Carousel,
   CarouselContent,
@@ -11,7 +11,6 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { Badge } from "@/components/ui/badge";
-import { useCarousel } from "@/components/ui/carousel";
 
 // Sample data (in a real app, this would come from an API)
 const featuredTenders = [
@@ -55,8 +54,9 @@ const featuredTenders = [
 
 const TenderSpotlight = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [focusedId, setFocusedId] = useState<number | null>(null);
   const [activeDot, setActiveDot] = useState<number>(0);
-  const [api, setApi] = useState<ReturnType<typeof useCarousel>["api"] | null>(null);
+  const [api, setApi] = useState<any>(null);
   
   // Effect to update the active dot based on carousel position
   useEffect(() => {
@@ -85,6 +85,20 @@ const TenderSpotlight = () => {
           </p>
         </div>
         
+        {/* Clear Focus Button */}
+        {focusedId && (
+          <div className="flex justify-center mb-4">
+            <Button 
+              onClick={() => setFocusedId(null)} 
+              variant="outline"
+              className="flex items-center gap-1 text-white border-white hover:bg-white hover:text-black"
+            >
+              <XCircle className="h-4 w-4" />
+              Show All Tenders
+            </Button>
+          </div>
+        )}
+        
         <div className="mt-12 carousel-3d-container">
           <Carousel 
             opts={{
@@ -103,9 +117,13 @@ const TenderSpotlight = () => {
                       relative h-full rounded-xl overflow-hidden
                       transition-all duration-500 ease-in-out
                       ${hoveredIndex === index ? 'tender-card-3d-hover' : ''}
+                      ${focusedId === tender.id ? 'tender-card-focused' : ''}
+                      ${focusedId && focusedId !== tender.id ? 'tender-card-blurred' : ''}
+                      cursor-pointer
                     `}
                     onMouseEnter={() => setHoveredIndex(index)}
                     onMouseLeave={() => setHoveredIndex(null)}
+                    onClick={() => setFocusedId(focusedId === tender.id ? null : tender.id)}
                   >
                     {/* Card content */}
                     <div className="p-8 pb-6 bg-white text-procloud-black rounded-xl h-full flex flex-col">
@@ -164,7 +182,7 @@ const TenderSpotlight = () => {
           
           {/* Pagination dots */}
           <div className="flex justify-center gap-2 mt-6">
-            {featuredTenders.map((_, index) => (
+            {featuredTenders.map((tender, index) => (
               <button
                 key={index}
                 className={`w-3 h-3 rounded-full transition-all ${
