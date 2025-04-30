@@ -27,6 +27,9 @@ const Navbar = () => {
             <Link to="/freelancers" className="text-sm font-medium hover:text-procloud-green transition-colors px-6">
               Freelancers
             </Link>
+            <Link to="/explore" className="text-sm font-medium hover:text-procloud-green transition-colors px-6">
+              Explore
+            </Link>
             <Link to="/how-it-works" className="text-sm font-medium hover:text-procloud-green transition-colors px-6">
               How It Works
             </Link>
@@ -71,6 +74,13 @@ const Navbar = () => {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Freelancers
+              </Link>
+              <Link 
+                to="/explore" 
+                className="px-4 py-2 text-sm font-medium hover:bg-procloud-gray-100 rounded-md"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Explore
               </Link>
               <Link 
                 to="/how-it-works" 

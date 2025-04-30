@@ -9,6 +9,7 @@ import Jobs from "./pages/Jobs";
 import Freelancers from "./pages/Freelancers";
 import FreelancerProfile from "./pages/FreelancerProfile";
 import ClientDashboard from "./pages/ClientDashboard";
+import ExploreFeed from "./pages/ExploreFeed";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +26,7 @@ const App = () => (
           <Route path="/freelancers" element={<Freelancers />} />
           <Route path="/freelancers/:id" element={<FreelancerProfile />} />
           <Route path="/dashboard" element={<ClientDashboard />} />
+          <Route path="/explore" element={<ExploreFeed />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
