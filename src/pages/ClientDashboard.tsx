@@ -8,6 +8,7 @@ import ReviewProposals from "@/components/client/ReviewProposals";
 import PaymentsPage from "@/components/client/PaymentsPage";
 import AnalyticsPage from "@/components/client/AnalyticsPage";
 import AccountSettings from "@/components/client/AccountSettings";
+import TokensWalletPage from "@/components/client/TokensWalletPage";
 import BuyTokensPage from "@/pages/BuyTokens";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -78,7 +79,7 @@ const ClientDashboard = () => {
             <TabsTrigger value="proposals">Review Proposals</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="tokens">Buy Tokens</TabsTrigger>
+            <TabsTrigger value="tokens">Tokens</TabsTrigger>
             <TabsTrigger value="account">Account</TabsTrigger>
           </TabsList>
           
@@ -104,7 +105,7 @@ const ClientDashboard = () => {
           
           <TabsContent value="tokens">
             <div className="max-w-4xl mx-auto">
-              <BuyTokensPage />
+              <TokensWalletPage />
             </div>
           </TabsContent>
           

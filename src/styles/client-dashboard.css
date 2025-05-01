@@ -102,6 +102,20 @@
   text-decoration: none;
 }
 
+/* Token wallet styles */
+.token-balance-card {
+  background: linear-gradient(to right bottom, #ffffff, #f8f9fa);
+  border: 1px solid #e9ecef;
+}
+
+.token-transaction {
+  transition: background-color 0.15s ease;
+}
+
+.token-transaction:hover {
+  background-color: rgba(0, 0, 0, 0.02);
+}
+
 /* Mobile responsiveness */
 @media (max-width: 640px) {
   .dashboard-cards {
