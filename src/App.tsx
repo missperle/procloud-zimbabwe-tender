@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +19,7 @@ import BuyTokens from "./pages/BuyTokens";
 import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
 import ImageGenerator from './components/client/ImageGenerator';
+import SubmitProposalPage from "./pages/SubmitProposalPage";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +45,7 @@ const App = () => {
                 <Route path="/buy-tokens" element={<BuyTokens />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/generate-images" element={<ImageGenerator />} />
+                <Route path="/jobs/:jobId/submit-proposal" element={<SubmitProposalPage />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
