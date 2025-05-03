@@ -154,7 +154,6 @@ const ChatWidget = () => {
             placeholder="Type a message..."
             className="flex-1 resize-none"
             rows={1}
-            maxRows={4}
             disabled={isLoading}
           />
           <Button
