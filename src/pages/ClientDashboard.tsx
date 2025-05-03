@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
@@ -9,6 +10,7 @@ import PaymentsPage from "@/components/client/PaymentsPage";
 import AnalyticsPage from "@/components/client/AnalyticsPage";
 import AccountSettings from "@/components/client/AccountSettings";
 import TokensWalletPage from "@/components/client/TokensWalletPage";
+import SubscriptionPage from "@/components/client/SubscriptionPage";
 import BuyTokensPage from "@/pages/BuyTokens";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
@@ -24,7 +26,7 @@ const ClientDashboard = () => {
     // Check for tab parameter in URL
     const searchParams = new URLSearchParams(location.search);
     const tabParam = searchParams.get('tab');
-    if (tabParam && ['dashboard', 'briefs', 'proposals', 'payments', 'analytics', 'tokens', 'account'].includes(tabParam)) {
+    if (tabParam && ['dashboard', 'briefs', 'proposals', 'payments', 'analytics', 'tokens', 'subscription', 'account'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, [location]);
@@ -73,13 +75,14 @@ const ClientDashboard = () => {
         </div>
         
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-2 mb-8">
+          <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-8 gap-2 mb-8">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="briefs">My Briefs</TabsTrigger>
             <TabsTrigger value="proposals">Review Proposals</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="tokens">Tokens</TabsTrigger>
+            <TabsTrigger value="subscription">Subscription</TabsTrigger>
             <TabsTrigger value="account">Account</TabsTrigger>
           </TabsList>
           
@@ -106,6 +109,12 @@ const ClientDashboard = () => {
           <TabsContent value="tokens">
             <div className="max-w-4xl mx-auto">
               <TokensWalletPage />
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="subscription">
+            <div className="max-w-4xl mx-auto">
+              <SubscriptionPage />
             </div>
           </TabsContent>
           

@@ -1,4 +1,3 @@
-
 export interface TokenTransaction {
   id: string;
   amount: number;
@@ -43,9 +42,17 @@ export interface Achievement {
 }
 
 export interface Referral {
-  id: string;
   code: string;
-  usedBy: string[];
-  rewards: number;
-  status: "active" | "expired";
+  usageCount: number;
+  tokensEarned: number;
+}
+
+export interface Subscription {
+  id: string;
+  userId: string;
+  tier: 'free' | 'basic' | 'pro';
+  status: 'active' | 'canceled' | 'past_due' | 'pending';
+  currentPeriodEnd: Date | null;
+  paymentMethod: 'card' | 'cash' | null;
+  createdAt: Date;
 }

@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import Index from "./pages/Index";
 import Jobs from "./pages/Jobs";
 import Freelancers from "./pages/Freelancers";
@@ -15,6 +16,7 @@ import ExploreFeed from "./pages/ExploreFeed";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import BuyTokens from "./pages/BuyTokens";
+import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,26 +25,29 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <BrowserRouter>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/jobs" element={<Jobs />} />
-              <Route path="/freelancers" element={<Freelancers />} />
-              <Route path="/freelancers/:id" element={<FreelancerProfile />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/client-dashboard" element={<ClientDashboard />} />
-              <Route path="/explore" element={<ExploreFeed />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Register />} />
-              <Route path="/buy-tokens" element={<BuyTokens />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </TooltipProvider>
-        </BrowserRouter>
+        <SubscriptionProvider>
+          <BrowserRouter>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/jobs" element={<Jobs />} />
+                <Route path="/freelancers" element={<Freelancers />} />
+                <Route path="/freelancers/:id" element={<FreelancerProfile />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/client-dashboard" element={<ClientDashboard />} />
+                <Route path="/explore" element={<ExploreFeed />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/signup" element={<Register />} />
+                <Route path="/buy-tokens" element={<BuyTokens />} />
+                <Route path="/pricing" element={<Pricing />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </TooltipProvider>
+          </BrowserRouter>
+        </SubscriptionProvider>
       </AuthProvider>
     </QueryClientProvider>
   );
