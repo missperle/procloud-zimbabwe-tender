@@ -12,7 +12,6 @@ import ReferralWidget from "./referral/ReferralWidget";
 import TokenROIWidget from "./analytics/TokenROIWidget";
 import TokenUsageOptions from "./token/TokenUsageOptions";
 import { Achievement, Referral } from "@/types/token";
-import { ACHIEVEMENTS } from "@/lib/tokenUtils";
 
 const TokensWalletPage = () => {
   const [currentTab, setCurrentTab] = useState<string>("overview");

@@ -1,8 +1,16 @@
 
-import React from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ResponsiveContainer, PieChart, Pie, Sector, Cell, Legend } from "recharts";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+
+interface TokenROIWidgetProps {
+  data?: {
+    month: string;
+    projectValue: number;
+    tokenCost: number;
+  }[];
+}
 
 // Mock data for ROI visualization
 const roiData = [
@@ -84,8 +92,8 @@ const renderLegend = (props: any) => {
   );
 };
 
-const TokenROIWidget = () => {
-  const [activeIndex, setActiveIndex] = React.useState(0);
+const TokenROIWidget: React.FC<TokenROIWidgetProps> = ({ data = monthlyData }) => {
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const onPieEnter = (_: any, index: number) => {
     setActiveIndex(index);
@@ -121,18 +129,7 @@ const TokenROIWidget = () => {
                     ))}
                   </Pie>
                   <Legend 
-                    content={renderLegend} 
-                    payload={
-                      roiData.map((item, index) => ({
-                        value: item.name,
-                        color: COLORS[index % COLORS.length],
-                        dataKey: item.name,
-                        payload: {
-                          value: item.value,
-                          name: item.name
-                        }
-                      }))
-                    }
+                    content={renderLegend}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -143,15 +140,15 @@ const TokenROIWidget = () => {
             <h4 className="text-sm font-medium mb-2">Monthly Token Usage vs Revenue</h4>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyData}>
+                <BarChart data={data}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="month" />
                   <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
                   <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
                   <Tooltip />
                   <Legend />
-                  <Bar yAxisId="left" dataKey="tokens" fill="#8884d8" name="Tokens Used" />
-                  <Bar yAxisId="right" dataKey="revenue" fill="#82ca9d" name="Revenue ($)" />
+                  <Bar yAxisId="left" dataKey="tokenCost" fill="#8884d8" name="Tokens Used" />
+                  <Bar yAxisId="right" dataKey="projectValue" fill="#82ca9d" name="Revenue ($)" />
                 </BarChart>
               </ResponsiveContainer>
             </div>

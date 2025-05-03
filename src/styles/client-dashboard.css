@@ -133,3 +133,35 @@
 .loading-pulse {
   animation: pulse 1.5s infinite;
 }
+
+/* Shiny text effect */
+.shiny {
+  font-size: 3rem;
+  font-weight: bold;
+  color: #000;               /* fallback */
+  position: relative;
+  overflow: hidden;
+}
+
+.shiny span {
+  /* make the text itself transparent so the gradient shows through */
+  background: linear-gradient(
+    90deg,
+    #0055ff 0%,
+    #66aaff 20%,
+    #0055ff 40%,
+    #66aaff 60%,
+    #0055ff 80%,
+    #66aaff 100%
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shine 3s linear infinite;
+}
+
+/* keyframes to sweep the gradient across */
+@keyframes shine {
+  0%   { background-position: -100% 0; }
+  100% { background-position: 200% 0; }
+}
