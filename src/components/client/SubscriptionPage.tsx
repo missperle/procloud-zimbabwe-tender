@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,12 +10,14 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getFirestore, collection, query, where, getDocs, doc, updateDoc, getDoc } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const SubscriptionPage: React.FC = () => {
   const { subscription, isLoading } = useSubscription();
   const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
+  const { toast } = useToast();
 
   const handleChangePlan = () => {
     navigate('/pricing');
