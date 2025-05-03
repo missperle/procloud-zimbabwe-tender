@@ -1,11 +1,10 @@
-
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Check, X } from "lucide-react";
-import { getFirestore, doc, getDoc, query, collection, where, getDocs } from "firebase/firestore";
+import { getFirestore, doc, getDoc, query, collection, where, getDocs, onSnapshot } from "firebase/firestore";
 import { getApp } from "firebase/app";
 
 // Mock data for briefs with proposals
@@ -91,6 +90,10 @@ const ReviewProposals = () => {
     skills: string[];
     rating: number;
   }>>([]);
+  const [sentimentData, setSentimentData] = useState<Record<string, { 
+    clarity: number; 
+    enthusiasm: number 
+  }>>({});
   
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -107,6 +110,36 @@ const ReviewProposals = () => {
       }
     }
   };
+
+  useEffect(() => {
+    // Watch for sentiment updates on proposals
+    const watchProposals = async () => {
+      try {
+        const db = getFirestore(getApp("proverb-digital-client"));
+        
+        // Setup listeners for each proposal
+        filteredProposals.forEach(proposal => {
+          const proposalRef = doc(db, 'proposals', proposal.id);
+          
+          onSnapshot(proposalRef, (snap) => {
+            if (snap.exists()) {
+              const data = snap.data();
+              if (data && data.sentiment) {
+                setSentimentData(prev => ({
+                  ...prev,
+                  [proposal.id]: data.sentiment
+                }));
+              }
+            }
+          });
+        });
+      } catch (error) {
+        console.error("Error setting up proposal listeners:", error);
+      }
+    };
+    
+    watchProposals();
+  }, [filteredProposals]);
 
   const loadRecommendations = async (briefId: string) => {
     try {
@@ -167,6 +200,30 @@ const ReviewProposals = () => {
     console.log(`Rejected proposal ${proposalId}`);
     // Maybe show a toast notification
     // Then remove the proposal from the list or mark it as rejected
+  };
+
+  // Helper function to get sentiment display classes
+  const getSentimentClasses = (proposalId: string) => {
+    const sentiment = sentimentData[proposalId];
+    
+    if (!sentiment) return {};
+    
+    const classes = {
+      card: "",
+      enthusiasmBadge: ""
+    };
+    
+    // Low clarity - highlight card
+    if (sentiment.clarity < 0.5) {
+      classes.card = "border-2 border-red-400";
+    }
+    
+    // High enthusiasm - show badge
+    if (sentiment.enthusiasm > 0.8) {
+      classes.enthusiasmBadge = "ml-2 bg-amber-400 text-black";
+    }
+    
+    return classes;
   };
 
   return (
@@ -253,59 +310,83 @@ const ReviewProposals = () => {
           <h3 className="text-lg font-medium mb-4">{activeTab === "all" ? "All Proposals" : "Submitted Proposals"}</h3>
           {filteredProposals.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProposals.map((proposal) => (
-                <Card key={proposal.id} className="overflow-hidden hover:shadow-md transition-shadow">
-                  <CardContent className="p-6">
-                    <div className="flex items-center space-x-4 mb-4">
-                      <Avatar>
-                        <AvatarImage src={proposal.freelancer.avatar} alt={proposal.freelancer.name} />
-                        <AvatarFallback>
-                          {proposal.freelancer.name.substr(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <h3 className="font-semibold">{proposal.freelancer.name}</h3>
-                        <div className="flex items-center">
-                          <span className="text-xs text-amber-burst mr-1">★</span>
-                          <span className="text-xs">{proposal.freelancer.rating}/5</span>
+              {filteredProposals.map((proposal) => {
+                const sentimentClasses = getSentimentClasses(proposal.id);
+                
+                return (
+                  <Card 
+                    key={proposal.id} 
+                    className={`overflow-hidden hover:shadow-md transition-shadow ${sentimentClasses.card}`}
+                  >
+                    <CardContent className="p-6">
+                      <div className="flex items-center space-x-4 mb-4">
+                        <Avatar>
+                          <AvatarImage src={proposal.freelancer.avatar} alt={proposal.freelancer.name} />
+                          <AvatarFallback>
+                            {proposal.freelancer.name.substr(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <h3 className="font-semibold">{proposal.freelancer.name}</h3>
+                          <div className="flex items-center">
+                            <span className="text-xs text-amber-burst mr-1">★</span>
+                            <span className="text-xs">{proposal.freelancer.rating}/5</span>
+                          </div>
+                        </div>
+                        <div className="ml-auto font-bold text-indigo-ink">
+                          {proposal.bidAmount}
                         </div>
                       </div>
-                      <div className="ml-auto font-bold text-indigo-ink">
-                        {proposal.bidAmount}
-                      </div>
-                    </div>
+                      
+                      <p className="text-sm text-gray-600 line-clamp-4 mb-4">
+                        {proposal.text}
+                      </p>
+                      
+                      {sentimentData[proposal.id] && (
+                        <div className="flex items-center mt-2 mb-2 text-xs text-gray-600">
+                          <div className="flex items-center">
+                            <span className="font-semibold mr-1">Clarity:</span>
+                            <span>{(sentimentData[proposal.id].clarity * 100).toFixed(0)}%</span>
+                          </div>
+                          <div className="mx-2">•</div>
+                          <div className="flex items-center">
+                            <span className="font-semibold mr-1">Enthusiasm:</span>
+                            <span>{(sentimentData[proposal.id].enthusiasm * 100).toFixed(0)}%</span>
+                            {sentimentClasses.enthusiasmBadge && (
+                              <Badge className={sentimentClasses.enthusiasmBadge}>🔥</Badge>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      
+                      <Button variant="link" className="px-0 text-xs">
+                        View Full Proposal
+                      </Button>
+                    </CardContent>
                     
-                    <p className="text-sm text-gray-600 line-clamp-4 mb-4">
-                      {proposal.text}
-                    </p>
-                    
-                    <Button variant="link" className="px-0 text-xs">
-                      View Full Proposal
-                    </Button>
-                  </CardContent>
-                  
-                  <CardFooter className="bg-gray-50 p-4 flex justify-between">
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleAccept(proposal.id)}
-                      className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                    >
-                      <Check className="h-4 w-4 mr-1" />
-                      Accept
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => handleReject(proposal.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <X className="h-4 w-4 mr-1" />
-                      Reject
-                    </Button>
-                  </CardFooter>
-                </Card>
-              ))}
+                    <CardFooter className="bg-gray-50 p-4 flex justify-between">
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleAccept(proposal.id)}
+                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                      >
+                        <Check className="h-4 w-4 mr-1" />
+                        Accept
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm"
+                        onClick={() => handleReject(proposal.id)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        Reject
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-12 bg-gray-50 rounded-lg">
