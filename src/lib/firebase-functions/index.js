@@ -1,6 +1,9 @@
 
-// Import all the Firebase functions
-const imageGen = require('./generateImages');
+// Export all cloud functions
+const matchProposalsFunction = require('./matchProposals');
 
 // Export the functions
-exports.generateImages = imageGen.generateImages;
+module.exports = {
+  ...matchProposalsFunction
+  // Additional functions can be added here
+};
