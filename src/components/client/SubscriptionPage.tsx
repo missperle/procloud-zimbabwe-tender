@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -8,9 +7,12 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { getFirestore, collection, query, where, getDocs, doc, updateDoc, getDoc } from "firebase/firestore";
+import { useAuth } from "@/contexts/AuthContext";
 
 const SubscriptionPage: React.FC = () => {
   const { subscription, isLoading } = useSubscription();
+  const { currentUser } = useAuth();
   const navigate = useNavigate();
   const [showCancelDialog, setShowCancelDialog] = useState(false);
 
@@ -27,10 +29,34 @@ const SubscriptionPage: React.FC = () => {
     setShowCancelDialog(true);
   };
 
-  const handleCancelSubscription = () => {
-    // In a real implementation, this would call an API to cancel the subscription
-    console.log('Cancelling subscription...');
-    setShowCancelDialog(false);
+  const handleCancelSubscription = async () => {
+    if (!currentUser || !subscription) return;
+    
+    try {
+      const db = getFirestore();
+      
+      // Find the subscription document by userId (per security rules)
+      const subscriptionsRef = collection(db, 'subscriptions');
+      const q = query(subscriptionsRef, where("userId", "==", currentUser.uid));
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        const subscriptionDoc = querySnapshot.docs[0];
+        // Update subscription status to canceled
+        await updateDoc(doc(db, 'subscriptions', subscriptionDoc.id), {
+          status: 'canceled',
+        });
+        
+        toast({
+          title: "Subscription canceled",
+          description: "Your subscription will end at the current billing period",
+        });
+        
+        setShowCancelDialog(false);
+      }
+    } catch (error) {
+      console.error("Error canceling subscription:", error);
+    }
   };
 
   if (isLoading) {

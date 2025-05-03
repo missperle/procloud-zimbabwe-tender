@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { auth } from "@/lib/firebase";
+import { getFirestore, collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 // Define subscription plan interfaces
 interface PlanFeature {
@@ -125,12 +126,25 @@ const Pricing = () => {
   const handleSubmitFreeSubscription = async () => {
     setIsProcessing(true);
     try {
-      // In a real implementation, this would update the database with a free subscription
-      // For demonstration purposes, we'll just show a success toast
+      const db = getFirestore();
+      
+      // Create the subscription document - following security rules
+      await addDoc(collection(db, 'subscriptions'), {
+        userId: currentUser.uid, // Security rule ensures this matches auth user
+        tier: 'free',
+        status: 'active',
+        currentPeriodEnd: null,
+        paymentMethod: null,
+        createdAt: serverTimestamp(),
+        nextBillingDate: null,
+        startDate: serverTimestamp()
+      });
+      
       toast({
         title: "Free plan selected",
         description: "You're now on the Free plan",
       });
+      
       setTimeout(() => {
         setIsProcessing(false);
         navigate("/client-dashboard");
@@ -164,15 +178,19 @@ const Pricing = () => {
     setIsProcessing(true);
 
     try {
-      // In a real app, this would be calling a Firebase function or API
-      console.log("Processing subscription:", {
-        userId: currentUser.uid,
-        plan: selectedPlan?.id,
-        paymentMethod
-      });
+      const db = getFirestore();
       
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Create the subscription according to security rules
+      await addDoc(collection(db, 'subscriptions'), {
+        userId: currentUser.uid,
+        tier: selectedPlan?.id || 'basic',
+        status: 'pending',
+        currentPeriodEnd: null,
+        paymentMethod: paymentMethod,
+        createdAt: serverTimestamp(),
+        nextBillingDate: null,
+        startDate: serverTimestamp()
+      });
       
       if (paymentMethod === "card") {
         // Simulate redirect to Stripe checkout
@@ -365,3 +383,4 @@ const Pricing = () => {
 };
 
 export default Pricing;
+

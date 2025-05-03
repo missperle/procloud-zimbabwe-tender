@@ -62,14 +62,11 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
     // Subscription rules
-    match /subscriptions/{subscriptionId} {
-      // Users can read their own subscriptions
-      allow read: if request.auth != null && 
-                  request.auth.uid == resource.data.userId;
-      
-      // Only admin or system can write subscriptions
-      allow write: if request.auth != null && 
-                  (request.auth.token.admin == true || request.auth.token.isSystem == true);
+    match /subscriptions/{subId} {
+      allow create: if request.auth.uid == request.resource.data.userId;
+      allow read, update: if request.auth.uid == resource.data.userId
+                          || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.isAdmin == true;
+      allow delete: if false;
     }
     
     // Payment history rules
@@ -104,3 +101,4 @@ service cloud.firestore {
   }
 }
 */
+
