@@ -5,7 +5,7 @@ import { ResponsiveContainer, PieChart, Pie, Sector, Cell, Legend } from "rechar
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 
 interface TokenROIWidgetProps {
-  data?: {
+  data: {
     month: string;
     projectValue: number;
     tokenCost: number;

@@ -13,11 +13,17 @@ import { UserPlus, Copy, Check, Coins } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { useToast } from "@/components/ui/use-toast";
 import { generateReferralCode } from "@/lib/tokenUtils";
+import { Referral } from "@/types/token";
 
-const ReferralWidget = () => {
+interface ReferralWidgetProps {
+  referral: Referral;
+  totalRewards: number;
+}
+
+const ReferralWidget = ({ referral, totalRewards }: ReferralWidgetProps) => {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
-  const [referralCode, setReferralCode] = useState("PROCLOUD123");
+  const [referralCode, setReferralCode] = useState(referral.code || "PROCLOUD123");
 
   const handleCopyCode = () => {
     navigator.clipboard.writeText(referralCode)
