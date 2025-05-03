@@ -4,6 +4,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Check, X } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { getFirestore, doc, getDoc, query, collection, where, getDocs, onSnapshot } from "firebase/firestore";
 import { getApp } from "firebase/app";
 
@@ -79,6 +80,12 @@ const mockProposals = [
     text: "Print design expert with 10+ years of experience. I create brochures that effectively communicate your message and attract customers.",
   },
 ];
+
+// Define types for the sentiment classes
+interface SentimentClasses {
+  card?: string;
+  enthusiasmBadge?: string;
+}
 
 const ReviewProposals = () => {
   const [activeTab, setActiveTab] = useState("all");
@@ -203,12 +210,12 @@ const ReviewProposals = () => {
   };
 
   // Helper function to get sentiment display classes
-  const getSentimentClasses = (proposalId: string) => {
+  const getSentimentClasses = (proposalId: string): SentimentClasses => {
     const sentiment = sentimentData[proposalId];
     
     if (!sentiment) return {};
     
-    const classes = {
+    const classes: SentimentClasses = {
       card: "",
       enthusiasmBadge: ""
     };
@@ -316,7 +323,7 @@ const ReviewProposals = () => {
                 return (
                   <Card 
                     key={proposal.id} 
-                    className={`overflow-hidden hover:shadow-md transition-shadow ${sentimentClasses.card}`}
+                    className={`overflow-hidden hover:shadow-md transition-shadow ${sentimentClasses.card || ''}`}
                   >
                     <CardContent className="p-6">
                       <div className="flex items-center space-x-4 mb-4">
