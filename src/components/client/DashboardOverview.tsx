@@ -1,6 +1,7 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Activity, Users, DollarSign, Award } from "lucide-react";
+import { Link } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
 
 // Mock data - in a real app this would come from API/database
 const stats = [
@@ -76,6 +77,25 @@ const DashboardOverview = () => {
               </li>
             ))}
           </ul>
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>AI Tools</CardTitle>
+          <CardDescription>
+            Use AI-powered tools to enhance your work
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <Button asChild variant="outline" className="w-full justify-start">
+              <Link to="/generate-images">
+                <span className="mr-2">🎨</span> Generate AI Images
+              </Link>
+            </Button>
+            {/* Add more AI tools here as they become available */}
+          </div>
         </CardContent>
       </Card>
     </div>
