@@ -21,6 +21,7 @@ import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
 import ImageGenerator from './components/client/ImageGenerator';
 import SubmitProposalPage from "./pages/SubmitProposalPage";
+import ChatWidget from "./components/chat/ChatWidget";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const App = () => {
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
+              <ChatWidget />
             </TooltipProvider>
           </BrowserRouter>
         </SubscriptionProvider>
