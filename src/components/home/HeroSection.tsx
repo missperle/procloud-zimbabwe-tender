@@ -78,8 +78,8 @@ const HeroSection = () => {
                                 translateY(${-scrollProgress}px)`,
                      opacity: Math.max(0, 1 - scrollProgress/50)
                    }}>
-                <h1 className="font-montserrat font-extrabold text-4xl md:text-5xl lg:text-6xl mb-6 text-[#111]">
-                  Zimbabwe's <span className="highlight text-indigo-ink">Best Creators</span> Are On ProCloud
+                <h1 className="shiny font-montserrat font-extrabold text-4xl md:text-5xl lg:text-6xl mb-6 text-[#111]">
+                  Zimbabwe's <span>Best Creators</span> Are On ProCloud
                 </h1>
               </div>
               
