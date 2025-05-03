@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import Index from "./pages/Index";
 import Jobs from "./pages/Jobs";
+import JobDetailsPage from "./pages/JobDetailsPage";
 import Freelancers from "./pages/Freelancers";
 import FreelancerProfile from "./pages/FreelancerProfile";
 import ClientDashboard from "./pages/ClientDashboard";
@@ -35,6 +36,7 @@ const App = () => {
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/jobs" element={<Jobs />} />
+                <Route path="/jobs/:jobId" element={<JobDetailsPage />} />
                 <Route path="/freelancers" element={<Freelancers />} />
                 <Route path="/freelancers/:id" element={<FreelancerProfile />} />
                 <Route path="/dashboard" element={<Dashboard />} />

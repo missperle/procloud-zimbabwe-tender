@@ -1,31 +1,46 @@
 
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import SubmitProposal from "@/components/proposals/SubmitProposal";
+import { mockJobs } from "@/data/mockJobs";
+import { Button } from "@/components/ui/button";
 
 const SubmitProposalPage = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const [jobTitle, setJobTitle] = useState("Job Title");
+  const [loading, setLoading] = useState(true);
   
   useEffect(() => {
-    // In a real implementation, you would fetch the job details here
-    // For example:
-    // const fetchJobDetails = async () => {
-    //   const jobDoc = await getDoc(doc(db, "jobs", jobId));
-    //   if (jobDoc.exists()) {
-    //     setJobTitle(jobDoc.data().title);
-    //   }
-    // };
-    // fetchJobDetails();
+    // Find the job from mock data
+    const job = mockJobs.find(job => job.id === jobId);
     
-    // For demo purposes, we're setting a placeholder title
-    setJobTitle("Web Development Project");
+    if (job) {
+      setJobTitle(job.title);
+    }
+    
+    setLoading(false);
   }, [jobId]);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="container mx-auto py-8">
+          <p>Loading...</p>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
       <div className="container mx-auto py-8">
+        <div className="mb-6">
+          <Link to={`/jobs/${jobId}`} className="text-procloud-green hover:underline mb-4 inline-flex items-center">
+            <span className="mr-2">←</span> Back to Job Details
+          </Link>
+        </div>
+        
         <h1 className="text-2xl font-bold mb-6">Submit Proposal for: {jobTitle}</h1>
         <SubmitProposal jobTitle={jobTitle} jobId={jobId || ""} />
       </div>

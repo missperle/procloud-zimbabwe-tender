@@ -3,66 +3,7 @@ import { useState, useEffect } from "react";
 import Layout from "@/components/layout/Layout";
 import JobCard from "@/components/jobs/JobCard";
 import JobsFilter from "@/components/jobs/JobsFilter";
-
-// Mock data
-const mockJobs = [
-  {
-    id: "job1",
-    title: "Brand Identity Design for Local Restaurant",
-    company: "Taste of Zim",
-    budget: "$150-200",
-    deadline: "May 15, 2025",
-    categories: ["Design", "Branding"],
-    brief: "Looking for a talented designer to create a brand identity for our new restaurant in Harare. We need a logo, color palette, and basic brand guidelines.",
-    featured: true
-  },
-  {
-    id: "job2",
-    title: "E-commerce Website Development",
-    company: "Fashion Outlet",
-    budget: "$300-500",
-    deadline: "May 20, 2025",
-    categories: ["Development", "Web"],
-    brief: "Need a developer to build a simple e-commerce website for our fashion business. Should include product listings, cart functionality, and payment integration."
-  },
-  {
-    id: "job3",
-    title: "Social Media Content Creation",
-    company: "Victoria Falls Tours",
-    budget: "$100-150",
-    deadline: "May 10, 2025",
-    categories: ["Marketing", "Social Media"],
-    brief: "Looking for a content creator to develop social media posts for our tourism company. Need 20 engaging posts with images for Instagram and Facebook.",
-    featured: true
-  },
-  {
-    id: "job4",
-    title: "Copywriting for Company Website",
-    company: "ZimTech Solutions",
-    budget: "$80-120",
-    deadline: "May 25, 2025",
-    categories: ["Writing", "Marketing"],
-    brief: "We need compelling copy for our new tech company website. Approximately 5 pages including home, about, services, team, and contact."
-  },
-  {
-    id: "job5",
-    title: "Product Photography for Craft Business",
-    company: "Handmade Zimbabwe",
-    budget: "$70-100",
-    deadline: "May 12, 2025",
-    categories: ["Photography"],
-    brief: "Need professional photos of our handmade crafts. Approximately 30 products need to be photographed with white background for our online shop."
-  },
-  {
-    id: "job6",
-    title: "Motion Graphics for Company Intro",
-    company: "Green Energy Zimbabwe",
-    budget: "$200-250",
-    deadline: "May 30, 2025",
-    categories: ["Video", "Animation"],
-    brief: "Looking for a motion graphics designer to create a 30-second company introduction video explaining our solar energy solutions."
-  },
-];
+import { mockJobs } from "@/data/mockJobs";
 
 const Jobs = () => {
   const [filteredJobs, setFilteredJobs] = useState(mockJobs);
