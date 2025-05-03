@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Coins, Plus, Trophy, UserPlus, TrendingUp } from "lucide-react";
@@ -59,11 +58,9 @@ const TokensWalletPage = () => {
   
   // Mock referral data
   const [referral, setReferral] = useState<Referral>({
-    id: "ref-123",
     code: "PV-AB12CD",
-    usedBy: ["user1", "user2"],
-    rewards: 100,
-    status: "active"
+    usageCount: 2,
+    tokensEarned: 100
   });
   
   // Mock ROI data
