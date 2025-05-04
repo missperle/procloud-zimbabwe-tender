@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { Heart, MoreHorizontal, Plus } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
@@ -7,6 +8,25 @@ import UploadModal from './UploadModal';
 import '../../styles/feed.css';
 import { useAuth } from '@/contexts/AuthContext';
 import { categories } from '@/components/layout/CategoryNav';
+import { getFirestore, collection, query, where, orderBy, getDocs, doc, getDoc } from 'firebase/firestore';
+import { getApp } from 'firebase/app';
+
+// Define types for feed items
+interface FeedItem {
+  id: number | string;
+  type: 'image' | 'video' | 'brief';
+  src?: string;
+  username: string;
+  pseudonym?: string;
+  avatar?: string;
+  likes: number;
+  categories: string[];
+  size: 'small' | 'medium' | 'large';
+  // Brief-specific fields
+  reviewText?: string;
+  originalText?: string;
+  status?: string;
+}
 
 // Sample data for the feed with categories and assigned sizes
 const SAMPLE_FEED_ITEMS = [
@@ -92,23 +112,12 @@ const SAMPLE_FEED_ITEMS = [
   }
 ];
 
-interface FeedItem {
-  id: number;
-  type: 'image' | 'video';
-  src: string;
-  username: string;
-  avatar: string;
-  likes: number;
-  categories: string[];
-  size: 'small' | 'medium' | 'large';
-}
-
 const Feed = ({ activeCategory }: { activeCategory: string }) => {
   // State
   const [feedItems, setFeedItems] = useState<FeedItem[]>(SAMPLE_FEED_ITEMS);
   const [filteredItems, setFilteredItems] = useState<FeedItem[]>(SAMPLE_FEED_ITEMS);
-  const [loading, setLoading] = useState(false);
-  const [likedItems, setLikedItems] = useState<Record<number, boolean>>({});
+  const [loading, setLoading] = useState(true);
+  const [likedItems, setLikedItems] = useState<Record<string | number, boolean>>({});
   const [modalOpen, setModalOpen] = useState(false);
   const [page, setPage] = useState(1);
   const { currentUser } = useAuth();
@@ -116,6 +125,72 @@ const Feed = ({ activeCategory }: { activeCategory: string }) => {
   // Refs
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadMoreRef = useRef<HTMLDivElement>(null);
+
+  // Fetch published briefs from Firestore
+  useEffect(() => {
+    const fetchPublishedBriefs = async () => {
+      try {
+        const db = getFirestore(getApp("proverb-digital-client"));
+        const briefsRef = collection(db, "briefs");
+        
+        // Query for published briefs
+        const briefsQuery = query(
+          briefsRef,
+          where("status", "==", "published"),
+          orderBy("publishedAt", "desc")
+        );
+        
+        const briefsSnapshot = await getDocs(briefsQuery);
+        const briefsData: FeedItem[] = [];
+        
+        for (const doc of briefsSnapshot.docs) {
+          const brief = doc.data();
+          
+          // If the brief has a creatorId, fetch their pseudonym
+          let pseudonym = "Anonymous";
+          if (brief.clientId) {
+            try {
+              const userDoc = await getDoc(doc.ref.firestore.doc(`users/${brief.clientId}`));
+              if (userDoc.exists()) {
+                const userData = userDoc.data();
+                pseudonym = userData.pseudonym || "Anonymous";
+              }
+            } catch (error) {
+              console.error("Error fetching user pseudonym:", error);
+            }
+          }
+          
+          // Get a random size for the brief card
+          const sizes: ('small' | 'medium' | 'large')[] = ['small', 'medium', 'large'];
+          const randomSize = sizes[Math.floor(Math.random() * sizes.length)];
+          
+          briefsData.push({
+            id: doc.id,
+            type: 'brief',
+            username: pseudonym,
+            pseudonym: pseudonym,
+            reviewText: brief.reviewText,
+            originalText: brief.originalText,
+            status: brief.status,
+            likes: 0,
+            categories: brief.categories || [],
+            size: randomSize,
+            avatar: `https://api.dicebear.com/7.x/initials/svg?seed=${pseudonym}`
+          });
+        }
+        
+        // Combine sample media with real briefs
+        const combinedItems = [...briefsData, ...SAMPLE_FEED_ITEMS];
+        setFeedItems(combinedItems);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching published briefs:", error);
+        setLoading(false);
+      }
+    };
+    
+    fetchPublishedBriefs();
+  }, []);
 
   // Filter items when activeCategory changes
   useEffect(() => {
@@ -129,7 +204,7 @@ const Feed = ({ activeCategory }: { activeCategory: string }) => {
   }, [activeCategory, feedItems]);
 
   // Handle liking a post
-  const handleLike = (id: number) => {
+  const handleLike = (id: number | string) => {
     setLikedItems(prev => {
       const isLiked = !prev[id];
       
@@ -151,11 +226,13 @@ const Feed = ({ activeCategory }: { activeCategory: string }) => {
     const videoObserver = new IntersectionObserver(
       (entries) => {
         entries.forEach(entry => {
-          const video = entry.target as HTMLVideoElement;
-          if (entry.isIntersecting) {
-            video.play().catch(error => console.log('Video play failed:', error));
-          } else {
-            video.pause();
+          if (entry.target instanceof HTMLVideoElement) {
+            const video = entry.target;
+            if (entry.isIntersecting) {
+              video.play().catch(error => console.log('Video play failed:', error));
+            } else {
+              video.pause();
+            }
           }
         });
       },
@@ -207,7 +284,7 @@ const Feed = ({ activeCategory }: { activeCategory: string }) => {
       // Clone and modify some of the existing items for simplicity
       const newItems: FeedItem[] = SAMPLE_FEED_ITEMS.map(item => ({
         ...item,
-        id: item.id + feedItems.length,
+        id: `${item.id}-${feedItems.length}`,
         likes: Math.floor(Math.random() * 1000),
         size: getRandomSize() // Assign random sizes to new items
       }));
@@ -232,7 +309,7 @@ const Feed = ({ activeCategory }: { activeCategory: string }) => {
     // Create a new item
     const newItem: FeedItem = {
       id: Date.now(),
-      type: file.type.startsWith('video/') ? 'video' as const : 'image' as const,
+      type: file.type.startsWith('video/') ? 'video' : 'image',
       src: URL.createObjectURL(file),
       username: currentUser?.email?.split('@')[0] || 'anonymous_user',
       avatar: 'https://randomuser.me/api/portraits/women/10.jpg', // Placeholder
@@ -251,73 +328,100 @@ const Feed = ({ activeCategory }: { activeCategory: string }) => {
     });
   };
 
+  // Render brief cards differently from media cards
+  const renderFeedItem = (item: FeedItem) => {
+    if (item.type === 'brief') {
+      return (
+        <div className="card-content p-4">
+          <h3 className="text-lg font-semibold mb-2">Job Opportunity</h3>
+          <p className="text-sm mb-3">{item.reviewText}</p>
+          <div className="text-xs text-gray-500">Categories: {item.categories.join(', ')}</div>
+        </div>
+      );
+    } else {
+      return (
+        <>
+          {item.type === 'video' ? (
+            <video 
+              src={item.src}
+              loop
+              muted
+              playsInline
+              className="feed-media"
+            />
+          ) : (
+            <img 
+              src={item.src}
+              alt={`Post by ${item.username}`}
+              className="feed-media"
+            />
+          )}
+        </>
+      );
+    }
+  };
+
   return (
     <>
       <div className="feed-container">
-        <div id="feed" className="masonry">
-          {filteredItems.length > 0 ? (
-            filteredItems.map(item => (
-              <div 
-                className={`card size-${item.size}`}
-                key={item.id}
-                data-categories={item.categories.join(',')}
-              >
-                {item.type === 'video' ? (
-                  <video 
-                    src={item.src}
-                    loop
-                    muted
-                    playsInline
-                    className="feed-media"
-                  />
-                ) : (
-                  <img 
-                    src={item.src}
-                    alt={`Post by ${item.username}`}
-                    className="feed-media"
-                  />
-                )}
-                
-                <div className="overlay top">
-                  <button className="menu-btn">
-                    <MoreHorizontal size={24} />
-                  </button>
-                </div>
-                
-                <div className="overlay bottom">
-                  <div className="user-info">
-                    <Avatar className="avatar">
-                      <AvatarImage src={item.avatar} alt={item.username} />
-                      <AvatarFallback>{item.username[0].toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <span className="username">{item.username}</span>
+        {loading && filteredItems.length === 0 ? (
+          <div className="flex justify-center p-12">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          <div id="feed" className="masonry">
+            {filteredItems.length > 0 ? (
+              filteredItems.map(item => (
+                <div 
+                  className={`card size-${item.size}`}
+                  key={item.id}
+                  data-categories={item.categories.join(',')}
+                >
+                  {renderFeedItem(item)}
+                  
+                  <div className="overlay top">
+                    <button className="menu-btn">
+                      <MoreHorizontal size={24} />
+                    </button>
                   </div>
                   
-                  <button 
-                    className={`like-btn ${likedItems[item.id] ? 'liked' : ''}`}
-                    onClick={() => handleLike(item.id)}
-                  >
-                    <Heart 
-                      size={20} 
-                      fill={likedItems[item.id] ? 'var(--accent)' : 'none'} 
-                      color={likedItems[item.id] ? 'var(--accent)' : 'currentColor'}
-                    />
-                    <span className="like-count">{item.likes}</span>
-                  </button>
+                  <div className="overlay bottom">
+                    <div className="user-info">
+                      <Avatar className="avatar">
+                        <AvatarImage src={item.avatar} alt={item.pseudonym || item.username} />
+                        <AvatarFallback>
+                          {(item.pseudonym || item.username)[0].toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="username">{item.pseudonym || item.username}</span>
+                    </div>
+                    
+                    <button 
+                      className={`like-btn ${likedItems[item.id] ? 'liked' : ''}`}
+                      onClick={() => handleLike(item.id)}
+                    >
+                      <Heart 
+                        size={20} 
+                        fill={likedItems[item.id] ? 'var(--accent)' : 'none'} 
+                        color={likedItems[item.id] ? 'var(--accent)' : 'currentColor'}
+                      />
+                      <span className="like-count">{item.likes}</span>
+                    </button>
+                  </div>
                 </div>
+              ))
+            ) : (
+              <div className="empty-state">
+                <p>No posts found in this category.</p>
               </div>
-            ))
-          ) : (
-            <div className="empty-state">
-              <p>No posts found in this category.</p>
+            )}
+            
+            {/* Loading indicator and observer target */}
+            <div ref={loadMoreRef} className="loading-container">
+              {loading && <div className="loading-spinner" />}
             </div>
-          )}
-          
-          {/* Loading indicator and observer target */}
-          <div ref={loadMoreRef} className="loading-container">
-            {loading && <div className="loading-spinner" />}
           </div>
-        </div>
+        )}
         
         <button 
           id="upload-btn"

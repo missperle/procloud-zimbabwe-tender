@@ -5,6 +5,7 @@ const suggestBudgetTimelineFunction = require('./suggestBudgetTimeline');
 const draftProposalFunction = require('./draftProposal');
 const chatSupportFunction = require('./chatSupport');
 const analyzeProposalFunction = require('./analyzeProposal');
+const pseudonymFunction = require('./assignPseudonym');
 
 // Export the functions
 module.exports = {
@@ -12,6 +13,7 @@ module.exports = {
   ...suggestBudgetTimelineFunction,
   ...draftProposalFunction,
   ...chatSupportFunction,
-  ...analyzeProposalFunction
+  ...analyzeProposalFunction,
+  ...pseudonymFunction
   // Additional functions can be added here
 };

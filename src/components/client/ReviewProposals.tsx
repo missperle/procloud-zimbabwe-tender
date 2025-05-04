@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -93,6 +94,7 @@ const ReviewProposals = () => {
   const [recommendedFreelancers, setRecommendedFreelancers] = useState<Array<{
     id: string;
     name: string;
+    pseudonym?: string;
     avatar?: string;
     skills: string[];
     rating: number;
@@ -175,10 +177,15 @@ const ReviewProposals = () => {
           const userSnap = await getDoc(doc(db, 'users', uid));
           if (userSnap.exists()) {
             const userData = userSnap.data();
+            
+            // Use pseudonym if available, otherwise fall back to name
+            const displayName = userData.pseudonym || userData.name || 'Unknown';
+            
             recommendedFreelancersData.push({
               id: uid,
-              name: userData.name || 'Unknown',
-              avatar: userData.avatar || `https://randomuser.me/api/portraits/${Math.random() > 0.5 ? 'men' : 'women'}/${Math.floor(Math.random() * 50) + 1}.jpg`,
+              name: displayName,
+              pseudonym: userData.pseudonym,
+              avatar: userData.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${displayName}`,
               skills: userData.skills || [],
               rating: userData.rating || 0
             });
@@ -257,13 +264,13 @@ const ReviewProposals = () => {
                     <CardContent className="p-6">
                       <div className="flex items-center space-x-4 mb-4">
                         <Avatar>
-                          <AvatarImage src={freelancer.avatar} alt={freelancer.name} />
+                          <AvatarImage src={freelancer.avatar} alt={freelancer.pseudonym || freelancer.name} />
                           <AvatarFallback>
-                            {freelancer.name.substr(0, 2).toUpperCase()}
+                            {(freelancer.pseudonym || freelancer.name).substr(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <h3 className="font-semibold">{freelancer.name}</h3>
+                          <h3 className="font-semibold">{freelancer.pseudonym || freelancer.name}</h3>
                           <div className="flex items-center">
                             <span className="text-xs text-amber-burst mr-1">★</span>
                             <span className="text-xs">{freelancer.rating}/5</span>
