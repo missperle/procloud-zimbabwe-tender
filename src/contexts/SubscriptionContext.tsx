@@ -1,106 +1,98 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
-import { useAuth } from './AuthContext';
 
-interface Subscription {
-  tier: string;
-  status: string;
-  currentPeriodEnd: Date | null;
-  paymentMethod: string | null;
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { db } from '@/lib/firebase';
+import { collection, query, where, orderBy, limit, getDocs, DocumentData } from 'firebase/firestore';
+import { useAuth } from './AuthContext';
+import { SubscriptionPlan, SubscriptionStatus, PaymentMethod } from '@/hooks/useSubscriptionGuard';
+
+export interface Subscription {
+  id: string;
+  userId: string;
+  plan: SubscriptionPlan;
+  status: SubscriptionStatus;
+  startDate: Date;
+  nextBillingDate: Date | null;
+  paymentMethod: PaymentMethod;
 }
 
 interface SubscriptionContextProps {
   subscription: Subscription | null;
   isLoading: boolean;
-  hasFeatureAccess: (feature: AIFeature) => boolean;
+  refreshSubscription: () => Promise<void>;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextProps | undefined>(undefined);
 
-export type AIFeature = 'ai_completion' | 'ai_image_generation' | 'ai_summarization' | 'ai_translation';
-
-interface SubscriptionProviderProps {
-  children: React.ReactNode;
-}
-
-export const SubscriptionProvider: React.FC<SubscriptionProviderProps> = ({ children }) => {
+export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
   const { currentUser } = useAuth();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchSubscription = async () => {
-      if (!currentUser) {
-        setIsLoading(false);
+  const fetchSubscription = async () => {
+    if (!currentUser) {
+      setSubscription(null);
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const subscriptionsRef = collection(db, 'subscriptions');
+      const q = query(
+        subscriptionsRef,
+        where('userId', '==', currentUser.uid),
+        orderBy('startDate', 'desc'),
+        limit(1)
+      );
+
+      const querySnapshot = await getDocs(q);
+      
+      if (querySnapshot.empty) {
+        setSubscription(null);
         return;
       }
 
-      try {
-        const db = getFirestore();
-        const userDocRef = doc(db, 'users', currentUser.uid);
-        const userDocSnap = await getDoc(userDocRef);
-
-        if (userDocSnap.exists()) {
-          const userData = userDocSnap.data();
-          if (userData && userData.subscriptionId) {
-            const subscriptionDocRef = doc(db, 'subscriptions', userData.subscriptionId);
-            const subscriptionDocSnap = await getDoc(subscriptionDocRef);
-
-            if (subscriptionDocSnap.exists()) {
-              const subscriptionData = subscriptionDocSnap.data() as Subscription;
-              // Convert timestamp to Date object
-              const currentPeriodEnd = subscriptionData.currentPeriodEnd ? new Date(subscriptionData.currentPeriodEnd) : null;
-              setSubscription({
-                ...subscriptionData,
-                currentPeriodEnd: currentPeriodEnd,
-              });
-            } else {
-              setSubscription(null);
-            }
-          } else {
-            setSubscription(null);
-          }
-        } else {
-          setSubscription(null);
-        }
-      } catch (error) {
-        console.error("Error fetching subscription:", error);
-        setSubscription(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSubscription();
-  }, [currentUser]);
-
-  const hasFeatureAccess = (feature: AIFeature): boolean => {
-    if (!subscription) return false;
-    
-    const { tier, status } = subscription;
-    
-    // Ensure subscription is active
-    if (status !== 'active') return false;
-    
-    // Feature access based on tier
-    switch (feature) {
-      case 'ai_completion':
-        return tier === 'pro' || tier === 'basic';
-      case 'ai_summarization':
-        return tier === 'pro';
-      case 'ai_translation':
-        return tier === 'pro';
-      case 'ai_image_generation':
-        return tier === 'pro'; // Only pro users can generate images
-      default:
-        return false;
+      const doc = querySnapshot.docs[0];
+      const data = doc.data();
+      
+      // Convert Firestore timestamps to Date objects
+      const subscription: Subscription = {
+        id: doc.id,
+        userId: data.userId,
+        plan: data.plan,
+        status: data.status,
+        startDate: data.startDate instanceof Date 
+          ? data.startDate 
+          : new Date(data.startDate.seconds * 1000),
+        nextBillingDate: data.nextBillingDate 
+          ? (data.nextBillingDate instanceof Date 
+              ? data.nextBillingDate 
+              : new Date(data.nextBillingDate.seconds * 1000))
+          : null,
+        paymentMethod: data.paymentMethod
+      };
+      
+      setSubscription(subscription);
+    } catch (error) {
+      console.error('Error fetching subscription:', error);
+      setSubscription(null);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const value: SubscriptionContextProps = {
+  useEffect(() => {
+    fetchSubscription();
+  }, [currentUser]);
+
+  const refreshSubscription = async () => {
+    await fetchSubscription();
+  };
+
+  const value = {
     subscription,
     isLoading,
-    hasFeatureAccess,
+    refreshSubscription
   };
 
   return (
@@ -113,7 +105,7 @@ export const SubscriptionProvider: React.FC<SubscriptionProviderProps> = ({ chil
 export const useSubscription = () => {
   const context = useContext(SubscriptionContext);
   if (context === undefined) {
-    throw new Error("useSubscription must be used within a SubscriptionProvider");
+    throw new Error('useSubscription must be used within a SubscriptionProvider');
   }
   return context;
 };

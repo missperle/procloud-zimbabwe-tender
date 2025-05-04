@@ -45,6 +45,16 @@ const createTestUsers = async () => {
             role: "client",
             createdAt: new Date(),
           });
+
+          // Create a free subscription for the test user
+          await setDoc(doc(db, "subscriptions", `test_subscription_${userCredential.user.uid}`), {
+            userId: userCredential.user.uid,
+            plan: "Free",
+            status: "active",
+            startDate: new Date(),
+            nextBillingDate: null,
+            paymentMethod: null
+          });
         })
         .catch(async (err) => {
           // If error is because user already exists, check if role exists in Firestore
@@ -65,6 +75,21 @@ const createTestUsers = async () => {
                   createdAt: new Date(),
                 });
                 console.log("Added role 'client' to existing test user");
+              }
+
+              // Create a subscription if it doesn't exist
+              const subId = `test_subscription_${userCredential.user.uid}`;
+              const subscriptionDoc = await getDoc(doc(db, "subscriptions", subId));
+              if (!subscriptionDoc.exists()) {
+                await setDoc(doc(db, "subscriptions", subId), {
+                  userId: userCredential.user.uid,
+                  plan: "Free",
+                  status: "active",
+                  startDate: new Date(),
+                  nextBillingDate: null,
+                  paymentMethod: null
+                });
+                console.log("Added free subscription to test user");
               }
               
               // Sign out
@@ -91,6 +116,16 @@ const createTestUsers = async () => {
             role: "agency",
             createdAt: new Date(),
           });
+          
+          // Create a pro subscription for the agency test user
+          await setDoc(doc(db, "subscriptions", `test_subscription_${userCredential.user.uid}`), {
+            userId: userCredential.user.uid,
+            plan: "Pro",
+            status: "active",
+            startDate: new Date(),
+            nextBillingDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+            paymentMethod: "Visa"
+          });
         })
         .catch(async (err) => {
           // If error is because user already exists, check if role exists in Firestore
@@ -111,6 +146,21 @@ const createTestUsers = async () => {
                   createdAt: new Date(),
                 });
                 console.log("Added role 'agency' to existing test user");
+              }
+
+              // Create a subscription if it doesn't exist
+              const subId = `test_subscription_${userCredential.user.uid}`;
+              const subscriptionDoc = await getDoc(doc(db, "subscriptions", subId));
+              if (!subscriptionDoc.exists()) {
+                await setDoc(doc(db, "subscriptions", subId), {
+                  userId: userCredential.user.uid,
+                  plan: "Pro",
+                  status: "active",
+                  startDate: new Date(),
+                  nextBillingDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
+                  paymentMethod: "Visa"
+                });
+                console.log("Added pro subscription to agency test user");
               }
               
               // Sign out
@@ -180,6 +230,33 @@ const createSampleBriefs = async () => {
   } catch (error) {
     console.error("Error creating sample briefs:", error);
   }
+};
+
+// Function to get Firestore security rules for subscriptions collection
+export const getSubscriptionSecurityRules = () => {
+  return `
+    // Firestore security rules for subscriptions collection
+    rules_version = '2';
+    service cloud.firestore {
+      match /databases/{database}/documents {
+        match /subscriptions/{subscriptionId} {
+          // Allow users to create subscriptions only for their own userId
+          allow create: if request.auth != null && 
+                         request.resource.data.userId == request.auth.uid;
+          
+          // Allow users to read only their own subscription documents
+          allow read: if request.auth != null && 
+                       resource.data.userId == request.auth.uid;
+          
+          // Only allow admins (with role="admin") to update status to "active"
+          allow update: if request.auth != null && 
+                         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin" || 
+                         (request.auth.uid == resource.data.userId && 
+                         request.resource.data.status != "active");
+        }
+      }
+    }
+  `;
 };
 
 // Call this function on development environment initialization
