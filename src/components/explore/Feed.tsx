@@ -28,6 +28,12 @@ interface FeedItem {
   status?: string;
 }
 
+// Define user data interface
+interface UserData {
+  pseudonym?: string;
+  [key: string]: any;
+}
+
 // Sample data for the feed with categories and assigned sizes
 const SAMPLE_FEED_ITEMS = [
   {
@@ -143,16 +149,17 @@ const Feed = ({ activeCategory }: { activeCategory: string }) => {
         const briefsSnapshot = await getDocs(briefsQuery);
         const briefsData: FeedItem[] = [];
         
-        for (const doc of briefsSnapshot.docs) {
-          const brief = doc.data();
+        for (const docSnapshot of briefsSnapshot.docs) {
+          const brief = docSnapshot.data();
           
           // If the brief has a creatorId, fetch their pseudonym
           let pseudonym = "Anonymous";
           if (brief.clientId) {
             try {
-              const userDoc = await getDoc(doc.ref.firestore.doc(`users/${brief.clientId}`));
+              const userDocRef = doc(db, `users/${brief.clientId}`);
+              const userDoc = await getDoc(userDocRef);
               if (userDoc.exists()) {
-                const userData = userDoc.data();
+                const userData = userDoc.data() as UserData;
                 pseudonym = userData.pseudonym || "Anonymous";
               }
             } catch (error) {
@@ -165,7 +172,7 @@ const Feed = ({ activeCategory }: { activeCategory: string }) => {
           const randomSize = sizes[Math.floor(Math.random() * sizes.length)];
           
           briefsData.push({
-            id: doc.id,
+            id: docSnapshot.id,
             type: 'brief',
             username: pseudonym,
             pseudonym: pseudonym,
