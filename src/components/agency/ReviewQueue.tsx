@@ -12,17 +12,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/components/ui/use-toast";
 import {
-  getFirestore, collection, query, where, orderBy,
-  doc, updateDoc, getDocs, onSnapshot
+  doc, updateDoc, addDoc, collection, query, where, orderBy,
+  getDocs, onSnapshot, serverTimestamp
 } from "firebase/firestore";
-import { getApp } from "firebase/app";
+import { db } from "@/lib/firebase";
 
 // Define type for brief items
 interface BriefItem {
   id: string;
   title: string;
   originalText: string;
-  reviewText: string;
+  reviewText?: string;
   status: "new" | "in_review" | "published" | "assigned";
   clientId: string;
   createdAt: any; // Firestore timestamp
@@ -40,7 +40,9 @@ const ReviewQueue = () => {
   useEffect(() => {
     const fetchBriefs = async () => {
       try {
-        const db = getFirestore(getApp("proverb-digital-client"));
+        // Try to create sample briefs for testing if none exist
+        await createSampleBriefsIfNeeded();
+        
         const briefsRef = collection(db, "briefs");
         
         // Query for new briefs
@@ -83,6 +85,52 @@ const ReviewQueue = () => {
     fetchBriefs();
   }, []);
 
+  // Create sample briefs if none exist
+  const createSampleBriefsIfNeeded = async () => {
+    try {
+      const briefsRef = collection(db, "briefs");
+      const snapshot = await getDocs(query(briefsRef, where("status", "==", "new")));
+      
+      // If no briefs exist, create sample ones
+      if (snapshot.empty) {
+        console.log("No briefs found, creating sample data");
+        
+        const sampleBriefs = [
+          {
+            title: "Website Redesign for Clothing Brand",
+            originalText: "We need a complete overhaul of our e-commerce website to improve user experience and conversion rates. The current site is outdated and difficult to navigate on mobile devices.",
+            status: "new",
+            clientId: "sample-client-1",
+            createdAt: serverTimestamp()
+          },
+          {
+            title: "Marketing Campaign for Product Launch",
+            originalText: "We're launching a new health supplement next month and need a comprehensive digital marketing strategy. We need help with social media content, email campaigns, and paid advertising.",
+            status: "new",
+            clientId: "sample-client-2",
+            createdAt: serverTimestamp()
+          },
+          {
+            title: "Logo Design for Tech Startup",
+            originalText: "Our AI startup needs a modern, minimalist logo that conveys innovation and reliability. We prefer blue and gray color schemes and want something that works well on both light and dark backgrounds.",
+            status: "new",
+            clientId: "sample-client-3",
+            createdAt: serverTimestamp()
+          }
+        ];
+        
+        // Add sample briefs to Firestore
+        for (const brief of sampleBriefs) {
+          await addDoc(briefsRef, brief);
+        }
+        
+        console.log("Sample briefs created successfully");
+      }
+    } catch (error) {
+      console.error("Error creating sample briefs:", error);
+    }
+  };
+
   // Handle brief selection for editing
   const handleSelectBrief = (brief: BriefItem) => {
     setSelectedBrief(brief);
@@ -97,14 +145,13 @@ const ReviewQueue = () => {
     setIsSubmitting(true);
     
     try {
-      const db = getFirestore(getApp("proverb-digital-client"));
       const briefRef = doc(db, "briefs", selectedBrief.id);
       
       // Update the brief with reviewed text and new status
       await updateDoc(briefRef, {
         reviewText: editedText,
         status: "published",
-        publishedAt: new Date()
+        publishedAt: serverTimestamp()
       });
       
       toast({
@@ -130,12 +177,11 @@ const ReviewQueue = () => {
   // Mark brief as "in review" when opened for editing
   const handleStartReview = async (briefId: string) => {
     try {
-      const db = getFirestore(getApp("proverb-digital-client"));
       const briefRef = doc(db, "briefs", briefId);
       
       await updateDoc(briefRef, {
         status: "in_review",
-        reviewStartedAt: new Date()
+        reviewStartedAt: serverTimestamp()
       });
     } catch (error) {
       console.error("Error marking brief as in review:", error);

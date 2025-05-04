@@ -4,8 +4,8 @@ import Layout from "@/components/layout/Layout";
 import ReviewQueue from "@/components/agency/ReviewQueue";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
-import { getApp } from "firebase/app";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 
 const AgencyReview = () => {
   const { currentUser } = useAuth();
@@ -21,7 +21,6 @@ const AgencyReview = () => {
       }
       
       try {
-        const db = getFirestore(getApp("proverb-digital-client"));
         const userDocRef = doc(db, "users", currentUser.uid);
         const userDoc = await getDoc(userDocRef);
         
