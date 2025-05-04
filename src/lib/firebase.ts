@@ -2,7 +2,7 @@
 // Import the functions you need from the SDKs
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc } from "firebase/firestore";
+import { getFirestore, doc, setDoc, getDoc, collection } from "firebase/firestore";
 
 // Your web app's Firebase configuration
 // Use environment variables in production
@@ -134,6 +134,9 @@ const createTestUsers = async () => {
 // Create sample briefs for agency to review
 const createSampleBriefs = async () => {
   try {
+    // Import necessary functions for Firestore collections and queries
+    const { collection, query, where, getDocs, addDoc } = await import("firebase/firestore");
+    
     const briefs = [
       {
         id: "brief1",
@@ -162,14 +165,16 @@ const createSampleBriefs = async () => {
     ];
 
     // Check if briefs already exist
-    const briefsCollection = db.collection("briefs");
-    const snapshot = await briefsCollection.where("status", "==", "new").get();
+    const briefsCollection = collection(db, "briefs");
+    const q = query(briefsCollection, where("status", "==", "new"));
+    const snapshot = await getDocs(q);
     
     // Only add sample briefs if none exist
     if (snapshot.empty) {
       console.log("Creating sample briefs for agency review");
       for (const brief of briefs) {
-        await briefsCollection.doc(brief.id).set(brief);
+        // Use addDoc instead of setting with a predefined ID
+        await addDoc(briefsCollection, brief);
       }
     }
   } catch (error) {

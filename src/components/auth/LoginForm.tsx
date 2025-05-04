@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 import { getApp } from "firebase/app";
+import { auth } from "@/lib/firebase"; // Import auth from firebase.ts
 
 const formSchema = z.object({
   email: z.string().email({
@@ -72,8 +73,8 @@ const LoginForm = () => {
       
       // Check user role in Firestore
       const db = getFirestore(getApp("proverb-digital-client"));
-      const user = await getDoc(doc(db, "users", auth.currentUser?.uid || ""));
-      const userRole = user.exists() ? user.data().role : null;
+      const userDoc = await getDoc(doc(db, "users", auth.currentUser?.uid || ""));
+      const userRole = userDoc.exists() ? userDoc.data().role : null;
       console.log("User role:", userRole);
       
       toast({
