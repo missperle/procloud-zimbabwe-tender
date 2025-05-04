@@ -4,6 +4,8 @@ import Layout from "@/components/layout/Layout";
 import ReviewQueue from "@/components/agency/ReviewQueue";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate } from "react-router-dom";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getApp } from "firebase/app";
 
 const AgencyReview = () => {
   const { currentUser } = useAuth();
@@ -19,12 +21,19 @@ const AgencyReview = () => {
       }
       
       try {
-        // In a real app, this would fetch the user's role from Firestore
-        const userDoc = await fetch(`/api/users/${currentUser.uid}`);
-        const userData = await userDoc.json();
-        setUserRole(userData.role);
+        const db = getFirestore(getApp("proverb-digital-client"));
+        const userDocRef = doc(db, "users", currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (userDoc.exists()) {
+          setUserRole(userDoc.data().role);
+        } else {
+          console.warn("User document not found");
+          setUserRole(null);
+        }
       } catch (error) {
         console.error("Error fetching user role:", error);
+        setUserRole(null);
       } finally {
         setLoading(false);
       }

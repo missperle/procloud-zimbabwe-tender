@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Bell, ChevronDown, CreditCard, LogOut, Search, Settings, User } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -13,11 +13,34 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { getApp } from "firebase/app";
 
 const TopBar = () => {
   const { currentUser } = useAuth();
   const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
+  const [userRole, setUserRole] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUserRole = async () => {
+      if (!currentUser) return;
+      
+      try {
+        const db = getFirestore(getApp("proverb-digital-client"));
+        const userDocRef = doc(db, "users", currentUser.uid);
+        const userDoc = await getDoc(userDocRef);
+        
+        if (userDoc.exists()) {
+          setUserRole(userDoc.data().role);
+        }
+      } catch (error) {
+        console.error("Error fetching user role:", error);
+      }
+    };
+    
+    fetchUserRole();
+  }, [currentUser]);
 
   const getUserInitials = () => {
     if (!currentUser?.email) return "U";
@@ -74,6 +97,16 @@ const TopBar = () => {
             >
               Dashboard
             </Link>
+            {userRole === "agency" && (
+              <Link 
+                to="/agency/review" 
+                className={`text-sm font-medium transition-colors hidden md:block ${
+                  location.pathname === '/agency/review' ? 'text-procloud-green' : 'hover:text-procloud-green'
+                }`}
+              >
+                Agency Review
+              </Link>
+            )}
             <button className="relative">
               <Bell className="h-5 w-5 text-gray-600 hover:text-procloud-green transition-colors" />
               <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] text-white">3</span>
@@ -101,6 +134,14 @@ const TopBar = () => {
                     <span>Dashboard</span>
                   </Link>
                 </DropdownMenuItem>
+                {userRole === "agency" && (
+                  <DropdownMenuItem asChild>
+                    <Link to="/agency/review" className="flex cursor-pointer items-center">
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Agency Review</span>
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem asChild>
                   <Link to="/dashboard?tab=payments" className="flex cursor-pointer items-center">
                     <CreditCard className="mr-2 h-4 w-4" />
