@@ -1,121 +1,79 @@
 
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import DashboardOverview from "@/components/client/DashboardOverview";
 import MyBriefs from "@/components/client/MyBriefs";
 import ReviewProposals from "@/components/client/ReviewProposals";
-import PaymentsPage from "@/components/client/PaymentsPage";
-import AnalyticsPage from "@/components/client/AnalyticsPage";
-import AccountSettings from "@/components/client/AccountSettings";
 import TokensWalletPage from "@/components/client/TokensWalletPage";
-import SubscriptionPage from "@/components/client/SubscriptionPage";
-import BuyTokensPage from "@/pages/BuyTokens";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
-import { Coins, Bell, MessageSquare, Calendar } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import AdminChat from "@/components/client/communication/AdminChat";
-import MeetingScheduler from "@/components/client/communication/MeetingScheduler";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import AccountSettings from "@/components/client/AccountSettings";
+import ChatWidget from "@/components/chat/ChatWidget";
+import { useAuth } from "@/contexts/AuthContext";
+import Profile from "@/components/client/Profile";
 
 const ClientDashboard = () => {
-  const [activeTab, setActiveTab] = useState("dashboard");
-  const [unreadNotifications, setUnreadNotifications] = useState(3);
-  const [chatDialogOpen, setChatDialogOpen] = useState(false);
-  const [meetingDialogOpen, setMeetingDialogOpen] = useState(false);
-  const location = useLocation();
+  const [activeTab, setActiveTab] = useState("overview");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
+  const { currentUser, loading } = useAuth();
 
+  // Set active tab based on URL query param or default to "overview"
   useEffect(() => {
-    // Check for tab parameter in URL
-    const searchParams = new URLSearchParams(location.search);
-    const tabParam = searchParams.get('tab');
-    if (tabParam && ['dashboard', 'briefs', 'proposals', 'payments', 'analytics', 'tokens', 'subscription', 'account'].includes(tabParam)) {
-      setActiveTab(tabParam);
+    const tabFromUrl = searchParams.get("tab");
+    if (tabFromUrl && ["overview", "briefs", "proposals", "wallet", "profile", "settings"].includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
     }
-  }, [location]);
-  
-  // Mock notification count - in a real app, this would come from Firestore
+  }, [searchParams]);
+
+  // Update URL when tab changes
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    searchParams.set("tab", value);
+    setSearchParams(searchParams);
+  };
+
+  // Redirect to login if user is not logged in and not in loading state
   useEffect(() => {
-    // Simulate fetching notification count
-    // In a real app, this would be a Firestore query:
-    // const notificationsRef = collection(db, "notifications");
-    // const q = query(notificationsRef, 
-    //                 where("userId", "==", auth.currentUser.uid),
-    //                 where("read", "==", false));
-    // const unreadSnapshot = await getDocs(q);
-    // setUnreadNotifications(unreadSnapshot.size);
-    
-    // For demo purposes:
-    setUnreadNotifications(3);
-  }, []);
+    if (!loading && !currentUser) {
+      // In a real app, you might want to redirect to login here
+      // navigate("/login");
+      console.log("User not logged in - this would typically redirect to login");
+    }
+  }, [currentUser, loading, navigate]);
+
+  if (loading) {
+    return (
+      <Layout>
+        <div className="client-dashboard p-6">
+          <div className="flex justify-center items-center min-h-[50vh]">
+            <div className="text-center">
+              <div className="h-8 w-8 border-4 border-t-accent rounded-full animate-spin mx-auto mb-4"></div>
+              <p className="text-gray-500">Loading dashboard...</p>
+            </div>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
-      <div className="p-6 client-dashboard">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Client Dashboard</h1>
-          <div className="flex items-center space-x-3">
-            <Dialog open={chatDialogOpen} onOpenChange={setChatDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="relative" aria-label="Chat with Proverb Digital">
-                  <MessageSquare className="h-5 w-5" />
-                  <span className="ml-2">Support</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[500px] h-[650px] p-0">
-                <AdminChat />
-              </DialogContent>
-            </Dialog>
-            
-            <Dialog open={meetingDialogOpen} onOpenChange={setMeetingDialogOpen}>
-              <DialogTrigger asChild>
-                <Button variant="outline" className="relative" aria-label="Schedule Meeting">
-                  <Calendar className="h-5 w-5" />
-                  <span className="ml-2">Schedule</span>
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[700px]">
-                <MeetingScheduler />
-              </DialogContent>
-            </Dialog>
-            
-            <div className="relative">
-              <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
-                <Bell className="h-5 w-5" />
-                {unreadNotifications > 0 && (
-                  <Badge 
-                    variant="destructive" 
-                    className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs"
-                  >
-                    {unreadNotifications}
-                  </Badge>
-                )}
-              </Button>
-            </div>
-            <Button asChild>
-              <Link to="/client-dashboard?tab=tokens">
-                <Coins className="mr-2 h-4 w-4" />
-                Buy Tokens
-              </Link>
-            </Button>
+      <div className="client-dashboard p-6">
+        <Tabs value={activeTab} onValueChange={handleTabChange}>
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold mb-4">Client Dashboard</h1>
+            <TabsList className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="briefs">My Briefs</TabsTrigger>
+              <TabsTrigger value="proposals">Proposals</TabsTrigger>
+              <TabsTrigger value="wallet">Tokens</TabsTrigger>
+              <TabsTrigger value="profile">Profile</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
+            </TabsList>
           </div>
-        </div>
-        
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-8 gap-2 mb-8">
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="briefs">My Briefs</TabsTrigger>
-            <TabsTrigger value="proposals">Review Proposals</TabsTrigger>
-            <TabsTrigger value="payments">Payments</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="tokens">Tokens</TabsTrigger>
-            <TabsTrigger value="subscription">Subscription</TabsTrigger>
-            <TabsTrigger value="account">Account</TabsTrigger>
-          </TabsList>
           
-          <TabsContent value="dashboard">
+          <TabsContent value="overview">
             <DashboardOverview />
           </TabsContent>
           
@@ -127,30 +85,20 @@ const ClientDashboard = () => {
             <ReviewProposals />
           </TabsContent>
           
-          <TabsContent value="payments">
-            <PaymentsPage />
+          <TabsContent value="wallet">
+            <TokensWalletPage />
           </TabsContent>
           
-          <TabsContent value="analytics">
-            <AnalyticsPage />
+          <TabsContent value="profile">
+            <Profile />
           </TabsContent>
           
-          <TabsContent value="tokens">
-            <div className="max-w-4xl mx-auto">
-              <TokensWalletPage />
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="subscription">
-            <div className="max-w-4xl mx-auto">
-              <SubscriptionPage />
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="account">
+          <TabsContent value="settings">
             <AccountSettings />
           </TabsContent>
         </Tabs>
+        
+        <ChatWidget />
       </div>
     </Layout>
   );

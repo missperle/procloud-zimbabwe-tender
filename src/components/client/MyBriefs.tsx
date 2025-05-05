@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Wand2 } from "lucide-react";
+import { PlusCircle, Wand2, Loader2 } from "lucide-react";
 import { 
   Dialog, 
   DialogContent, 
@@ -18,19 +19,7 @@ import { Link } from "react-router-dom";
 import { BriefFormData } from "./BriefCreationForm";
 import { Card } from "@/components/ui/card";
 import { BriefStatus } from "./brief/BriefStatusBadge";
-
-// Update Brief interface if needed locally
-// Note: This is commented out because we should import it from BriefTableList
-// interface Brief {
-//   id: string;
-//   title: string;
-//   budget: string;
-//   deadline: Date;
-//   status: BriefStatus;
-//   attachment_url?: string;
-//   original_description?: string;
-//   category?: string;
-// }
+import { useAuth } from "@/contexts/AuthContext";
 
 const MyBriefs = () => {
   const [briefs, setBriefs] = useState<Brief[]>([]);
@@ -38,21 +27,35 @@ const MyBriefs = () => {
   const [isViewOpen, setIsViewOpen] = useState(false);
   const [isRevisionOpen, setIsRevisionOpen] = useState(false);
   const [selectedBrief, setSelectedBrief] = useState<Brief | null>(null);
+  const [loading, setLoading] = useState(true);
   const { getClientBriefs } = useBriefs();
+  const { currentUser } = useAuth();
 
   useEffect(() => {
-    fetchBriefs();
-  }, []);
+    if (currentUser) {
+      fetchBriefs();
+    } else {
+      setLoading(false);
+    }
+  }, [currentUser]);
 
   const fetchBriefs = async () => {
-    const briefsData = await getClientBriefs();
-    if (briefsData) {
-      // Ensure all brief status values are of type BriefStatus
-      const typedBriefs = briefsData.map(brief => ({
-        ...brief,
-        status: brief.status as BriefStatus
-      }));
-      setBriefs(typedBriefs as Brief[]);
+    setLoading(true);
+    try {
+      const briefsData = await getClientBriefs();
+      if (briefsData) {
+        // Ensure all brief status values are of type BriefStatus and convert deadline to Date
+        const typedBriefs = briefsData.map(brief => ({
+          ...brief,
+          deadline: new Date(brief.deadline),
+          status: brief.status as BriefStatus
+        }));
+        setBriefs(typedBriefs as Brief[]);
+      }
+    } catch (error) {
+      console.error("Error fetching briefs:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -90,6 +93,28 @@ const MyBriefs = () => {
     fetchBriefs();
   };
 
+  if (!currentUser) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-semibold">My Briefs</h2>
+        </div>
+        
+        <Card className="p-8 text-center">
+          <h3 className="text-lg font-medium mb-2">Authentication Required</h3>
+          <p className="text-gray-500 mb-4">
+            Please log in to view and manage your briefs.
+          </p>
+          <Link to="/login">
+            <Button>
+              Log In
+            </Button>
+          </Link>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -122,33 +147,13 @@ const MyBriefs = () => {
         </div>
       </div>
 
-      {briefs.length > 0 ? (
-        <BriefTableList 
-          briefs={briefs} 
-          onStatusChange={handleStatusChange} 
-          onViewBrief={handleViewBrief}
-          onEditBrief={handleEditBrief}
-        />
-      ) : (
-        <Card className="p-8 text-center">
-          <h3 className="text-lg font-medium mb-2">No briefs yet</h3>
-          <p className="text-gray-500 mb-4">
-            Start by creating your first brief to attract talented creators.
-          </p>
-          <div className="flex justify-center space-x-3">
-            <Link to="/create-brief">
-              <Button variant="outline" className="flex items-center gap-1.5">
-                <Wand2 className="h-4 w-4" />
-                Try AI-Guided Brief
-              </Button>
-            </Link>
-            <Button onClick={() => setIsFormOpen(true)}>
-              <PlusCircle className="h-4 w-4 mr-1.5" />
-              Create Brief Manually
-            </Button>
-          </div>
-        </Card>
-      )}
+      <BriefTableList 
+        briefs={briefs} 
+        onStatusChange={handleStatusChange} 
+        onViewBrief={handleViewBrief}
+        onEditBrief={handleEditBrief}
+        loading={loading}
+      />
 
       {selectedBrief && (
         <>

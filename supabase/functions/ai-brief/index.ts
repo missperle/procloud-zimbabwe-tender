@@ -1,116 +1,89 @@
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.4";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+interface RequestData {
+  prompt: string;
+  briefDraftId?: string;
+  questionId?: string;
+  category?: string;
+}
 
 serve(async (req) => {
-  // Handle CORS preflight requests
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
   try {
-    const { action, data } = await req.json();
+    // Get the request body
+    const requestData: RequestData = await req.json();
+    const { prompt, briefDraftId, questionId, category } = requestData;
 
-    switch (action) {
-      case 'suggestAnswer':
-        return await suggestAnswer(data);
-      case 'generateSummary':
-        return await generateSummary(data);
-      case 'getNextQuestions':
-        return await getNextQuestions(data);
-      default:
-        return new Response(
-          JSON.stringify({ error: 'Invalid action' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+    // Create a Supabase client with the service role key
+    const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
+    const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    // For now, we're mocking the AI response
+    // In a real implementation, this would call OpenAI or a similar service
+    const aiSuggestions = {
+      "design": [
+        "A minimalist logo design featuring geometric shapes with a focus on simplicity and scalability.",
+        "A vibrant and colorful brand identity that appeals to a younger demographic.",
+        "A professional corporate branding package including logo, business cards, and letterhead."
+      ],
+      "development": [
+        "A responsive website with modern UI/UX design principles and optimized for mobile devices.",
+        "A cross-platform mobile application with user authentication and data synchronization.",
+        "An e-commerce solution with secure payment processing and inventory management."
+      ],
+      "marketing": [
+        "A comprehensive social media campaign targeting Instagram and TikTok users aged 18-25.",
+        "A content marketing strategy focused on building thought leadership in your industry.",
+        "An email marketing sequence designed to convert leads into customers."
+      ],
+      "writing": [
+        "A persuasive product description highlighting key features and benefits.",
+        "A comprehensive blog post exploring industry trends and positioning your brand as an expert.",
+        "An engaging website copy that clearly communicates your value proposition."
+      ]
+    };
+
+    let suggestion = "Based on your requirements, I'd recommend focusing on creating a detailed brief that includes specific deliverables, timeline expectations, and visual examples of styles you like.";
+
+    // Select a suggestion based on the category if available
+    if (category && aiSuggestions[category as keyof typeof aiSuggestions]) {
+      const categorySuggestions = aiSuggestions[category as keyof typeof aiSuggestions];
+      suggestion = categorySuggestions[Math.floor(Math.random() * categorySuggestions.length)];
     }
-  } catch (error) {
-    console.error('Error in ai-brief function:', error);
+
+    // If a briefDraftId and questionId are provided, store the suggestion in the database
+    if (briefDraftId && questionId) {
+      const { data, error } = await supabase
+        .from('brief_responses')
+        .upsert({
+          brief_draft_id: briefDraftId,
+          question_id: questionId,
+          ai_suggested_response: suggestion
+        }, {
+          onConflict: 'brief_draft_id,question_id'
+        });
+
+      if (error) {
+        console.error("Error storing suggestion:", error);
+        return new Response(
+          JSON.stringify({ error: "Failed to store suggestion" }),
+          { status: 500, headers: { "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    // Return the AI suggestion
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ suggestion }),
+      { status: 200, headers: { "Content-Type": "application/json" } }
+    );
+  } catch (error) {
+    console.error("Error processing request:", error);
+    return new Response(
+      JSON.stringify({ error: "Internal server error" }),
+      { status: 500, headers: { "Content-Type": "application/json" } }
     );
   }
 });
-
-async function suggestAnswer(data: { questionId: string; question: string; previousResponses: Array<{ question: string; response: string }> }) {
-  const { questionId, question, previousResponses } = data;
-  
-  // In a real implementation, we would call an LLM API like OpenAI
-  // For demonstration, we'll return simulated suggestions
-  const suggestions = {
-    'objectives': 'To create a modern, responsive website that showcases our products and drives online sales.',
-    'audience': 'Small business owners and entrepreneurs aged 30-45 who are looking to improve their digital presence.',
-    'timeline': 'We need this completed within 4 weeks from the project start date.',
-    'budget': '$2,000 - $3,500',
-    'deliverables': 'A fully responsive website with 5-7 pages, including home, about, products, contact, and blog pages.',
-    'skills': 'Web design, UI/UX expertise, and experience with e-commerce functionality.',
-    'references': 'We like the clean design of www.example.com and the user experience of www.anotherexample.com.',
-    'brand': 'Our brand voice is professional but approachable, using clear language without technical jargon.'
-  };
-
-  // Extract the category from the question
-  const category = question.toLowerCase().includes('objective') ? 'objectives' :
-                   question.toLowerCase().includes('audience') ? 'audience' :
-                   question.toLowerCase().includes('timeline') ? 'timeline' :
-                   question.toLowerCase().includes('budget') ? 'budget' :
-                   question.toLowerCase().includes('deliverables') ? 'deliverables' :
-                   question.toLowerCase().includes('skills') ? 'skills' :
-                   question.toLowerCase().includes('examples') ? 'references' :
-                   question.toLowerCase().includes('brand') ? 'brand' : 'general';
-
-  const suggestedAnswer = suggestions[category as keyof typeof suggestions] || 
-    'I suggest providing specific details here to help creators understand your needs better.';
-
-  return new Response(
-    JSON.stringify({ 
-      questionId, 
-      suggestedAnswer 
-    }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  );
-}
-
-async function generateSummary(data: { responses: Array<{ question: string; response: string }> }) {
-  const { responses } = data;
-
-  // Simulate creating a cohesive brief summary from all the responses
-  // In a real implementation, this would use an LLM to create a well-structured brief
-  
-  let summary = "Project Brief Summary:\n\n";
-  
-  responses.forEach(item => {
-    summary += `${item.question}:\n${item.response}\n\n`;
-  });
-  
-  summary += "This project requires a skilled professional who can deliver high-quality work within the specified timeframe and budget.";
-
-  return new Response(
-    JSON.stringify({ summary }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  );
-}
-
-async function getNextQuestions(data: { currentCategory: string; currentResponses: Array<{ questionId: string; response: string }> }) {
-  const { currentCategory, currentResponses } = data;
-
-  // This would typically involve some logic based on previous answers
-  // For demonstration, we'll use a simple predefined flow
-  const categories = ['objectives', 'audience', 'timeline', 'budget', 'deliverables', 'skills', 'references', 'brand'];
-  
-  const currentIndex = categories.indexOf(currentCategory);
-  const nextCategory = currentIndex < categories.length - 1 ? categories[currentIndex + 1] : null;
-  
-  return new Response(
-    JSON.stringify({ 
-      nextCategory,
-      isComplete: nextCategory === null
-    }),
-    { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-  );
-}
