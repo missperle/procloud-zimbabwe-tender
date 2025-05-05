@@ -58,7 +58,7 @@ const LoginForm = () => {
       navigate("/client-dashboard");
     } catch (err) {
       const errorMessage = err instanceof Error 
-        ? err.message.replace("Firebase: ", "") 
+        ? err.message 
         : "An error occurred during login.";
       console.error("Login error:", errorMessage);
       setError(errorMessage);

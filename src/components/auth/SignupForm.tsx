@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,8 +31,10 @@ interface SignupFormProps {
 
 const SignupForm = ({ initialUserType = "freelancer" }: SignupFormProps) => {
   const { signup } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const form = useForm<SignupFormValues>({
     resolver: zodResolver(signupSchema),
@@ -45,13 +47,20 @@ const SignupForm = ({ initialUserType = "freelancer" }: SignupFormProps) => {
   });
 
   const onSubmit = async (data: SignupFormValues) => {
+    setError(null);
     setLoading(true);
     try {
-      // Here we could include userType in the signup process if needed
-      await signup(data.email, data.password);
-      // You might want to save the user type to the user's profile in a production app
+      // Include the user type in the metadata
+      await signup(data.email, data.password, {
+        role: data.userType
+      });
+      
+      // Redirect to appropriate dashboard based on user type
+      navigate(data.userType === "client" ? "/client-dashboard" : "/dashboard");
     } catch (error) {
       console.error("Signup error:", error);
+      const errorMessage = error instanceof Error ? error.message : "An error occurred during signup";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -180,6 +189,8 @@ const SignupForm = ({ initialUserType = "freelancer" }: SignupFormProps) => {
               </FormItem>
             )}
           />
+
+          {error && <p className="text-destructive text-sm">{error}</p>}
 
           <Button 
             type="submit" 
