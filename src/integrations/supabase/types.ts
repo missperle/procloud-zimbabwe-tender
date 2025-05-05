@@ -9,6 +9,149 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      freelancer_profiles: {
+        Row: {
+          bio: string | null
+          created_at: string | null
+          education: string | null
+          hourly_rate: number | null
+          id: string
+          location: string | null
+          profile_image_url: string | null
+          title: string | null
+          updated_at: string | null
+          verified: boolean | null
+          years_experience: number | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string | null
+          education?: string | null
+          hourly_rate?: number | null
+          id: string
+          location?: string | null
+          profile_image_url?: string | null
+          title?: string | null
+          updated_at?: string | null
+          verified?: boolean | null
+          years_experience?: number | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string | null
+          education?: string | null
+          hourly_rate?: number | null
+          id?: string
+          location?: string | null
+          profile_image_url?: string | null
+          title?: string | null
+          updated_at?: string | null
+          verified?: boolean | null
+          years_experience?: number | null
+        }
+        Relationships: []
+      }
+      freelancer_skills: {
+        Row: {
+          created_at: string | null
+          freelancer_id: string
+          id: string
+          skill_id: string
+          years_experience: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          freelancer_id: string
+          id?: string
+          skill_id: string
+          years_experience?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          freelancer_id?: string
+          id?: string
+          skill_id?: string
+          years_experience?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "freelancer_skills_freelancer_id_fkey"
+            columns: ["freelancer_id"]
+            isOneToOne: false
+            referencedRelation: "freelancer_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "freelancer_skills_skill_id_fkey"
+            columns: ["skill_id"]
+            isOneToOne: false
+            referencedRelation: "skills"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      portfolio_items: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          description: string | null
+          freelancer_id: string
+          id: string
+          image_url: string | null
+          project_url: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          freelancer_id: string
+          id?: string
+          image_url?: string | null
+          project_url?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          description?: string | null
+          freelancer_id?: string
+          id?: string
+          image_url?: string | null
+          project_url?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "portfolio_items_freelancer_id_fkey"
+            columns: ["freelancer_id"]
+            isOneToOne: false
+            referencedRelation: "freelancer_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      skills: {
+        Row: {
+          created_at: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
       subscriptions: {
         Row: {
           created_at: string

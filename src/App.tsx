@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -25,6 +24,7 @@ import ChatWidget from "./components/chat/ChatWidget";
 import RoleSelection from "./pages/RoleSelection";
 import Auth from "./pages/Auth";
 import FreelancerDashboard from "./pages/FreelancerDashboard";
+import FreelancerProfileEdit from "./pages/FreelancerProfileEdit";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +46,7 @@ const App = () => {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/client-dashboard" element={<ClientDashboard />} />
                 <Route path="/freelancer-dashboard" element={<FreelancerDashboard />} />
+                <Route path="/freelancer-profile-edit" element={<FreelancerProfileEdit />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Register />} />
                 <Route path="/role-selection" element={<RoleSelection />} />
