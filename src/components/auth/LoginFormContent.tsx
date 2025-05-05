@@ -114,11 +114,11 @@ const LoginFormContent = ({ loginType }: LoginFormContentProps) => {
       // Verify role matches the login type
       if ((loginType === "client" && userRole !== "client") || 
           (loginType === "freelancer" && userRole !== "freelancer")) {
-        // Show warning but don't log out
+        // Show warning but don't log out - Fixed the variant here from "warning" to "default"
         toast({
           title: "Role mismatch",
           description: `This account is registered as a ${userRole || 'unknown'} account but you're using the ${loginType} login. You'll be redirected to the appropriate dashboard.`,
-          variant: "warning",
+          variant: "default",
         });
       }
       
