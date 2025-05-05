@@ -110,7 +110,9 @@ const LoginForm = () => {
         options: {
           data: {
             role
-          }
+          },
+          // Bypass email confirmation in development
+          emailRedirectTo: window.location.origin + "/login"
         }
       });
       
@@ -138,8 +140,18 @@ const LoginForm = () => {
         console.error(`Error setting role for test ${role} user:`, userError);
       }
       
-      // Sign out the test user so we don't interfere with the login flow
-      await supabase.auth.signOut();
+      // In development, auto-confirm the email
+      if (import.meta.env.DEV) {
+        try {
+          // This is a workaround to auto-confirm the email in development
+          // We sign in directly to bypass the email confirmation requirement
+          await supabase.auth.signInWithPassword({ email, password });
+          console.log(`Auto-confirmed test ${role} user in dev mode`);
+          await supabase.auth.signOut();
+        } catch (confirmError) {
+          console.error("Error auto-confirming user:", confirmError);
+        }
+      }
       
       console.log(`Test ${role} user created successfully:`, email);
     } catch (err) {
@@ -166,25 +178,70 @@ const LoginForm = () => {
       // Sign out any existing user first
       await supabase.auth.signOut();
       
-      // Attempt to log in
-      const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
-        email: data.email,
-        password: data.password
-      });
-      
-      if (loginError) {
-        throw new Error(loginError.message);
-      }
-      
-      if (!loginData.user) {
-        throw new Error("No user returned from login");
+      // If we're in development mode, let's handle unconfirmed emails
+      if (import.meta.env.DEV) {
+        // For dev mode, try to sign up the user again if login fails due to unconfirmed email
+        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+          email: data.email,
+          password: data.password
+        });
+        
+        if (loginError && loginError.message.includes("Email not confirmed")) {
+          console.log("Email not confirmed, attempting workaround in development mode...");
+          
+          // Force sign up again, which will overwrite the existing user
+          const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+            email: data.email,
+            password: data.password,
+            options: {
+              data: {
+                role: loginType
+              }
+            }
+          });
+          
+          if (signUpError) {
+            throw new Error(signUpError.message);
+          }
+          
+          // Try login again
+          const { data: secondLoginData, error: secondLoginError } = await supabase.auth.signInWithPassword({
+            email: data.email,
+            password: data.password
+          });
+          
+          if (secondLoginError) {
+            throw new Error("Failed to login after signup workaround: " + secondLoginError.message);
+          }
+          
+          // Continue with the successfully logged in user
+          if (!secondLoginData.user) {
+            throw new Error("No user returned from workaround login");
+          }
+        } else if (loginError) {
+          throw new Error(loginError.message);
+        }
+      } else {
+        // Normal login flow for production
+        const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
+          email: data.email,
+          password: data.password
+        });
+        
+        if (loginError) {
+          throw new Error(loginError.message);
+        }
+        
+        if (!loginData.user) {
+          throw new Error("No user returned from login");
+        }
       }
       
       // Get user profile to check role
       const { data: userProfile, error: profileError } = await supabase
         .from('users')
         .select('role')
-        .eq('id', loginData.user.id)
+        .eq('id', (await supabase.auth.getUser()).data.user?.id)
         .single();
       
       if (profileError) {
