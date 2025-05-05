@@ -15,8 +15,21 @@ import { useNavigate } from "react-router-dom";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
+// List of common personal email domains
+const personalEmailDomains = [
+  "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", 
+  "aol.com", "icloud.com", "mail.com", "protonmail.com", 
+  "zoho.com", "yandex.com", "gmx.com", "tutanota.com",
+  "live.com", "msn.com"
+];
+
 const clientSignupSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
+  email: z.string()
+    .email({ message: "Please enter a valid email address" })
+    .refine((email) => {
+      const domain = email.split('@')[1]?.toLowerCase();
+      return !personalEmailDomains.includes(domain);
+    }, { message: "Please use a work email address, not a personal email" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   companyName: z.string().min(2, { message: "Company name is required" }),
   companyRegistrationNumber: z.string().min(1, { message: "Registration number is required" }),
