@@ -1,11 +1,11 @@
 
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import LoginForm from "@/components/auth/LoginForm";
 import { useAuth } from "@/contexts/SupabaseAuthContext";
-import { Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Coins } from "lucide-react";
-import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -13,6 +13,7 @@ const Login = () => {
   const { currentUser, loading } = useAuth();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [checkingRole, setCheckingRole] = useState(false);
+  const navigate = useNavigate();
   
   // Check user role when currentUser changes
   useEffect(() => {
@@ -32,6 +33,18 @@ const Login = () => {
           console.error("Error checking user role:", error);
         } else if (data) {
           setUserRole(data.role);
+          
+          // Redirect based on role
+          if (data.role === 'client') {
+            navigate('/client-dashboard');
+          } else if (data.role === 'freelancer') {
+            navigate('/freelancer-dashboard');
+          } else if (data.role === 'agency') {
+            navigate('/agency/review');
+          } else {
+            // Default fallback
+            navigate('/client-dashboard');
+          }
         }
       } catch (error) {
         console.error("Error checking user role:", error);
@@ -43,7 +56,7 @@ const Login = () => {
     if (currentUser) {
       checkUserRole();
     }
-  }, [currentUser]);
+  }, [currentUser, navigate]);
 
   // Show loading state while auth initializes or role is being checked
   if (loading || checkingRole) {
@@ -59,15 +72,7 @@ const Login = () => {
     );
   }
 
-  // If user is already logged in, redirect based on role
-  if (currentUser) {
-    console.log("User already logged in, redirecting based on role:", userRole);
-    if (userRole === "agency") {
-      return <Navigate to="/agency/review" replace />;
-    } else {
-      return <Navigate to="/client-dashboard" replace />;
-    }
-  }
+  // If user is already logged in, they will be redirected by the useEffect
 
   return (
     <Layout>
@@ -75,21 +80,15 @@ const Login = () => {
         <LoginForm />
         
         <div className="mt-8 text-center">
-          <p className="mb-2 text-gray-600">Want to explore our platform?</p>
+          <p className="mb-2 text-gray-600">Don't have an account?</p>
           <div className="flex gap-3 flex-wrap justify-center">
             <Button asChild variant="outline">
-              <Link to="/client-dashboard">View Client Demo</Link>
+              <Link to="/role-selection">Sign up</Link>
             </Button>
             <Button asChild>
               <Link to="/buy-tokens">
                 <CreditCard className="mr-2 h-4 w-4" />
                 Buy Tokens
-              </Link>
-            </Button>
-            <Button asChild variant="outline">
-              <Link to="/agency/review">
-                <Coins className="mr-2 h-4 w-4" />
-                View Agency Demo
               </Link>
             </Button>
           </div>

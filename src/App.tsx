@@ -22,6 +22,9 @@ import ImageGenerator from './components/client/ImageGenerator';
 import SubmitProposalPage from "./pages/SubmitProposalPage";
 import AgencyReview from "./pages/AgencyReview";
 import ChatWidget from "./components/chat/ChatWidget";
+import RoleSelection from "./pages/RoleSelection";
+import Auth from "./pages/Auth";
+import FreelancerDashboard from "./pages/FreelancerDashboard";
 
 const queryClient = new QueryClient();
 
@@ -42,8 +45,11 @@ const App = () => {
                 <Route path="/freelancers/:id" element={<FreelancerProfile />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/client-dashboard" element={<ClientDashboard />} />
+                <Route path="/freelancer-dashboard" element={<FreelancerDashboard />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Register />} />
+                <Route path="/role-selection" element={<RoleSelection />} />
+                <Route path="/auth" element={<Auth />} />
                 <Route path="/buy-tokens" element={<BuyTokens />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/generate-images" element={<ImageGenerator />} />

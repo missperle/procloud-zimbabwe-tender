@@ -42,23 +42,71 @@ export type Database = {
         }
         Relationships: []
       }
+      user_documents: {
+        Row: {
+          document_type: string
+          file_name: string
+          file_path: string
+          file_size: number
+          id: string
+          uploaded_at: string
+          user_id: string
+        }
+        Insert: {
+          document_type: string
+          file_name: string
+          file_path: string
+          file_size: number
+          id?: string
+          uploaded_at?: string
+          user_id: string
+        }
+        Update: {
+          document_type?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          id?: string
+          uploaded_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       users: {
         Row: {
+          alias: string | null
+          company_address: Json | null
+          company_name: string | null
+          company_registration_number: string | null
           created_at: string
           email: string
+          full_name: string | null
           id: string
+          onboarding_completed: boolean | null
           role: string | null
         }
         Insert: {
+          alias?: string | null
+          company_address?: Json | null
+          company_name?: string | null
+          company_registration_number?: string | null
           created_at?: string
           email: string
+          full_name?: string | null
           id: string
+          onboarding_completed?: boolean | null
           role?: string | null
         }
         Update: {
+          alias?: string | null
+          company_address?: Json | null
+          company_name?: string | null
+          company_registration_number?: string | null
           created_at?: string
           email?: string
+          full_name?: string | null
           id?: string
+          onboarding_completed?: boolean | null
           role?: string | null
         }
         Relationships: []
@@ -68,7 +116,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_random_alias: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
