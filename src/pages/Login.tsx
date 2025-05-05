@@ -39,8 +39,6 @@ const Login = () => {
             navigate('/client-dashboard');
           } else if (data.role === 'freelancer') {
             navigate('/freelancer-dashboard');
-          } else if (data.role === 'agency') {
-            navigate('/agency/review');
           } else {
             // Default fallback
             navigate('/client-dashboard');

@@ -38,17 +38,17 @@ const LoginForm = () => {
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [loginType, setLoginType] = useState<"client" | "agency">("client");
+  const [loginType, setLoginType] = useState<"client" | "freelancer">("client");
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: loginType === "client" 
         ? (import.meta.env.DEV ? "test@proverb.digital" : "") 
-        : (import.meta.env.DEV ? "agency@proverb.digital" : ""),
+        : (import.meta.env.DEV ? "freelancer@proverb.digital" : ""),
       password: loginType === "client" 
         ? (import.meta.env.DEV ? "password123" : "") 
-        : (import.meta.env.DEV ? "agency123" : ""),
+        : (import.meta.env.DEV ? "freelancer123" : ""),
     },
   });
 
@@ -56,10 +56,10 @@ const LoginForm = () => {
   useEffect(() => {
     form.setValue("email", loginType === "client" 
       ? (import.meta.env.DEV ? "test@proverb.digital" : "") 
-      : (import.meta.env.DEV ? "agency@proverb.digital" : ""));
+      : (import.meta.env.DEV ? "freelancer@proverb.digital" : ""));
     form.setValue("password", loginType === "client" 
       ? (import.meta.env.DEV ? "password123" : "") 
-      : (import.meta.env.DEV ? "agency123" : ""));
+      : (import.meta.env.DEV ? "freelancer123" : ""));
   }, [loginType, form]);
 
   const onSubmit = async (data: FormData) => {
@@ -91,9 +91,12 @@ const LoginForm = () => {
       });
       
       // Redirect based on role
-      if (userRole === "agency") {
-        navigate("/agency/review");
+      if (userRole === "freelancer") {
+        navigate("/freelancer-dashboard");
+      } else if (userRole === "client") {
+        navigate("/client-dashboard");
       } else {
+        // Default fallback
         navigate("/client-dashboard");
       }
     } catch (err) {
@@ -110,7 +113,7 @@ const LoginForm = () => {
   // For development convenience
   const devLoginMessage = import.meta.env.DEV ? (
     <p className="text-xs text-gray-400 mt-2">
-      DEV MODE: Use {loginType === "client" ? "test@proverb.digital / password123" : "agency@proverb.digital / agency123"}
+      DEV MODE: Use {loginType === "client" ? "test@proverb.digital / password123" : "freelancer@proverb.digital / freelancer123"}
     </p>
   ) : null;
 
@@ -121,10 +124,10 @@ const LoginForm = () => {
         <p className="text-sm text-gray-500 mt-1">Sign in to access your dashboard</p>
       </div>
       
-      <Tabs value={loginType} onValueChange={(value) => setLoginType(value as "client" | "agency")} className="mb-6">
+      <Tabs value={loginType} onValueChange={(value) => setLoginType(value as "client" | "freelancer")} className="mb-6">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="client">Client Login</TabsTrigger>
-          <TabsTrigger value="agency">Agency Login</TabsTrigger>
+          <TabsTrigger value="freelancer">Freelancer Login</TabsTrigger>
         </TabsList>
       </Tabs>
 
@@ -138,7 +141,7 @@ const LoginForm = () => {
                 <FormLabel>Email</FormLabel>
                 <FormControl>
                   <Input 
-                    placeholder={loginType === "client" ? "client@example.com" : "agency@example.com"} 
+                    placeholder={loginType === "client" ? "client@example.com" : "freelancer@example.com"} 
                     {...field} 
                     className="custom-input"
                   />
@@ -179,7 +182,7 @@ const LoginForm = () => {
             ) : (
               <>
                 <LogIn size={18} />
-                <span>Sign In as {loginType === "client" ? "Client" : "Agency"}</span>
+                <span>Sign In as {loginType === "client" ? "Client" : "Freelancer"}</span>
               </>
             )}
           </Button>
