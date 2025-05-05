@@ -16,7 +16,7 @@ const ImageGenerator: React.FC = () => {
   const { checkAccess } = useFeatureAccess();
   
   const handleGenerateImages = async () => {
-    if (!checkAccess('ai_image_generation')) {
+    if (!checkAccess('image-generation')) {
       return; // The checkAccess function will handle redirection and toast
     }
     
