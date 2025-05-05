@@ -1,7 +1,7 @@
 
 import Layout from "@/components/layout/Layout";
 import SignupForm from "@/components/auth/SignupForm";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/SupabaseAuthContext";
 import { Navigate } from "react-router-dom";
 
 const Register = () => {

@@ -1,10 +1,10 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/SupabaseAuthContext";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -19,9 +19,7 @@ import { LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
-import { getApp } from "firebase/app";
-import { auth } from "@/lib/firebase"; // Import auth from firebase.ts
+import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -55,7 +53,7 @@ const LoginForm = () => {
   });
 
   // Update form values when login type changes
-  useEffect(() => {
+  form.useEffect(() => {
     form.setValue("email", loginType === "client" 
       ? (import.meta.env.DEV ? "test@proverb.digital" : "") 
       : (import.meta.env.DEV ? "agency@proverb.digital" : ""));
@@ -71,10 +69,20 @@ const LoginForm = () => {
       console.log(`Attempting ${loginType} login with:`, data.email);
       await login(data.email, data.password);
       
-      // Check user role in Firestore
-      const db = getFirestore(getApp("proverb-digital-client"));
-      const userDoc = await getDoc(doc(db, "users", auth.currentUser?.uid || ""));
-      const userRole = userDoc.exists() ? userDoc.data().role : null;
+      // Check user role in Supabase
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        throw new Error("User not found after login");
+      }
+      
+      // Get user metadata for role
+      const { data: userProfile } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+      
+      const userRole = userProfile?.role || null;
       console.log("User role:", userRole);
       
       toast({
@@ -90,7 +98,7 @@ const LoginForm = () => {
       }
     } catch (err) {
       const errorMessage = err instanceof Error 
-        ? err.message.replace("Firebase: ", "") 
+        ? err.message 
         : "An error occurred during login.";
       console.error("Login error:", errorMessage);
       setError(errorMessage);

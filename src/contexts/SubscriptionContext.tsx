@@ -1,8 +1,7 @@
 
 import React, { createContext, useState, useEffect, useContext } from 'react';
-import { db } from '@/lib/firebase';
-import { collection, query, where, orderBy, limit, getDocs, DocumentData } from 'firebase/firestore';
-import { useAuth } from './AuthContext';
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from './SupabaseAuthContext';
 import { SubscriptionPlan, SubscriptionStatus, PaymentMethod } from '@/hooks/useSubscriptionGuard';
 
 export type AIFeature = 'image-generation' | 'brief-builder' | 'proposal-assistance' | 'analytics' | 'job-matching';
@@ -40,38 +39,35 @@ export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ ch
 
     try {
       setIsLoading(true);
-      const subscriptionsRef = collection(db, 'subscriptions');
-      const q = query(
-        subscriptionsRef,
-        where('userId', '==', currentUser.uid),
-        orderBy('startDate', 'desc'),
-        limit(1)
-      );
-
-      const querySnapshot = await getDocs(q);
       
-      if (querySnapshot.empty) {
+      // Query subscriptions table for the current user
+      const { data, error } = await supabase
+        .from('subscriptions')
+        .select('*')
+        .eq('userId', currentUser.id)
+        .order('startDate', { ascending: false })
+        .limit(1)
+        .single();
+      
+      if (error) {
+        console.error('Error fetching subscription:', error);
         setSubscription(null);
         return;
       }
-
-      const doc = querySnapshot.docs[0];
-      const data = doc.data();
       
-      // Convert Firestore timestamps to Date objects
+      if (!data) {
+        setSubscription(null);
+        return;
+      }
+      
+      // Convert Supabase timestamps to Date objects
       const subscription: Subscription = {
-        id: doc.id,
+        id: data.id,
         userId: data.userId,
         plan: data.plan,
         status: data.status,
-        startDate: data.startDate instanceof Date 
-          ? data.startDate 
-          : new Date(data.startDate.seconds * 1000),
-        nextBillingDate: data.nextBillingDate 
-          ? (data.nextBillingDate instanceof Date 
-              ? data.nextBillingDate 
-              : new Date(data.nextBillingDate.seconds * 1000))
-          : null,
+        startDate: new Date(data.startDate),
+        nextBillingDate: data.nextBillingDate ? new Date(data.nextBillingDate) : null,
         paymentMethod: data.paymentMethod
       };
       

@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Bell, ChevronDown, CreditCard, LogOut, Search, Settings, User } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import LogoutButton from '@/components/auth/LogoutButton';
 import {
   DropdownMenu,
@@ -13,8 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
-import { getApp } from "firebase/app";
+import { supabase } from "@/integrations/supabase/client";
 
 const TopBar = () => {
   const { currentUser } = useAuth();
@@ -27,12 +26,16 @@ const TopBar = () => {
       if (!currentUser) return;
       
       try {
-        const db = getFirestore(getApp("proverb-digital-client"));
-        const userDocRef = doc(db, "users", currentUser.uid);
-        const userDoc = await getDoc(userDocRef);
+        const { data, error } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', currentUser.id)
+          .single();
         
-        if (userDoc.exists()) {
-          setUserRole(userDoc.data().role);
+        if (error) {
+          console.error("Error fetching user role:", error);
+        } else if (data) {
+          setUserRole(data.role);
         }
       } catch (error) {
         console.error("Error fetching user role:", error);

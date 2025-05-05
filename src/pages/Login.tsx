@@ -1,30 +1,18 @@
 
 import Layout from "@/components/layout/Layout";
 import LoginForm from "@/components/auth/LoginForm";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/SupabaseAuthContext";
 import { Navigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { CreditCard, Coins } from "lucide-react";
-import { useEffect, useState } from "react";
-import { getAnalytics, logEvent } from "firebase/analytics";
-import { auth } from "@/lib/firebase";
-import { getFirestore, doc, getDoc } from "firebase/firestore";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const { currentUser, loading } = useAuth();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [checkingRole, setCheckingRole] = useState(false);
-  
-  // Log page view event
-  useEffect(() => {
-    try {
-      const analytics = getAnalytics(auth.app);
-      logEvent(analytics, 'page_view');
-    } catch (error) {
-      console.error("Analytics error:", error);
-    }
-  }, []);
   
   // Check user role when currentUser changes
   useEffect(() => {
@@ -33,12 +21,17 @@ const Login = () => {
       
       try {
         setCheckingRole(true);
-        const db = getFirestore(auth.app);
-        const userDocRef = doc(db, "users", currentUser.uid);
-        const userDoc = await getDoc(userDocRef);
+        // Query the users table for role
+        const { data, error } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', currentUser.id)
+          .single();
         
-        if (userDoc.exists()) {
-          setUserRole(userDoc.data().role);
+        if (error) {
+          console.error("Error checking user role:", error);
+        } else if (data) {
+          setUserRole(data.role);
         }
       } catch (error) {
         console.error("Error checking user role:", error);
