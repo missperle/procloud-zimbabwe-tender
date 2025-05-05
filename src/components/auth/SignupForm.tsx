@@ -5,15 +5,19 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Eye, EyeOff, Mail } from "lucide-react";
+import { Eye, EyeOff, Mail, Briefcase, UserPlus } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const signupSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   confirmPassword: z.string().min(6, { message: "Password must be at least 6 characters" }),
+  userType: z.enum(["freelancer", "client"], {
+    required_error: "Please select a user type",
+  }),
 }).refine(data => data.password === data.confirmPassword, {
   message: "Passwords do not match",
   path: ["confirmPassword"],
@@ -21,7 +25,11 @@ const signupSchema = z.object({
 
 type SignupFormValues = z.infer<typeof signupSchema>;
 
-const SignupForm = () => {
+interface SignupFormProps {
+  initialUserType?: string;
+}
+
+const SignupForm = ({ initialUserType = "freelancer" }: SignupFormProps) => {
   const { signup } = useAuth();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -32,13 +40,16 @@ const SignupForm = () => {
       email: "",
       password: "",
       confirmPassword: "",
+      userType: initialUserType === "client" ? "client" : "freelancer",
     },
   });
 
   const onSubmit = async (data: SignupFormValues) => {
     setLoading(true);
     try {
+      // Here we could include userType in the signup process if needed
       await signup(data.email, data.password);
+      // You might want to save the user type to the user's profile in a production app
     } catch (error) {
       console.error("Signup error:", error);
     } finally {
@@ -59,6 +70,39 @@ const SignupForm = () => {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="userType"
+            render={({ field }) => (
+              <FormItem className="space-y-3">
+                <FormLabel>I want to join as a</FormLabel>
+                <FormControl>
+                  <RadioGroup
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    className="flex flex-col space-y-1"
+                  >
+                    <div className="flex items-center space-x-2 rounded-md border p-3 cursor-pointer hover:bg-slate-50">
+                      <RadioGroupItem value="client" id="client" />
+                      <label htmlFor="client" className="flex items-center gap-2 cursor-pointer font-medium">
+                        <Briefcase className="h-5 w-5 text-indigo-ink" />
+                        Client
+                      </label>
+                    </div>
+                    <div className="flex items-center space-x-2 rounded-md border p-3 cursor-pointer hover:bg-slate-50">
+                      <RadioGroupItem value="freelancer" id="freelancer" />
+                      <label htmlFor="freelancer" className="flex items-center gap-2 cursor-pointer font-medium">
+                        <UserPlus className="h-5 w-5 text-indigo-ink" />
+                        Freelancer
+                      </label>
+                    </div>
+                  </RadioGroup>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <FormField
             control={form.control}
             name="email"

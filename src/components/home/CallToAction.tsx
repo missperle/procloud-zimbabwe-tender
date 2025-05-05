@@ -1,5 +1,8 @@
+
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { Briefcase, UserPlus } from "lucide-react";
+
 const CallToAction = () => {
   return <section className="py-20 bg-procloud-black text-white relative overflow-hidden">
       <div className="absolute inset-0 opacity-10">
@@ -17,13 +20,15 @@ const CallToAction = () => {
           
           <div className="flex flex-col sm:flex-row justify-center gap-6">
             <Link to="/signup?type=freelancer">
-              <Button size="lg" className="w-full sm:w-auto text-lg bg-procloud-green hover:bg-procloud-gold hover:text-black">
+              <Button size="lg" className="w-full sm:w-auto text-lg bg-procloud-green hover:bg-procloud-gold hover:text-black flex items-center gap-2">
+                <UserPlus size={20} />
                 Join as a Freelancer
               </Button>
             </Link>
-            <Link to="/signup?type=business">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg border-white text-white hover:bg-white/10">
-                Sign up as a Business
+            <Link to="/signup?type=client">
+              <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg border-white text-white hover:bg-white/10 flex items-center gap-2">
+                <Briefcase size={20} />
+                Sign up as a Client
               </Button>
             </Link>
           </div>
@@ -31,4 +36,5 @@ const CallToAction = () => {
       </div>
     </section>;
 };
+
 export default CallToAction;

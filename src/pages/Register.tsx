@@ -2,10 +2,12 @@
 import Layout from "@/components/layout/Layout";
 import SignupForm from "@/components/auth/SignupForm";
 import { useAuth } from "@/contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Navigate, useSearchParams } from "react-router-dom";
 
 const Register = () => {
   const { currentUser } = useAuth();
+  const [searchParams] = useSearchParams();
+  const userType = searchParams.get('type') || 'freelancer';
 
   if (currentUser) {
     return <Navigate to="/dashboard" />;
@@ -14,7 +16,7 @@ const Register = () => {
   return (
     <Layout>
       <div className="flex items-center justify-center min-h-[calc(100vh-200px)] px-4">
-        <SignupForm />
+        <SignupForm initialUserType={userType} />
       </div>
     </Layout>
   );

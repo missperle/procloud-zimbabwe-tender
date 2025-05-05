@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ChevronUp } from "lucide-react";
+import { ChevronUp, UserPlus, Briefcase } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 const HeroSection = () => {
@@ -96,21 +96,23 @@ const HeroSection = () => {
                      transform: `translateY(${scrollProgress * 0.6}px)`,
                      opacity: Math.max(0, 1 - scrollProgress/30)
                    }}>
-                <Link to="/post-job">
+                <Link to="/signup?type=client">
                   <Button 
                     size="lg" 
-                    className="btn-primary text-lg font-medium bg-indigo-ink text-white hover:opacity-90 hover:bg-indigo-ink"
+                    className="btn-primary text-lg font-medium bg-indigo-ink text-white hover:opacity-90 hover:bg-indigo-ink flex items-center gap-2"
                   >
-                    Hire a Freelancer
+                    <Briefcase size={20} />
+                    Sign up as a Client
                   </Button>
                 </Link>
-                <Link to="/jobs">
+                <Link to="/signup?type=freelancer">
                   <Button 
                     size="lg" 
                     variant="outline" 
-                    className="text-lg font-medium border-2 border-indigo-ink text-indigo-ink bg-white hover:opacity-90 hover:bg-white"
+                    className="text-lg font-medium border-2 border-indigo-ink text-indigo-ink bg-white hover:opacity-90 hover:bg-white flex items-center gap-2"
                   >
-                    Try Pro Features
+                    <UserPlus size={20} />
+                    Join as a Freelancer
                   </Button>
                 </Link>
               </div>
