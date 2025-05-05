@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
@@ -118,7 +117,7 @@ const Pricing = () => {
         const subscriptionsRef = collection(db, 'subscriptions');
         const q = query(
           subscriptionsRef,
-          where('userId', '==', currentUser.uid),
+          where('userId', '==', currentUser.id), // Changed from uid to id
           orderBy('startDate', 'desc'),
           limit(1)
         );
@@ -173,7 +172,7 @@ const Pricing = () => {
     try {
       // Create the subscription document
       await addDoc(collection(db, 'subscriptions'), {
-        userId: currentUser.uid,
+        userId: currentUser.id, // Changed from uid to id
         plan: 'Free' as SubscriptionPlan,
         status: 'active',
         startDate: serverTimestamp(),
@@ -221,7 +220,7 @@ const Pricing = () => {
     try {
       // Create the subscription with pending status
       await addDoc(collection(db, 'subscriptions'), {
-        userId: currentUser.uid,
+        userId: currentUser.id, // Changed from uid to id
         plan: selectedPlan?.id || 'Basic',
         status: 'pending',
         startDate: serverTimestamp(),
