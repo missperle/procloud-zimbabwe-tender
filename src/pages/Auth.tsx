@@ -5,7 +5,7 @@ import Layout from "@/components/layout/Layout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import LoginForm from "@/components/auth/LoginForm";
 import ClientSignupForm from "@/components/auth/ClientSignupForm";
-import FreelancerSignupForm from "@/components/auth/FreelancerSignupForm";
+import FreelancerSignupForm from "@/components/auth/freelancer/FreelancerSignupForm";
 import { useAuth } from "@/contexts/SupabaseAuthContext";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
