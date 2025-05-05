@@ -11,25 +11,31 @@ import AnalyticsPage from "@/components/client/AnalyticsPage";
 import AccountSettings from "@/components/client/AccountSettings";
 import TokensWalletPage from "@/components/client/TokensWalletPage";
 import SubscriptionPage from "@/components/client/SubscriptionPage";
-import BuyTokensPage from "@/pages/BuyTokens";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { Coins, Bell } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/SupabaseAuthContext";
 
 const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [unreadNotifications, setUnreadNotifications] = useState(0);
   const location = useLocation();
+  const { currentUser } = useAuth();
 
   useEffect(() => {
+    // If no user is logged in, redirect would happen in layout
+    if (!currentUser) {
+      return;
+    }
+
     // Check for tab parameter in URL
     const searchParams = new URLSearchParams(location.search);
     const tabParam = searchParams.get('tab');
     if (tabParam && ['dashboard', 'briefs', 'proposals', 'payments', 'analytics', 'tokens', 'subscription', 'account'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
-  }, [location]);
+  }, [location, currentUser]);
   
   // Mock notification count - in a real app, this would come from Firestore
   useEffect(() => {
