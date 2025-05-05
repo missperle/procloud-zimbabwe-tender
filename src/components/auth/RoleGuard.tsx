@@ -15,7 +15,7 @@ interface RoleGuardProps {
 const RoleGuard = ({
   children,
   allowedRoles,
-  redirectTo = "/login"
+  redirectTo = "/client-login"
 }: RoleGuardProps) => {
   const { currentUser, loading: authLoading } = useAuth();
   const [userRole, setUserRole] = useState<string | null>(null);

@@ -12,7 +12,12 @@ const RoleSelection = () => {
 
   const handleSelection = (role: "client" | "freelancer") => {
     setSelectedRole(role);
-    navigate(`/auth?role=${role}`);
+    // Direct users to the role-specific login pages
+    if (role === "client") {
+      navigate("/client-login");
+    } else {
+      navigate("/freelancer-login");
+    }
   };
 
   return (

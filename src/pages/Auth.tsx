@@ -25,6 +25,19 @@ const Auth = () => {
     }
   }, [currentUser, navigate]);
 
+  // Redirect to role-specific login page for login tab
+  useEffect(() => {
+    if (activeTab === "login") {
+      if (role === "client") {
+        navigate("/client-login");
+      } else if (role === "freelancer") {
+        navigate("/freelancer-login");
+      } else {
+        navigate("/client-login"); // Default to client login
+      }
+    }
+  }, [activeTab, role, navigate]);
+
   if (!role) {
     return (
       <Layout>
@@ -33,9 +46,9 @@ const Auth = () => {
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
               Please select a role first. 
-              <a href="/" className="font-medium underline ml-1">
+              <Link to="/role-selection" className="font-medium underline ml-1">
                 Go back to role selection
-              </a>
+              </Link>
             </AlertDescription>
           </Alert>
         </div>
@@ -59,10 +72,6 @@ const Auth = () => {
             
             <TabsContent value="signup">
               {role === "client" ? <ClientSignupForm /> : <FreelancerSignupForm />}
-            </TabsContent>
-            
-            <TabsContent value="login">
-              <LoginForm />
             </TabsContent>
           </Tabs>
         </div>

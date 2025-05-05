@@ -73,9 +73,14 @@ const Navbar = () => {
               </div>
             ) : (
               <>
-                <Link to="/login">
+                <Link to="/client-login">
                   <Button variant="outline" size="sm">
-                    Log in
+                    Client Login
+                  </Button>
+                </Link>
+                <Link to="/freelancer-login">
+                  <Button variant="outline" size="sm">
+                    Freelancer Login
                   </Button>
                 </Link>
                 <Link to="/role-selection">
@@ -153,9 +158,14 @@ const Navbar = () => {
                 </div>
               ) : (
                 <div className="pt-2 flex flex-col space-y-2">
-                  <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                  <Link to="/client-login" onClick={() => setIsMenuOpen(false)}>
                     <Button variant="outline" className="w-full">
-                      Log in
+                      Client Login
+                    </Button>
+                  </Link>
+                  <Link to="/freelancer-login" onClick={() => setIsMenuOpen(false)}>
+                    <Button variant="outline" className="w-full">
+                      Freelancer Login
                     </Button>
                   </Link>
                   <Link to="/role-selection" onClick={() => setIsMenuOpen(false)}>

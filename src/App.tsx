@@ -14,6 +14,8 @@ import FreelancerProfile from "./pages/FreelancerProfile";
 import ClientDashboard from "./pages/ClientDashboard";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
+import ClientLogin from "./pages/ClientLogin";
+import FreelancerLogin from "./pages/FreelancerLogin";
 import Register from "./pages/Register";
 import BuyTokens from "./pages/BuyTokens";
 import Pricing from "./pages/Pricing";
@@ -49,6 +51,8 @@ const App = () => {
                 <Route path="/freelancer-dashboard" element={<FreelancerDashboard />} />
                 <Route path="/freelancer-profile-edit" element={<FreelancerProfileEdit />} />
                 <Route path="/login" element={<Login />} />
+                <Route path="/client-login" element={<ClientLogin />} />
+                <Route path="/freelancer-login" element={<FreelancerLogin />} />
                 <Route path="/signup" element={<Register />} />
                 <Route path="/role-selection" element={<RoleSelection />} />
                 <Route path="/auth" element={<Auth />} />
