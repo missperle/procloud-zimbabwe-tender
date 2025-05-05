@@ -104,7 +104,7 @@ const HeroSection = () => {
                     Hire a Freelancer
                   </Button>
                 </Link>
-                <Link to="/jobs">
+                <Link to="/pricing">
                   <Button 
                     size="lg" 
                     variant="outline" 
