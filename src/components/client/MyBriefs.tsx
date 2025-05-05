@@ -11,14 +11,26 @@ import {
   DialogTrigger
 } from "@/components/ui/dialog";
 import BriefCreationForm from "./BriefCreationForm";
-import BriefTableList from "./BriefTableList";
+import BriefTableList, { Brief } from "./BriefTableList";
 import BriefDetailView from "./brief/BriefDetailView";
 import BriefRevisionForm from "./brief/BriefRevisionForm";
 import { useBriefs } from "@/hooks/useBriefs";
-import { Brief } from "./BriefTableList";
 import { Link } from "react-router-dom";
 import { BriefFormData } from "./BriefCreationForm";
 import { Card } from "@/components/ui/card";
+
+// Update Brief interface if needed locally
+// Note: This is commented out because we should import it from BriefTableList
+// interface Brief {
+//   id: string;
+//   title: string;
+//   budget: string;
+//   deadline: Date;
+//   status: string;
+//   attachment_url?: string;
+//   original_description: string;
+//   category: string;
+// }
 
 const MyBriefs = () => {
   const [briefs, setBriefs] = useState<Brief[]>([]);
@@ -139,6 +151,7 @@ const MyBriefs = () => {
             <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <BriefDetailView 
                 brief={selectedBrief}
+                onBack={() => setIsViewOpen(false)}
                 onClose={() => setIsViewOpen(false)}
               />
             </DialogContent>
@@ -150,10 +163,10 @@ const MyBriefs = () => {
                 briefId={selectedBrief.id}
                 initialData={{
                   title: selectedBrief.title,
-                  original_description: selectedBrief.original_description,
+                  original_description: selectedBrief.original_description || "",
                   budget: selectedBrief.budget,
                   deadline: new Date(selectedBrief.deadline).toISOString().split('T')[0],
-                  category: selectedBrief.category,
+                  category: selectedBrief.category || "design",
                   attachment_url: selectedBrief.attachment_url
                 }}
                 feedback={[

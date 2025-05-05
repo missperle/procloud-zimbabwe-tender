@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 interface BriefDetailViewProps {
   brief: Brief;
   onBack: () => void;
+  onClose?: () => void; // Added onClose prop as optional
   feedback?: {
     message: string;
     createdAt: Date;
@@ -23,8 +24,18 @@ interface BriefDetailViewProps {
 const BriefDetailView: React.FC<BriefDetailViewProps> = ({ 
   brief, 
   onBack,
+  onClose, // Added onClose to the destructuring
   feedback = []
 }) => {
+  // Use onClose if provided, otherwise fall back to onBack
+  const handleClose = () => {
+    if (onClose) {
+      onClose();
+    } else {
+      onBack();
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
