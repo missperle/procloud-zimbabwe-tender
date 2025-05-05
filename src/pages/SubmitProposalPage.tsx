@@ -1,15 +1,17 @@
 
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, Navigate } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import SubmitProposal from "@/components/proposals/SubmitProposal";
 import { mockJobs } from "@/data/mockJobs";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/SupabaseAuthContext";
 
 const SubmitProposalPage = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const [jobTitle, setJobTitle] = useState("Job Title");
   const [loading, setLoading] = useState(true);
+  const { currentUser } = useAuth();
   
   useEffect(() => {
     // Find the job from mock data
@@ -21,6 +23,11 @@ const SubmitProposalPage = () => {
     
     setLoading(false);
   }, [jobId]);
+
+  // Redirect unauthenticated users to role selection
+  if (!currentUser) {
+    return <Navigate to="/role-selection" state={{ from: `/jobs/${jobId}/submit-proposal` }} />;
+  }
 
   if (loading) {
     return (

@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Calendar, DollarSign, Building, Clock } from "lucide-react";
+import { useAuth } from "@/contexts/SupabaseAuthContext";
 
 // Import the mock jobs data
 import { mockJobs } from "@/data/mockJobs";
@@ -14,6 +15,7 @@ const JobDetailsPage = () => {
   const { jobId } = useParams<{ jobId: string }>();
   const [job, setJob] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const { currentUser } = useAuth();
 
   useEffect(() => {
     // In a real implementation, you would fetch the job details from an API
@@ -124,11 +126,19 @@ const JobDetailsPage = () => {
               </div>
               
               <div className="mt-8 flex justify-center">
-                <Link to={`/jobs/${jobId}/submit-proposal`} className="w-full max-w-md">
-                  <Button className="w-full bg-procloud-green hover:bg-procloud-green-dark text-white py-6">
-                    Submit Proposal
-                  </Button>
-                </Link>
+                {currentUser ? (
+                  <Link to={`/jobs/${jobId}/submit-proposal`} className="w-full max-w-md">
+                    <Button className="w-full bg-procloud-green hover:bg-procloud-green-dark text-white py-6">
+                      Submit Proposal
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link to="/role-selection" className="w-full max-w-md">
+                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-6">
+                      Sign Up to Submit Proposal
+                    </Button>
+                  </Link>
+                )}
               </div>
             </CardContent>
           </Card>
