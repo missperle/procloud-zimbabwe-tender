@@ -5,6 +5,8 @@ import { collection, query, where, orderBy, limit, getDocs, DocumentData } from 
 import { useAuth } from './AuthContext';
 import { SubscriptionPlan, SubscriptionStatus, PaymentMethod } from '@/hooks/useSubscriptionGuard';
 
+export type AIFeature = 'image-generation' | 'brief-builder' | 'proposal-assistance' | 'analytics' | 'job-matching';
+
 export interface Subscription {
   id: string;
   userId: string;
@@ -19,6 +21,7 @@ interface SubscriptionContextProps {
   subscription: Subscription | null;
   isLoading: boolean;
   refreshSubscription: () => Promise<void>;
+  hasFeatureAccess: (feature: AIFeature) => boolean;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextProps | undefined>(undefined);
@@ -89,10 +92,27 @@ export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ ch
     await fetchSubscription();
   };
 
+  // Implement feature access logic based on subscription plan
+  const hasFeatureAccess = (feature: AIFeature): boolean => {
+    if (!subscription || subscription.status !== 'active') {
+      return false;
+    }
+
+    // Define which features are available for each plan
+    const featureAccess: Record<SubscriptionPlan, AIFeature[]> = {
+      'Free': ['job-matching'],
+      'Basic': ['job-matching', 'brief-builder', 'proposal-assistance'],
+      'Pro': ['job-matching', 'brief-builder', 'proposal-assistance', 'image-generation', 'analytics']
+    };
+
+    return featureAccess[subscription.plan]?.includes(feature) || false;
+  };
+
   const value = {
     subscription,
     isLoading,
-    refreshSubscription
+    refreshSubscription,
+    hasFeatureAccess
   };
 
   return (

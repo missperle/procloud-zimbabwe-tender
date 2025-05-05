@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { db } from '@/lib/firebase';
-import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { collection, query, where, orderBy, limit, getDocs, Timestamp } from 'firebase/firestore';
 
 export type SubscriptionStatus = 'pending' | 'active' | 'canceled';
 export type SubscriptionPlan = 'Free' | 'Basic' | 'Pro';
@@ -49,17 +49,35 @@ export function useSubscriptionGuard() {
           return;
         }
 
-        const subscriptionData = querySnapshot.docs[0].data() as Subscription;
+        const subscriptionDoc = querySnapshot.docs[0];
+        const data = subscriptionDoc.data();
         
         // Convert Firestore timestamps to Date objects
-        subscriptionData.startDate = subscriptionData.startDate instanceof Date 
-          ? subscriptionData.startDate 
-          : new Date(subscriptionData.startDate.seconds * 1000);
+        const subscriptionData: Subscription = {
+          userId: data.userId,
+          plan: data.plan,
+          status: data.status,
+          startDate: new Date(),
+          nextBillingDate: null,
+          paymentMethod: data.paymentMethod
+        };
+
+        // Handle startDate conversion from Firestore Timestamp to Date
+        if (data.startDate) {
+          if (data.startDate instanceof Timestamp) {
+            subscriptionData.startDate = data.startDate.toDate();
+          } else if (data.startDate.seconds) {
+            subscriptionData.startDate = new Date(data.startDate.seconds * 1000);
+          }
+        }
         
-        if (subscriptionData.nextBillingDate) {
-          subscriptionData.nextBillingDate = subscriptionData.nextBillingDate instanceof Date 
-            ? subscriptionData.nextBillingDate 
-            : new Date(subscriptionData.nextBillingDate.seconds * 1000);
+        // Handle nextBillingDate conversion from Firestore Timestamp to Date
+        if (data.nextBillingDate) {
+          if (data.nextBillingDate instanceof Timestamp) {
+            subscriptionData.nextBillingDate = data.nextBillingDate.toDate();
+          } else if (data.nextBillingDate.seconds) {
+            subscriptionData.nextBillingDate = new Date(data.nextBillingDate.seconds * 1000);
+          }
         }
 
         setSubscription(subscriptionData);

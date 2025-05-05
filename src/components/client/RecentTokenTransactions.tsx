@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -41,9 +40,9 @@ const getTransactionBadge = (type: TransactionType, status: TransactionStatus) =
   
   switch (type) {
     case "purchase":
-      return "success";
-    case "usage":
       return "default";
+    case "usage":
+      return "secondary";
     case "refund":
       return "secondary";
     case "admin":

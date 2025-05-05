@@ -8,7 +8,7 @@ import { useSubscription } from "@/contexts/SubscriptionContext";
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { getFirestore, collection, query, where, getDocs, doc, updateDoc, getDoc } from "firebase/firestore";
+import { getFirestore, collection, query, where, getDocs, doc, updateDoc } from "firebase/firestore";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -79,13 +79,13 @@ const SubscriptionPage: React.FC = () => {
     });
   };
 
-  const getTierLabel = (tier: string) => {
+  const getTierLabel = (plan: string) => {
     const tierLabels: Record<string, string> = {
-      'free': 'Free',
-      'basic': 'Basic',
-      'pro': 'Pro'
+      'Free': 'Free',
+      'Basic': 'Basic',
+      'Pro': 'Pro'
     };
-    return tierLabels[tier] || tier;
+    return tierLabels[plan] || plan;
   };
 
   const getStatusBadgeColor = (status: string) => {
@@ -115,7 +115,7 @@ const SubscriptionPage: React.FC = () => {
                   <h3 className="text-sm font-medium text-muted-foreground mb-2">Plan</h3>
                   <div className="flex items-center">
                     <span className="text-lg font-bold capitalize">
-                      {getTierLabel(subscription.tier)}
+                      {getTierLabel(subscription.plan)}
                     </span>
                     <Badge className={`ml-2 ${getStatusBadgeColor(subscription.status)}`}>
                       {subscription.status}
@@ -123,12 +123,12 @@ const SubscriptionPage: React.FC = () => {
                   </div>
                 </div>
 
-                {subscription.currentPeriodEnd && subscription.status === 'active' && (
+                {subscription.nextBillingDate && subscription.status === 'active' && (
                   <div>
                     <h3 className="text-sm font-medium text-muted-foreground mb-2">Renews On</h3>
                     <div className="flex items-center">
                       <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
-                      <span>{formatDate(subscription.currentPeriodEnd)}</span>
+                      <span>{formatDate(subscription.nextBillingDate)}</span>
                     </div>
                   </div>
                 )}
@@ -148,7 +148,7 @@ const SubscriptionPage: React.FC = () => {
                 <Button onClick={handleChangePlan}>
                   Change Plan
                 </Button>
-                {subscription.tier !== 'free' && subscription.status === 'active' && (
+                {subscription.plan !== 'Free' && subscription.status === 'active' && (
                   <>
                     <Button variant="outline" onClick={handleManageBilling}>
                       Manage Billing
@@ -169,7 +169,7 @@ const SubscriptionPage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {subscription?.tier === 'free' && (
+      {subscription?.plan === 'Free' && (
         <Card>
           <CardContent className="pt-6">
             <Alert className="bg-amber-50">
@@ -194,7 +194,7 @@ const SubscriptionPage: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <p>Your subscription will remain active until {formatDate(subscription?.currentPeriodEnd)}</p>
+            <p>Your subscription will remain active until {formatDate(subscription?.nextBillingDate)}</p>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowCancelDialog(false)}>

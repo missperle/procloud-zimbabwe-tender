@@ -19,7 +19,7 @@ import SubscriptionGuard from "@/components/subscription/SubscriptionGuard";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import Badge from "@/components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 
 // Sample data
 const statsData = {
@@ -100,7 +100,7 @@ const Dashboard = () => {
                   <CardTitle className="text-lg">Your Subscription</CardTitle>
                 </div>
                 {subscription.status === 'active' && (
-                  <Badge className="ml-auto bg-green-500 text-white">Active</Badge>
+                  <Badge variant="default" className="ml-auto bg-green-500 text-white">Active</Badge>
                 )}
               </CardHeader>
               <CardContent className="pt-2">
