@@ -9,6 +9,54 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      client_briefs: {
+        Row: {
+          admin_notes: string | null
+          anonymous_description: string | null
+          attachment_url: string | null
+          budget: string
+          category: string
+          client_id: string
+          created_at: string
+          deadline: string
+          id: string
+          original_description: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          anonymous_description?: string | null
+          attachment_url?: string | null
+          budget: string
+          category: string
+          client_id: string
+          created_at?: string
+          deadline: string
+          id?: string
+          original_description: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          anonymous_description?: string | null
+          attachment_url?: string | null
+          budget?: string
+          category?: string
+          client_id?: string
+          created_at?: string
+          deadline?: string
+          id?: string
+          original_description?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       freelancer_profiles: {
         Row: {
           bio: string | null
@@ -130,6 +178,56 @@ export type Database = {
             columns: ["freelancer_id"]
             isOneToOne: false
             referencedRelation: "freelancer_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      proposals: {
+        Row: {
+          admin_notes: string | null
+          brief_id: string
+          client_feedback: string | null
+          content: string
+          created_at: string
+          freelancer_id: string
+          id: string
+          price: string
+          status: string
+          timeline: string
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          brief_id: string
+          client_feedback?: string | null
+          content: string
+          created_at?: string
+          freelancer_id: string
+          id?: string
+          price: string
+          status?: string
+          timeline: string
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          brief_id?: string
+          client_feedback?: string | null
+          content?: string
+          created_at?: string
+          freelancer_id?: string
+          id?: string
+          price?: string
+          status?: string
+          timeline?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposals_brief_id_fkey"
+            columns: ["brief_id"]
+            isOneToOne: false
+            referencedRelation: "client_briefs"
             referencedColumns: ["id"]
           },
         ]

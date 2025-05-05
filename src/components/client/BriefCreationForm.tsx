@@ -5,19 +5,21 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
-import { Images, Calendar, Loader2 } from "lucide-react";
+import { Images, Calendar, Loader2, Info } from "lucide-react";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { getApp } from "firebase/app";
 import { useToast } from "@/hooks/use-toast";
+import { useBriefs } from "@/hooks/useBriefs";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 // Form type for new brief
 export type BriefFormData = {
   title: string;
-  description: string;
+  original_description: string;
   budget: string;
   deadline: string;
   category: string;
-  attachedImageUrl: string;
+  attachment_url?: string;
 };
 
 interface BriefCreationFormProps {
@@ -34,11 +36,12 @@ const BriefCreationForm = ({ onSubmit, onClose }: BriefCreationFormProps) => {
   const [budgetEstimate, setBudgetEstimate] = useState("");
   const [timelineEstimate, setTimelineEstimate] = useState("");
   const { toast } = useToast();
+  const { submitBrief, loading: submittingBrief } = useBriefs();
   
   const { register, handleSubmit, reset, setValue, watch } = useForm<BriefFormData>();
 
   const title = watch("title");
-  const description = watch("description");
+  const description = watch("original_description");
 
   const handleGenerateImages = async () => {
     if (!aiPrompt.trim() || aiPrompt.length < 5) {
@@ -79,7 +82,7 @@ const BriefCreationForm = ({ onSubmit, onClose }: BriefCreationFormProps) => {
 
   const handleSelectImage = (url: string) => {
     setSelectedImageUrl(url);
-    setValue("attachedImageUrl", url);
+    setValue("attachment_url", url);
     toast({
       title: "Image selected",
       description: "The image has been attached to your brief",
@@ -129,16 +132,27 @@ const BriefCreationForm = ({ onSubmit, onClose }: BriefCreationFormProps) => {
     }
   };
 
-  const handleFormSubmit = (data: BriefFormData) => {
-    onSubmit(data);
-    setAiPrompt("");
-    setGeneratedImages([]);
-    setSelectedImageUrl("");
-    reset();
+  const handleFormSubmit = async (data: BriefFormData) => {
+    const result = await submitBrief(data);
+    if (result) {
+      onSubmit(data);
+      setAiPrompt("");
+      setGeneratedImages([]);
+      setSelectedImageUrl("");
+      reset();
+    }
   };
 
   return (
     <form onSubmit={handleSubmit(handleFormSubmit)}>
+      <Alert className="mb-4 bg-blue-50 border-blue-200">
+        <Info className="h-5 w-5 text-blue-600" />
+        <AlertDescription className="text-blue-600">
+          Your brief will be reviewed by Proverb Digital before being published to creators. 
+          We'll protect your identity and may suggest edits to make your brief more effective.
+        </AlertDescription>
+      </Alert>
+      
       <div className="grid gap-4 py-4">
         <div className="grid grid-cols-4 items-center gap-4">
           <Label htmlFor="title" className="text-right">
@@ -151,13 +165,13 @@ const BriefCreationForm = ({ onSubmit, onClose }: BriefCreationFormProps) => {
           />
         </div>
         <div className="grid grid-cols-4 items-center gap-4">
-          <Label htmlFor="description" className="text-right">
+          <Label htmlFor="original_description" className="text-right">
             Description
           </Label>
           <Textarea
-            id="description"
+            id="original_description"
             className="col-span-3 min-h-[80px]"
-            {...register("description", { required: true })}
+            {...register("original_description", { required: true })}
           />
         </div>
         
@@ -292,8 +306,8 @@ const BriefCreationForm = ({ onSubmit, onClose }: BriefCreationFormProps) => {
               
               <input 
                 type="hidden" 
-                id="attached-image" 
-                {...register("attachedImageUrl")} 
+                id="attachment_url" 
+                {...register("attachment_url")} 
               />
             </div>
           </div>
@@ -315,7 +329,9 @@ const BriefCreationForm = ({ onSubmit, onClose }: BriefCreationFormProps) => {
         <Button type="button" variant="outline" onClick={onClose}>
           Cancel
         </Button>
-        <Button type="submit">Post Brief</Button>
+        <Button type="submit" disabled={submittingBrief}>
+          {submittingBrief ? "Submitting..." : "Submit Brief for Review"}
+        </Button>
       </div>
     </form>
   );

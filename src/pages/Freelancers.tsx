@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import ProfileCard from "@/components/freelancers/ProfileCard";
@@ -12,11 +11,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-// Mock data
+// Update mock data to use aliases instead of real names
 const mockFreelancers = [
   {
     id: "user1",
-    name: "Tatenda M.",
+    name: "creator_TND48M",
     title: "Graphic Designer",
     avatar: "",
     verified: true,
@@ -26,7 +25,7 @@ const mockFreelancers = [
   },
   {
     id: "user2",
-    name: "Farai D.",
+    name: "creator_FRT29Z",
     title: "Web Developer",
     avatar: "",
     verified: true,
@@ -36,7 +35,7 @@ const mockFreelancers = [
   },
   {
     id: "user3",
-    name: "Kudzai N.",
+    name: "creator_KDZ17X",
     title: "Content Writer",
     avatar: "",
     verified: false,
@@ -46,7 +45,7 @@ const mockFreelancers = [
   },
   {
     id: "user4",
-    name: "Tendai R.",
+    name: "creator_TNR64Y",
     title: "Digital Marketer",
     avatar: "",
     verified: true,
@@ -56,7 +55,7 @@ const mockFreelancers = [
   },
   {
     id: "user5",
-    name: "Rudo C.",
+    name: "creator_RDC88P",
     title: "Video Editor",
     avatar: "",
     verified: false,
@@ -66,7 +65,7 @@ const mockFreelancers = [
   },
   {
     id: "user6",
-    name: "Takudzwa M.",
+    name: "creator_TKZ93M",
     title: "Full-Stack Developer",
     avatar: "",
     verified: true,
@@ -118,9 +117,12 @@ const Freelancers = () => {
       <div className="bg-procloud-gray-100 py-8 md:py-16">
         <div className="container mx-auto px-4">
           <div className="text-center mb-10">
-            <h1 className="mb-4">Find Talented Freelancers</h1>
+            <h1 className="mb-4">Find Talented Creators</h1>
             <p className="text-lg text-procloud-gray-600 max-w-2xl mx-auto">
-              Discover Zimbabwe's best freelance talent for your next project.
+              Discover Zimbabwe's best talent for your next project, curated and managed by Proverb Digital.
+            </p>
+            <p className="text-sm text-procloud-gray-500 mt-2 max-w-2xl mx-auto">
+              All creators use unique aliases to ensure fair selection based on quality of work alone.
             </p>
           </div>
           
@@ -190,7 +192,7 @@ const Freelancers = () => {
             </div>
           ) : (
             <div className="bg-white p-8 rounded-lg shadow-sm border border-procloud-gray-200 text-center">
-              <h3 className="text-xl font-bold mb-2">No freelancers found</h3>
+              <h3 className="text-xl font-bold mb-2">No creators found</h3>
               <p className="text-procloud-gray-600">
                 Try adjusting your filters to find the talent you're looking for.
               </p>
