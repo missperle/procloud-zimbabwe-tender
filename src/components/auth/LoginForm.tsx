@@ -21,6 +21,18 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 
+// Define credentials for dev mode login
+const DEV_CREDENTIALS = {
+  client: {
+    email: "test@proverb.digital",
+    password: "password123"
+  },
+  freelancer: {
+    email: "freelancer@proverb.digital",
+    password: "freelancer123"
+  }
+};
+
 const formSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address.",
@@ -44,22 +56,94 @@ const LoginForm = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: loginType === "client" 
-        ? (import.meta.env.DEV ? "test@proverb.digital" : "") 
-        : (import.meta.env.DEV ? "freelancer@proverb.digital" : ""),
+        ? (import.meta.env.DEV ? DEV_CREDENTIALS.client.email : "") 
+        : (import.meta.env.DEV ? DEV_CREDENTIALS.freelancer.email : ""),
       password: loginType === "client" 
-        ? (import.meta.env.DEV ? "password123" : "") 
-        : (import.meta.env.DEV ? "freelancer123" : ""),
+        ? (import.meta.env.DEV ? DEV_CREDENTIALS.client.password : "") 
+        : (import.meta.env.DEV ? DEV_CREDENTIALS.freelancer.password : ""),
     },
   });
+
+  // Create test users for development mode
+  useEffect(() => {
+    const createTestUsers = async () => {
+      if (!import.meta.env.DEV) return;
+      
+      try {
+        console.log("Checking if test users need to be created...");
+        
+        // Try to create client test user
+        await createTestUser("client", DEV_CREDENTIALS.client.email, DEV_CREDENTIALS.client.password);
+        
+        // Try to create freelancer test user
+        await createTestUser("freelancer", DEV_CREDENTIALS.freelancer.email, DEV_CREDENTIALS.freelancer.password);
+      } catch (err) {
+        console.error("Error creating test users:", err);
+      }
+    };
+    
+    createTestUsers();
+  }, []);
+  
+  const createTestUser = async (role: "client" | "freelancer", email: string, password: string) => {
+    // Check if user already exists
+    const { data: existingUsers } = await supabase
+      .from('users')
+      .select('id, email, role')
+      .eq('email', email);
+      
+    if (existingUsers && existingUsers.length > 0) {
+      console.log(`Test ${role} user already exists:`, email);
+      return;
+    }
+    
+    console.log(`Creating test ${role} user:`, email);
+    
+    // Create the user
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          role
+        }
+      }
+    });
+    
+    if (error) {
+      console.error(`Error creating test ${role} user:`, error);
+      return;
+    }
+    
+    if (!data.user) {
+      console.error(`No user returned when creating test ${role} user`);
+      return;
+    }
+    
+    // Set role in users table
+    const { error: userError } = await supabase
+      .from('users')
+      .update({ role })
+      .eq('id', data.user.id);
+      
+    if (userError) {
+      console.error(`Error setting role for test ${role} user:`, userError);
+    }
+    
+    // Sign out the test user so we don't interfere with the login flow
+    await supabase.auth.signOut();
+    
+    console.log(`Test ${role} user created successfully:`, email);
+  };
 
   // Update form values when login type changes
   useEffect(() => {
     form.setValue("email", loginType === "client" 
-      ? (import.meta.env.DEV ? "test@proverb.digital" : "") 
-      : (import.meta.env.DEV ? "freelancer@proverb.digital" : ""));
+      ? (import.meta.env.DEV ? DEV_CREDENTIALS.client.email : "") 
+      : (import.meta.env.DEV ? DEV_CREDENTIALS.freelancer.email : ""));
     form.setValue("password", loginType === "client" 
-      ? (import.meta.env.DEV ? "password123" : "") 
-      : (import.meta.env.DEV ? "freelancer123" : ""));
+      ? (import.meta.env.DEV ? DEV_CREDENTIALS.client.password : "") 
+      : (import.meta.env.DEV ? DEV_CREDENTIALS.freelancer.password : ""));
   }, [loginType, form]);
 
   const onSubmit = async (data: FormData) => {
