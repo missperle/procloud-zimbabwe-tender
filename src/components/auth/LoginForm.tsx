@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -32,6 +33,7 @@ type FormData = z.infer<typeof formSchema>;
 
 const LoginForm = () => {
   const { login } = useAuth();
+  const { userRole } = useSubscription();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
@@ -55,7 +57,12 @@ const LoginForm = () => {
         title: "Login successful",
         description: "Redirecting to your dashboard...",
       });
-      navigate("/client-dashboard");
+      // Redirect based on user role
+      if (userRole === 'freelancer') {
+        navigate("/dashboard");
+      } else {
+        navigate("/client-dashboard");
+      }
     } catch (err) {
       const errorMessage = err instanceof Error 
         ? err.message 
@@ -77,8 +84,8 @@ const LoginForm = () => {
   return (
     <div className="login-card bg-white p-8 rounded-lg shadow-lg w-full max-w-md mx-auto">
       <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold">Client Login</h1>
-        <p className="text-sm text-gray-500 mt-1">Sign in to access your dashboard</p>
+        <h1 className="text-2xl font-bold">Login to proCloud</h1>
+        <p className="text-sm text-gray-500 mt-1">Sign in to access your account</p>
       </div>
 
       <Form {...form}>
@@ -91,7 +98,7 @@ const LoginForm = () => {
                 <FormLabel>Email</FormLabel>
                 <FormControl>
                   <Input 
-                    placeholder="client@example.com" 
+                    placeholder="your@email.com" 
                     {...field} 
                     className="custom-input"
                   />

@@ -22,6 +22,7 @@ import NotFound from "./pages/NotFound";
 import ImageGenerator from './components/client/ImageGenerator';
 import SubmitProposalPage from "./pages/SubmitProposalPage";
 import ChatWidget from "./components/chat/ChatWidget";
+import FreelancerOnboardingPage from "./pages/FreelancerOnboardingPage";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +50,7 @@ const App = () => {
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/generate-images" element={<ImageGenerator />} />
                 <Route path="/jobs/:jobId/submit-proposal" element={<SubmitProposalPage />} />
+                <Route path="/freelancer-onboarding" element={<FreelancerOnboardingPage />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

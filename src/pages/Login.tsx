@@ -4,7 +4,7 @@ import LoginForm from "@/components/auth/LoginForm";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { CreditCard, Coins } from "lucide-react";
+import { CreditCard, Coins, Briefcase, UserPlus } from "lucide-react";
 import { useEffect } from "react";
 
 const Login = () => {
@@ -24,7 +24,7 @@ const Login = () => {
     );
   }
 
-  // If user is already logged in, redirect to dashboard
+  // If user is already logged in, redirect to appropriate dashboard
   if (currentUser) {
     console.log("User already logged in, redirecting to dashboard");
     return <Navigate to="/client-dashboard" replace />;
@@ -36,23 +36,32 @@ const Login = () => {
         <LoginForm />
         
         <div className="mt-8 text-center">
-          <p className="mb-2 text-gray-600">Want to explore our platform?</p>
+          <p className="mb-2 text-gray-600">New to proCloud?</p>
           <div className="flex gap-3 flex-wrap justify-center">
             <Button asChild variant="outline">
-              <Link to="/client-dashboard">View Demo Dashboard</Link>
+              <Link to="/signup?type=client">
+                <Briefcase className="mr-2 h-4 w-4" />
+                Join as a Client
+              </Link>
             </Button>
             <Button asChild>
-              <Link to="/buy-tokens">
-                <CreditCard className="mr-2 h-4 w-4" />
-                Buy Tokens
+              <Link to="/signup?type=freelancer">
+                <UserPlus className="mr-2 h-4 w-4" />
+                Join as a Freelancer
               </Link>
             </Button>
-            <Button asChild variant="outline">
-              <Link to="/client-dashboard?tab=tokens">
-                <Coins className="mr-2 h-4 w-4" />
-                Dashboard Tokens Tab
-              </Link>
-            </Button>
+          </div>
+          
+          <div className="mt-6">
+            <p className="mb-2 text-gray-600">Want to explore our platform?</p>
+            <div className="flex gap-3 flex-wrap justify-center">
+              <Button asChild variant="outline">
+                <Link to="/client-dashboard">View Demo Dashboard</Link>
+              </Button>
+              <Button asChild variant="outline">
+                <Link to="/freelancers">Browse Freelancers</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </div>

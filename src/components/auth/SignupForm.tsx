@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { useToast } from "@/hooks/use-toast";
 
 const signupSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -32,6 +33,7 @@ interface SignupFormProps {
 const SignupForm = ({ initialUserType = "freelancer" }: SignupFormProps) => {
   const { signup } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -55,8 +57,20 @@ const SignupForm = ({ initialUserType = "freelancer" }: SignupFormProps) => {
         role: data.userType
       });
       
+      // Show success message
+      toast({
+        title: "Account Created",
+        description: data.userType === "freelancer" 
+          ? "Welcome to proCloud! Let's set up your freelancer profile." 
+          : "Account created successfully! Redirecting to your dashboard.",
+      });
+      
       // Redirect to appropriate dashboard based on user type
-      navigate(data.userType === "client" ? "/client-dashboard" : "/dashboard");
+      if (data.userType === "freelancer") {
+        navigate("/freelancer-onboarding");
+      } else {
+        navigate("/client-dashboard");
+      }
     } catch (error) {
       console.error("Signup error:", error);
       const errorMessage = error instanceof Error ? error.message : "An error occurred during signup";

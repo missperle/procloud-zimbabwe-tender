@@ -13,12 +13,16 @@ export type AIFeature =
   | 'ai_chat_support'
   | 'ai_sentiment_scoring';
 
+// Define the user role type
+export type UserRole = 'freelancer' | 'client';
+
 interface SubscriptionContextType {
   subscription: any | null;
   isLoading: boolean;
   error: any | null;
   fetchSubscription: () => Promise<void>;
   hasFeatureAccess: (feature: AIFeature) => boolean;
+  userRole: UserRole | null;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(undefined);
@@ -35,6 +39,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   const [subscription, setSubscription] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
   const { currentUser } = useAuth();
 
   const fetchSubscription = async () => {
@@ -63,6 +68,20 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
         console.log("Subscription data:", data);
         setSubscription(data);
       }
+      
+      // Fetch user role
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', currentUser.id)
+        .single();
+        
+      if (userError) {
+        console.error("Error fetching user role:", userError);
+      } else if (userData) {
+        console.log("User role:", userData.role);
+        setUserRole(userData.role as UserRole);
+      }
     } catch (err) {
       console.error("Error during subscription fetch:", err);
       setError(err);
@@ -76,6 +95,7 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
       fetchSubscription();
     } else {
       setSubscription(null);
+      setUserRole(null);
     }
   }, [currentUser]);
 
@@ -105,7 +125,8 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
     isLoading,
     error,
     fetchSubscription,
-    hasFeatureAccess
+    hasFeatureAccess,
+    userRole
   };
 
   return (

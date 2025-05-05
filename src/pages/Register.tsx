@@ -3,14 +3,19 @@ import Layout from "@/components/layout/Layout";
 import SignupForm from "@/components/auth/SignupForm";
 import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, useSearchParams } from "react-router-dom";
+import { useSubscription } from "@/contexts/SubscriptionContext";
 
 const Register = () => {
   const { currentUser } = useAuth();
+  const { userRole } = useSubscription();
   const [searchParams] = useSearchParams();
   const userType = searchParams.get('type') || 'freelancer';
 
   if (currentUser) {
-    return <Navigate to="/dashboard" />;
+    if (userRole === 'freelancer') {
+      return <Navigate to="/freelancer-onboarding" />;
+    }
+    return <Navigate to="/client-dashboard" />;
   }
 
   return (
