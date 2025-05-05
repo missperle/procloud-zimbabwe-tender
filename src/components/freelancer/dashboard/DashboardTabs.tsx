@@ -33,7 +33,7 @@ const DashboardTabs = ({
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {/* Profile completion card */}
           <ProfileCompletion 
-            completion={profileCompletion} 
+            profileCompletion={profileCompletion} 
           />
           
           {/* Quick links card */}
@@ -45,7 +45,7 @@ const DashboardTabs = ({
         
         <div className="mt-6">
           {!profileData || profileCompletion < 50 ? (
-            <GettingStarted completion={profileCompletion} />
+            <GettingStarted profileCompletion={profileCompletion} />
           ) : (
             <Card className="mt-6">
               <CardContent className="pt-6">

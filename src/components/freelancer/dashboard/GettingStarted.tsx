@@ -2,7 +2,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { CheckCircle, FileText, DollarSign } from "lucide-react";
 
-const GettingStarted = () => {
+interface GettingStartedProps {
+  profileCompletion: number;
+}
+
+const GettingStarted = ({ profileCompletion }: GettingStartedProps) => {
   return (
     <div className="mt-6">
       <h2 className="text-xl font-bold mb-4">Getting Started</h2>
