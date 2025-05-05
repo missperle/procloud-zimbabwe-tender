@@ -1,16 +1,18 @@
 
-import { UseFormRegister, UseFormWatch } from "react-hook-form";
+import { UseFormRegister, UseFormWatch, UseFormSetValue } from "react-hook-form";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { BriefFormData } from "../BriefCreationForm";
+import { DatePicker } from "./DatePicker";
 
 interface BriefFormFieldsProps {
   register: UseFormRegister<BriefFormData>;
   watch: UseFormWatch<BriefFormData>;
+  setValue: UseFormSetValue<BriefFormData>;
 }
 
-const BriefFormFields = ({ register, watch }: BriefFormFieldsProps) => {
+const BriefFormFields = ({ register, watch, setValue }: BriefFormFieldsProps) => {
   return (
     <>
       <div className="grid grid-cols-4 items-center gap-4">
@@ -48,12 +50,14 @@ const BriefFormFields = ({ register, watch }: BriefFormFieldsProps) => {
         <Label htmlFor="deadline" className="text-right">
           Deadline
         </Label>
-        <Input
-          id="deadline"
-          type="date"
-          className="col-span-3"
-          {...register("deadline", { required: true })}
-        />
+        <div className="col-span-3">
+          <DatePicker 
+            id="deadline"
+            value={watch("deadline")} 
+            onChange={(date) => setValue("deadline", date)}
+            register={register}
+          />
+        </div>
       </div>
       <div className="grid grid-cols-4 items-center gap-4">
         <Label htmlFor="category" className="text-right">

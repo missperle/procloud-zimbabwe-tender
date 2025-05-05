@@ -63,7 +63,7 @@ const BriefCreationForm = ({ onSubmit, onClose }: BriefCreationFormProps) => {
       </Alert>
       
       <div className="grid gap-4 py-4">
-        <BriefFormFields register={register} watch={watch} />
+        <BriefFormFields register={register} watch={watch} setValue={setValue} />
         
         <BudgetEstimator 
           title={title} 
