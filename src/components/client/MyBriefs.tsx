@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Wand2 } from "lucide-react";
@@ -18,6 +17,7 @@ import { useBriefs } from "@/hooks/useBriefs";
 import { Link } from "react-router-dom";
 import { BriefFormData } from "./BriefCreationForm";
 import { Card } from "@/components/ui/card";
+import { BriefStatus } from "./brief/BriefStatusBadge";
 
 // Update Brief interface if needed locally
 // Note: This is commented out because we should import it from BriefTableList
@@ -26,10 +26,10 @@ import { Card } from "@/components/ui/card";
 //   title: string;
 //   budget: string;
 //   deadline: Date;
-//   status: string;
+//   status: BriefStatus;
 //   attachment_url?: string;
-//   original_description: string;
-//   category: string;
+//   original_description?: string;
+//   category?: string;
 // }
 
 const MyBriefs = () => {
@@ -47,7 +47,12 @@ const MyBriefs = () => {
   const fetchBriefs = async () => {
     const briefsData = await getClientBriefs();
     if (briefsData) {
-      setBriefs(briefsData as Brief[]);
+      // Ensure all brief status values are of type BriefStatus
+      const typedBriefs = briefsData.map(brief => ({
+        ...brief,
+        status: brief.status as BriefStatus
+      }));
+      setBriefs(typedBriefs as Brief[]);
     }
   };
 

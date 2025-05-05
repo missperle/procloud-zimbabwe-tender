@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,7 +20,7 @@ export interface Brief {
   title: string;
   budget: string;
   deadline: Date;
-  status: string;
+  status: BriefStatus; // Changed from string to BriefStatus
   attachment_url?: string;
   original_description?: string;
   category?: string;
