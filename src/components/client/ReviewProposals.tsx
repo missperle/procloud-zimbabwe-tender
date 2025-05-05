@@ -126,7 +126,7 @@ const ReviewProposals = () => {
                 <Info className="h-5 w-5 text-gray-500" />
                 How to Select Creators
               </h3>
-              <ol className="list-decimal pl-5 space-y-2 text-sm text-gray-600">
+              <ol className="list-decimal pl-5 space-y-2 text-sm text-gray-600 text-left">
                 <li>Review all proposals carefully, paying attention to creator ratings and Proverb Digital recommendations.</li>
                 <li>Use the message feature to ask any clarifying questions before making a decision.</li>
                 <li>When you've found a creator you'd like to work with, click "Request this creator".</li>
