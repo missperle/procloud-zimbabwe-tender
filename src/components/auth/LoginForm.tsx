@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -53,14 +53,14 @@ const LoginForm = () => {
   });
 
   // Update form values when login type changes
-  useState(() => {
+  useEffect(() => {
     form.setValue("email", loginType === "client" 
       ? (import.meta.env.DEV ? "test@proverb.digital" : "") 
       : (import.meta.env.DEV ? "agency@proverb.digital" : ""));
     form.setValue("password", loginType === "client" 
       ? (import.meta.env.DEV ? "password123" : "") 
       : (import.meta.env.DEV ? "agency123" : ""));
-  });
+  }, [loginType, form]);
 
   const onSubmit = async (data: FormData) => {
     try {

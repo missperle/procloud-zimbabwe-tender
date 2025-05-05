@@ -44,8 +44,8 @@ export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ ch
       const { data, error } = await supabase
         .from('subscriptions')
         .select('*')
-        .eq('userId', currentUser.id)
-        .order('startDate', { ascending: false })
+        .eq('userid', currentUser.id)
+        .order('startdate', { ascending: false })
         .limit(1)
         .single();
       
@@ -63,12 +63,12 @@ export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ ch
       // Convert Supabase timestamps to Date objects
       const subscription: Subscription = {
         id: data.id,
-        userId: data.userId,
+        userId: data.userid,
         plan: data.plan as SubscriptionPlan,
         status: data.status as SubscriptionStatus,
-        startDate: new Date(data.startDate),
-        nextBillingDate: data.nextBillingDate ? new Date(data.nextBillingDate) : null,
-        paymentMethod: data.paymentMethod as PaymentMethod
+        startDate: new Date(data.startdate),
+        nextBillingDate: data.nextbillingdate ? new Date(data.nextbillingdate) : null,
+        paymentMethod: data.paymentmethod as PaymentMethod
       };
       
       setSubscription(subscription);
