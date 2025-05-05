@@ -8,10 +8,10 @@ import { Button } from "@/components/ui/button";
 import { CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { handleRoleRedirection } from "@/components/auth/login/RoleRedirection";
 
 const Login = () => {
   const { currentUser, loading } = useAuth();
-  const [userRole, setUserRole] = useState<string | null>(null);
   const [checkingRole, setCheckingRole] = useState(false);
   const navigate = useNavigate();
   
@@ -32,19 +32,10 @@ const Login = () => {
         if (error) {
           console.error("Error checking user role:", error);
         } else if (data) {
-          setUserRole(data.role);
-          
-          // Redirect based on role
-          if (data.role === 'freelancer') {
-            navigate('/freelancer-dashboard', { replace: true });
-          } else if (data.role === 'client') {
-            navigate('/client-dashboard', { replace: true });
-          } else if (data.role === 'agency') {
-            navigate('/agency/review', { replace: true });
-          } else {
-            // Default fallback
-            navigate('/client-dashboard', { replace: true });
-          }
+          // Use the same handleRoleRedirection function we use for login
+          // For consistency, we'll use 'client' as default loginType when detecting from session
+          const loginType = data.role === 'freelancer' ? 'freelancer' : 'client';
+          handleRoleRedirection(data.role, loginType, navigate);
         }
       } catch (error) {
         console.error("Error checking user role:", error);

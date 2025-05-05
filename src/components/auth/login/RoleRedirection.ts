@@ -10,7 +10,7 @@ export const handleRoleRedirection = (
   loginType: "client" | "freelancer",
   navigate: NavigateFunction
 ) => {
-  console.log(`Redirecting based on detected role: ${userRole}`);
+  console.log(`Redirecting based on detected role: ${userRole}, login type: ${loginType}`);
   
   // Display role mismatch warning if applicable
   if ((loginType === "client" && userRole !== "client") || 

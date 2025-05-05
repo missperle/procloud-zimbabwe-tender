@@ -13,67 +13,80 @@ export const DEV_CREDENTIALS = {
   }
 };
 
-// Function for handling development mode login issues
+// Function for handling development mode login issues with improved reliability
 export const handleDevModeLogin = async (email: string, password: string) => {
-  // For dev mode, try to sign up the user again if login fails due to unconfirmed email
+  // Try to sign in first without signing out
   const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
     email: email,
     password: password
   });
   
-  if (loginError && loginError.message.includes("Email not confirmed")) {
+  // If login successful, return the data
+  if (!loginError) {
+    return { 
+      data: loginData,
+      error: null
+    };
+  }
+  
+  // If email not confirmed, try the workaround
+  if (loginError.message.includes("Email not confirmed")) {
     console.log("Email not confirmed, attempting workaround in development mode...");
     
     // Extract role from email for default assignment
     const role = email.includes("client") ? "client" : "freelancer";
     
-    // Force sign up again, which will overwrite the existing user
-    const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-      email: email,
-      password: password,
-      options: {
-        data: {
-          role: role
+    try {
+      // Force sign up again, which will overwrite the existing user
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+        email: email,
+        password: password,
+        options: {
+          data: {
+            role: role
+          }
         }
+      });
+      
+      if (signUpError) {
+        return { 
+          data: null, 
+          error: { message: signUpError.message } 
+        };
       }
-    });
-    
-    if (signUpError) {
+      
+      // Wait a moment to ensure the signup is processed
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      // Try login again
+      const { data: secondLoginData, error: secondLoginError } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password
+      });
+      
+      if (secondLoginError) {
+        return {
+          data: null,
+          error: { message: "Failed to login after signup workaround: " + secondLoginError.message }
+        };
+      }
+      
       return { 
-        data: null, 
-        error: { message: signUpError.message } 
+        data: secondLoginData,
+        error: null
       };
-    }
-    
-    // Try login again
-    const { data: secondLoginData, error: secondLoginError } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password
-    });
-    
-    if (secondLoginError) {
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error during dev mode login";
       return {
         data: null,
-        error: { message: "Failed to login after signup workaround: " + secondLoginError.message }
+        error: { message }
       };
     }
-    
-    return { 
-      data: secondLoginData,
-      error: null
-    };
-  } 
-  
-  // If there was another error or the login was successful
-  if (loginError) {
-    return {
-      data: null,
-      error: loginError
-    };
   }
   
-  return { 
-    data: loginData,
-    error: null
+  // For other types of errors, return them
+  return {
+    data: null,
+    error: loginError
   };
 };
