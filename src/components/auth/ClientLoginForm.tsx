@@ -4,8 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { EmailPasswordForm } from "./login/EmailPasswordForm";
-import { attemptLogin } from "./login/DevModeHelpers";
+import { attemptLogin, fetchUserRole } from "./login/DevModeHelpers";
 import { DEV_CREDENTIALS } from "@/utils/authHelpers";
+import { handleRoleRedirection } from "./login/RoleRedirection";
 
 interface FormData {
   email: string;
@@ -62,24 +63,18 @@ const ClientLoginForm = () => {
       
       while (retries <= MAX_RETRIES) {
         try {
-          const { data, error: roleError } = await supabase
-            .from('users')
-            .select('role')
-            .eq('id', userId)
-            .maybeSingle();
-          
-          if (roleError) {
-            if (roleError.message.includes("rate limit") && retries < MAX_RETRIES) {
-              console.log(`Rate limit hit when fetching role, retrying (${retries + 1}/${MAX_RETRIES})`);
-              retries++;
-              await new Promise(resolve => setTimeout(resolve, delay));
-              delay *= 2;
-              continue;
-            }
-            console.error("Error fetching user role:", roleError);
-          } else {
-            userRole = data?.role || null;
+          const role = await fetchUserRole(userId);
+          if (role !== null) {
+            userRole = role;
             break;
+          }
+          
+          if (retries < MAX_RETRIES) {
+            console.log(`Role fetch attempt failed, retrying (${retries + 1}/${MAX_RETRIES})`);
+            retries++;
+            await new Promise(resolve => setTimeout(resolve, delay));
+            delay *= 2;
+            continue;
           }
         } catch (error) {
           console.error("Error in role check:", error);
@@ -93,23 +88,17 @@ const ClientLoginForm = () => {
         }
       }
       
+      console.log("Login successful, detected role:", userRole);
+      
       // Show appropriate toast based on role
-      if (userRole && userRole !== "client") {
-        toast({
-          title: "Role mismatch",
-          description: `This account is registered as a ${userRole} account. You'll be redirected to the appropriate dashboard.`,
-          variant: "default",
-        });
-        
-        navigate(userRole === "freelancer" ? "/freelancer-dashboard" : "/client-dashboard", { replace: true });
-      } else {
-        toast({
-          title: "Login successful",
-          description: "Redirecting to your dashboard...",
-        });
-        
-        navigate("/client-dashboard", { replace: true });
-      }
+      toast({
+        title: "Login successful",
+        description: "Redirecting to your dashboard...",
+      });
+      
+      // Use the consistent handleRoleRedirection function for all redirections
+      handleRoleRedirection(userRole, "client", navigate);
+      
     } catch (err) {
       const errorMessage = err instanceof Error 
         ? err.message 

@@ -76,18 +76,19 @@ const RoleGuard = ({
 
   if (!currentUser) {
     console.log("RoleGuard: No current user, redirecting to login");
-    return <Navigate to={redirectTo} state={{ from: window.location.pathname }} replace />;
+    // Determine the appropriate login page based on the allowed roles
+    const loginRedirect = allowedRoles.includes('freelancer') 
+      ? "/freelancer-login" 
+      : "/client-login";
+    
+    return <Navigate to={loginRedirect} state={{ from: window.location.pathname }} replace />;
   }
 
   if (!allowedRoles.includes(userRole || '')) {
     console.log("RoleGuard: User role not allowed:", userRole);
     
-    // Handle unauthorized role with toast notification
-    toast({
-      title: "Access restricted",
-      description: "You're being redirected to the appropriate dashboard for your account type.",
-      variant: "default",
-    });
+    // Don't show the toast here, it's better to show it when redirecting
+    // to avoid duplicate toast messages
     
     // Handle unauthorized role - redirect to appropriate dashboard
     if (userRole === 'client') {
