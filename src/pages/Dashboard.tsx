@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,7 +14,6 @@ import {
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import Layout from "@/components/layout/Layout";
 import { useAuth } from "@/contexts/SupabaseAuthContext";
-import Feed from "@/components/explore/Feed";
 import SubscriptionGuard from "@/components/subscription/SubscriptionGuard";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { Link } from "react-router-dom";
@@ -57,7 +55,6 @@ const earnings = {
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [activeCategory, setActiveCategory] = useState("All");
   const { currentUser } = useAuth();
   const { subscription } = useSubscription();
   
@@ -132,9 +129,8 @@ const Dashboard = () => {
           )}
           
           <Tabs defaultValue="dashboard" onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid grid-cols-5 mb-8">
+            <TabsList className="grid grid-cols-4 mb-8">
               <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-              <TabsTrigger value="explore">Explore</TabsTrigger>
               <TabsTrigger value="proposals">My Proposals</TabsTrigger>
               <TabsTrigger value="payments">Payments</TabsTrigger>
               <TabsTrigger value="profile">Profile</TabsTrigger>
@@ -267,31 +263,6 @@ const Dashboard = () => {
                   </CardContent>
                 </Card>
               </div>
-            </TabsContent>
-
-            {/* Explore Tab */}
-            <TabsContent value="explore">
-              <div className="mb-4">
-                <div className="tabs-container overflow-x-auto hide-scrollbar border-b border-gray-200 sticky top-0 bg-white z-30">
-                  <div className="flex px-4 py-2 space-x-6 min-w-max">
-                    {["All", "Design", "Illustration", "Branding", "Photography", 
-                      "Web Development", "Mobile Apps", "Animation", "UI/UX", "3D"].map((category) => (
-                      <button
-                        key={category}
-                        className={`tab-item whitespace-nowrap py-2 px-1 text-sm font-medium transition-colors ${
-                          activeCategory === category 
-                            ? 'border-b-2 border-accent text-accent' 
-                            : 'hover:text-accent'
-                        }`}
-                        onClick={() => setActiveCategory(category)}
-                      >
-                        {category}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <Feed activeCategory={activeCategory} />
             </TabsContent>
 
             {/* My Proposals Tab */}
