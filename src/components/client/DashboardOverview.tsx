@@ -1,8 +1,10 @@
-
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Activity, Users, DollarSign, Award } from "lucide-react";
+import { Activity, Users, DollarSign, Award, HelpCircle } from "lucide-react";
 import { Link } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import OnboardingGuide from "./OnboardingGuide";
 
 // Mock data - in a real app this would come from API/database
 const stats = [
@@ -42,9 +44,27 @@ const activities = [
 ];
 
 const DashboardOverview = () => {
+  const [showGuide, setShowGuide] = useState(false);
+  
   return (
     <div className="space-y-6">
-      <h2 className="text-xl font-semibold">Overview</h2>
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Overview</h2>
+        <Button 
+          variant="outline"
+          onClick={() => setShowGuide(true)}
+          className="flex items-center gap-1.5"
+        >
+          <HelpCircle className="h-4 w-4" />
+          How It Works
+        </Button>
+      </div>
+      
+      <Dialog open={showGuide} onOpenChange={setShowGuide}>
+        <DialogContent className="max-w-4xl">
+          <OnboardingGuide onClose={() => setShowGuide(false)} />
+        </DialogContent>
+      </Dialog>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat) => (

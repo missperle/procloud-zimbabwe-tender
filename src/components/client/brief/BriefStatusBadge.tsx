@@ -85,7 +85,7 @@ export const BriefStatusBadge: React.FC<BriefStatusBadgeProps> = ({
         };
       default:
         return {
-          label: status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' '),
+          label: status.toString().charAt(0).toUpperCase() + status.toString().slice(1).replace(/_/g, ' '),
           icon: <PenTool className="h-4 w-4" />,
           bgColor: "bg-gray-100",
           textColor: "text-gray-800"

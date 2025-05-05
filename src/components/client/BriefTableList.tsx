@@ -21,6 +21,7 @@ export interface Brief {
   budget: string;
   deadline: Date;
   status: BriefStatus;
+  attachment_url?: string; // Added to fix TypeScript error
 }
 
 interface BriefTableListProps {

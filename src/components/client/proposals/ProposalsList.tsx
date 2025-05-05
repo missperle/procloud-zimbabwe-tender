@@ -1,5 +1,5 @@
 
-import React from "react";
+import React, { useState } from "react";
 import ProposalCard, { ProposalData } from "./ProposalCard";
 import { Button } from "@/components/ui/button";
 import { Award } from "lucide-react";
@@ -19,6 +19,13 @@ const ProposalsList = ({
   onMessageCreator,
   recommendedProposals = []
 }: ProposalsListProps) => {
+  const [showRecommendedOnly, setShowRecommendedOnly] = useState(false);
+  
+  // Filter proposals if showing recommended only
+  const displayedProposals = showRecommendedOnly 
+    ? proposals.filter(proposal => recommendedProposals.includes(proposal.id))
+    : proposals;
+
   return (
     <>
       <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
@@ -30,19 +37,22 @@ const ProposalsList = ({
               <Button 
                 variant="outline" 
                 size="sm" 
-                className="ml-2 text-indigo-600 border-indigo-200 hover:text-indigo-700 hover:bg-indigo-50"
+                className={`ml-2 text-indigo-600 border-indigo-200 hover:text-indigo-700 hover:bg-indigo-50 ${
+                  showRecommendedOnly ? 'bg-indigo-50' : ''
+                }`}
+                onClick={() => setShowRecommendedOnly(!showRecommendedOnly)}
               >
                 <Award className="h-4 w-4 mr-1" />
-                View Recommended Only
+                {showRecommendedOnly ? "View All" : "View Recommended Only"}
               </Button>
             </>
           )
         }
       </h3>
       
-      {proposals.length > 0 ? (
+      {displayedProposals.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {proposals.map((proposal) => (
+          {displayedProposals.map((proposal) => (
             <ProposalCard 
               key={proposal.id} 
               proposal={proposal} 
@@ -54,7 +64,11 @@ const ProposalsList = ({
         </div>
       ) : (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <p className="text-gray-500">No proposals available for this brief yet.</p>
+          <p className="text-gray-500">
+            {showRecommendedOnly 
+              ? "No recommended proposals available for this brief yet."
+              : "No proposals available for this brief yet."}
+          </p>
         </div>
       )}
     </>
