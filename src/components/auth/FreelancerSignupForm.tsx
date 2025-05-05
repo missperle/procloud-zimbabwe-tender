@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,8 +14,22 @@ import { useNavigate } from "react-router-dom";
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
+// List of common personal email domains
+const personalEmailDomains = [
+  "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", 
+  "aol.com", "icloud.com", "mail.com", "protonmail.com", 
+  "zoho.com", "yandex.com", "gmx.com", "tutanota.com",
+  "live.com", "msn.com"
+];
+
 const freelancerSignupSchema = z.object({
-  email: z.string().email({ message: "Please enter a valid email address" }),
+  email: z.string()
+    .email({ message: "Please enter a valid email address" })
+    .refine((email) => {
+      const domain = email.split('@')[1]?.toLowerCase();
+      // For freelancer accounts, we WANT personal email domains
+      return personalEmailDomains.includes(domain);
+    }, { message: "Please use a personal email address for freelancer accounts" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   fullName: z.string().min(2, { message: "Full name is required" }),
   acceptTerms: z.boolean().refine(val => val === true, { message: "You must accept the terms and conditions" }),
@@ -113,6 +126,17 @@ const FreelancerSignupForm = () => {
 
     setLoading(true);
     try {
+      // Check if email is already registered as a client
+      const { data: existingUser, error: checkError } = await supabase
+        .from('users')
+        .select('role')
+        .eq('email', data.email)
+        .single();
+
+      if (existingUser && existingUser.role === 'client') {
+        throw new Error("This email is already registered as a client. Please use a different email address.");
+      }
+
       // 1. Create the user in Supabase Auth
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: data.email,
@@ -179,9 +203,12 @@ const FreelancerSignupForm = () => {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="your.email@example.com" {...field} />
+                      <Input placeholder="your.email@gmail.com" {...field} />
                     </FormControl>
                     <FormMessage />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Use a personal email address (Gmail, Hotmail, etc.)
+                    </p>
                   </FormItem>
                 )}
               />

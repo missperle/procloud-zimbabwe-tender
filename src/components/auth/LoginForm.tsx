@@ -67,15 +67,25 @@ const LoginForm = () => {
       setError(null);
       setIsLoading(true);
       console.log(`Attempting ${loginType} login with:`, data.email);
+      
+      // First, check if a user with this email exists
+      const { data: { user: existingUser }, error: checkError } = await supabase.auth.getUser();
+      
+      // If there's a session already, sign out
+      if (existingUser) {
+        await supabase.auth.signOut();
+      }
+      
+      // Attempt to log in
       await login(data.email, data.password);
       
-      // Check user role in Supabase
+      // Get user after login
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         throw new Error("User not found after login");
       }
       
-      // Get user metadata for role
+      // Get user profile to check role
       const { data: userProfile } = await supabase
         .from('users')
         .select('role')
@@ -84,6 +94,14 @@ const LoginForm = () => {
       
       const userRole = userProfile?.role || null;
       console.log("User role:", userRole);
+      
+      // Verify role matches the login type
+      if ((loginType === "client" && userRole !== "client") || 
+          (loginType === "freelancer" && userRole !== "freelancer")) {
+        // Log out the user since they used the wrong login type
+        await supabase.auth.signOut();
+        throw new Error(`This email is not registered as a ${loginType}. Please use the correct login option.`);
+      }
       
       toast({
         title: "Login successful",
