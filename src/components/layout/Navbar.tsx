@@ -41,6 +41,26 @@ const Navbar = () => {
             >
               Jobs
             </Link>
+            {currentUser && (
+              <>
+                <Link 
+                  to="/client-dashboard" 
+                  className={`text-sm font-medium transition-colors px-6 ${
+                    location.pathname === '/client-dashboard' ? 'text-procloud-green' : 'hover:text-procloud-green'
+                  }`}
+                >
+                  Dashboard
+                </Link>
+                <Link 
+                  to="/pricing" 
+                  className={`text-sm font-medium transition-colors px-6 ${
+                    location.pathname === '/pricing' ? 'text-procloud-green' : 'hover:text-procloud-green'
+                  }`}
+                >
+                  Your Plan
+                </Link>
+              </>
+            )}
           </nav>
           
           <div className="hidden md:flex items-center space-x-3">
@@ -98,6 +118,29 @@ const Navbar = () => {
               >
                 Jobs
               </Link>
+              
+              {currentUser && (
+                <>
+                  <Link 
+                    to="/client-dashboard" 
+                    className={`px-4 py-2 text-sm font-medium hover:bg-procloud-gray-100 rounded-md ${
+                      location.pathname === '/client-dashboard' ? 'text-procloud-green' : ''
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Dashboard
+                  </Link>
+                  <Link 
+                    to="/pricing" 
+                    className={`px-4 py-2 text-sm font-medium hover:bg-procloud-gray-100 rounded-md ${
+                      location.pathname === '/pricing' ? 'text-procloud-green' : ''
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Your Plan
+                  </Link>
+                </>
+              )}
               
               {currentUser ? (
                 <div className="pt-2 flex flex-col space-y-2">
