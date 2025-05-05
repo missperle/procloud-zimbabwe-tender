@@ -69,9 +69,6 @@ const LoginFormContent = ({ loginType }: LoginFormContentProps) => {
       setIsLoading(true);
       console.log(`Attempting ${loginType} login with:`, data.email);
       
-      // Sign out any existing user first
-      await supabase.auth.signOut();
-      
       // If we're in development mode, let's handle unconfirmed emails
       if (import.meta.env.DEV) {
         const { data: loginData } = await handleDevModeLogin(data.email, data.password);
@@ -81,6 +78,11 @@ const LoginFormContent = ({ loginType }: LoginFormContentProps) => {
         }
       } else {
         // Normal login flow for production
+        const { error: signOutError } = await supabase.auth.signOut();
+        if (signOutError) {
+          console.warn("Error signing out before login:", signOutError);
+        }
+        
         const { data: loginData, error: loginError } = await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password
@@ -100,11 +102,10 @@ const LoginFormContent = ({ loginType }: LoginFormContentProps) => {
         .from('users')
         .select('role')
         .eq('id', (await supabase.auth.getUser()).data.user?.id)
-        .single();
+        .maybeSingle();
       
       if (profileError) {
         console.error("Error fetching user role:", profileError);
-        throw new Error("Error fetching user role");
       }
       
       const userRole = userProfile?.role || null;
@@ -113,9 +114,12 @@ const LoginFormContent = ({ loginType }: LoginFormContentProps) => {
       // Verify role matches the login type
       if ((loginType === "client" && userRole !== "client") || 
           (loginType === "freelancer" && userRole !== "freelancer")) {
-        // Log out the user since they used the wrong login type
-        await supabase.auth.signOut();
-        throw new Error(`This email is registered as a ${userRole || 'unknown'} account. Please use the correct login option.`);
+        // Show warning but don't log out
+        toast({
+          title: "Role mismatch",
+          description: `This account is registered as a ${userRole || 'unknown'} account but you're using the ${loginType} login. You'll be redirected to the appropriate dashboard.`,
+          variant: "warning",
+        });
       }
       
       toast({

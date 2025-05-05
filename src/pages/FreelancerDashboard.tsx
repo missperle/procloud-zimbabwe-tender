@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Calendar, DollarSign, File, FileText, Edit } from "lucide-react";
 
 const FreelancerDashboard = () => {
-  const { currentUser } = useAuth();
+  const { currentUser, loading: authLoading } = useAuth();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [freelancerAlias, setFreelancerAlias] = useState<string | null>(null);
@@ -19,58 +19,54 @@ const FreelancerDashboard = () => {
   const [profileData, setProfileData] = useState<any>(null);
 
   useEffect(() => {
-    const checkUserRole = async () => {
+    const checkUserInfo = async () => {
       if (!currentUser) {
         setLoading(false);
         return;
       }
       
       try {
-        const { data, error } = await supabase
+        console.log("Fetching user info for:", currentUser.id);
+        
+        // Get user role and alias
+        const { data: userData, error: userError } = await supabase
           .from('users')
           .select('role, alias')
           .eq('id', currentUser.id)
-          .single();
+          .maybeSingle();
         
-        if (error) {
-          console.error("Error fetching user role:", error);
-          setUserRole(null);
-        } else if (data) {
-          setUserRole(data.role);
-          setFreelancerAlias(data.alias);
+        if (userError) {
+          console.error("Error fetching user role:", userError);
+        } else if (userData) {
+          console.log("User data retrieved:", userData);
+          setUserRole(userData.role);
+          setFreelancerAlias(userData.alias);
         }
-      } catch (error) {
-        console.error("Error checking user role:", error);
-        setUserRole(null);
-      }
-    };
-    
-    const fetchFreelancerProfile = async () => {
-      if (!currentUser) return;
-      
-      try {
-        const { data, error } = await supabase
+        
+        // Get freelancer profile
+        const { data: profileData, error: profileError } = await supabase
           .from('freelancer_profiles')
           .select('*')
           .eq('id', currentUser.id)
-          .single();
+          .maybeSingle();
           
-        if (error && error.code !== "PGRST116") {
-          console.error("Error fetching freelancer profile:", error);
-        } else if (data) {
-          setProfileData(data);
+        if (profileError && profileError.code !== "PGRST116") {
+          console.error("Error fetching freelancer profile:", profileError);
+        } else if (profileData) {
+          console.log("Profile data retrieved:", profileData);
+          setProfileData(profileData);
         }
       } catch (error) {
-        console.error("Error fetching freelancer profile:", error);
+        console.error("Error in checkUserInfo:", error);
       } finally {
         setLoading(false);
       }
     };
     
-    Promise.all([checkUserRole(), fetchFreelancerProfile()]);
+    checkUserInfo();
   }, [currentUser]);
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <Layout>
         <div className="container mx-auto px-4 py-8">
@@ -84,8 +80,15 @@ const FreelancerDashboard = () => {
     );
   }
   
-  if (!currentUser || userRole !== "freelancer") {
+  // Redirect if not logged in or not a freelancer
+  if (!currentUser) {
+    console.log("No current user, redirecting to login");
     return <Navigate to="/login" replace />;
+  }
+  
+  if (userRole !== "freelancer" && userRole !== null) {
+    console.log("User is not a freelancer, redirecting to appropriate dashboard");
+    return <Navigate to={userRole === "client" ? "/client-dashboard" : "/login"} replace />;
   }
 
   const profileCompletion = profileData ? calculateProfileCompletion(profileData) : 0;

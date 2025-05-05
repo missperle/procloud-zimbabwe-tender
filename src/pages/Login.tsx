@@ -5,7 +5,7 @@ import Layout from "@/components/layout/Layout";
 import LoginForm from "@/components/auth/LoginForm";
 import { useAuth } from "@/contexts/SupabaseAuthContext";
 import { Button } from "@/components/ui/button";
-import { CreditCard, Coins } from "lucide-react";
+import { CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -27,7 +27,7 @@ const Login = () => {
           .from('users')
           .select('role')
           .eq('id', currentUser.id)
-          .single();
+          .maybeSingle();
         
         if (error) {
           console.error("Error checking user role:", error);

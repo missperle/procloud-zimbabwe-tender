@@ -16,7 +16,7 @@ const RoleGuard = ({
   allowedRoles,
   redirectTo = "/login"
 }: RoleGuardProps) => {
-  const { currentUser } = useAuth();
+  const { currentUser, loading: authLoading } = useAuth();
   const [userRole, setUserRole] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -28,16 +28,18 @@ const RoleGuard = ({
       }
       
       try {
+        console.log("Checking role for user:", currentUser.id);
         const { data, error } = await supabase
           .from('users')
           .select('role')
           .eq('id', currentUser.id)
-          .single();
+          .maybeSingle();
         
         if (error) {
           console.error("Error fetching user role:", error);
           setUserRole(null);
         } else if (data) {
+          console.log("User role retrieved:", data.role);
           setUserRole(data.role);
         }
       } catch (error) {
@@ -48,10 +50,14 @@ const RoleGuard = ({
       }
     };
     
-    checkUserRole();
+    if (currentUser) {
+      checkUserRole();
+    } else {
+      setLoading(false);
+    }
   }, [currentUser]);
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div className="container mx-auto p-8">
         <Skeleton className="h-8 w-64 mb-6" />
@@ -64,10 +70,12 @@ const RoleGuard = ({
   }
 
   if (!currentUser) {
+    console.log("No current user, redirecting to login");
     return <Navigate to={redirectTo} state={{ from: window.location.pathname }} replace />;
   }
 
   if (!allowedRoles.includes(userRole || '')) {
+    console.log("User role not allowed:", userRole);
     // Handle unauthorized role - redirect to appropriate dashboard
     if (userRole === 'client') {
       return <Navigate to="/client-dashboard" replace />;
