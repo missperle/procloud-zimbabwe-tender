@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { CreditCard, LogOut, Search, Settings, User } from 'lucide-react';
+import { CreditCard, LogOut, Settings, User } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,12 +35,6 @@ const UserMenu = ({ userRole }: UserMenuProps) => {
           <p className="text-xs text-muted-foreground">{currentUser?.email}</p>
         </div>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link to="/explore" className="flex cursor-pointer items-center">
-            <Search className="mr-2 h-4 w-4" />
-            <span>Explore</span>
-          </Link>
-        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link to="/client-dashboard" className="flex cursor-pointer items-center">
             <User className="mr-2 h-4 w-4" />

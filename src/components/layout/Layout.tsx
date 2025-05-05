@@ -1,28 +1,19 @@
 
 import { ReactNode } from "react";
-import { useLocation } from "react-router-dom";
-import Navbar from "./Navbar";
-import Footer from "./Footer";
 import SideNav from "./SideNav";
 import TopBar from "./TopBar";
-import CategoryNav from "./CategoryNav";
+import Footer from "./Footer";
 
 interface LayoutProps {
   children: ReactNode;
-  activeCategory?: string;
-  onCategoryChange?: (category: string) => void;
 }
 
-const Layout = ({ children, activeCategory, onCategoryChange }: LayoutProps) => {
-  const location = useLocation();
-  const showCategoryNav = location.pathname === '/explore';
-  
+const Layout = ({ children }: LayoutProps) => {
   return (
     <div className="app-wrapper flex">
       <SideNav />
       <div className="main-content flex-grow">
         <TopBar />
-        {showCategoryNav && <CategoryNav activeCategory={activeCategory} onCategoryChange={onCategoryChange} />}
         <main className="flex-grow">
           {children}
         </main>

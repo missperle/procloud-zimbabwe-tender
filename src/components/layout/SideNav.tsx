@@ -16,9 +16,6 @@ const SideNav = () => {
       </div>
       
       <div className="sidenav-footer">
-        <Link to="/explore" className="hover:text-procloud-green transition-colors mb-4">
-          Explore
-        </Link>
         <Link to="/pricing" className="hover:text-procloud-gold transition-colors">
           Subscribe
         </Link>

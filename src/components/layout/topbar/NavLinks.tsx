@@ -31,7 +31,6 @@ interface NavLinksProps {
 const NavLinks = ({ userRole, isLoggedIn }: NavLinksProps) => {
   return (
     <nav className="flex items-center space-x-6">
-      <NavLink to="/explore" label="Explore" />
       {isLoggedIn && (
         <>
           <NavLink to="/client-dashboard" label="Dashboard" mobileOnly />
