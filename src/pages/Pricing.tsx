@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
@@ -130,7 +129,7 @@ const Pricing = () => {
       
       // Create the subscription document - following security rules
       await addDoc(collection(db, 'subscriptions'), {
-        userId: currentUser.uid, // Security rule ensures this matches auth user
+        userId: currentUser.id, // Updated from currentUser.uid
         tier: 'free',
         status: 'active',
         currentPeriodEnd: null,
@@ -182,7 +181,7 @@ const Pricing = () => {
       
       // Create the subscription according to security rules
       await addDoc(collection(db, 'subscriptions'), {
-        userId: currentUser.uid,
+        userId: currentUser.id, // Updated from currentUser.uid
         tier: selectedPlan?.id || 'basic',
         status: 'pending',
         currentPeriodEnd: null,
@@ -383,4 +382,3 @@ const Pricing = () => {
 };
 
 export default Pricing;
-
