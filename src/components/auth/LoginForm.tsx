@@ -53,14 +53,14 @@ const LoginForm = () => {
   });
 
   // Update form values when login type changes
-  form.useEffect(() => {
+  useState(() => {
     form.setValue("email", loginType === "client" 
       ? (import.meta.env.DEV ? "test@proverb.digital" : "") 
       : (import.meta.env.DEV ? "agency@proverb.digital" : ""));
     form.setValue("password", loginType === "client" 
       ? (import.meta.env.DEV ? "password123" : "") 
       : (import.meta.env.DEV ? "agency123" : ""));
-  }, [loginType, form]);
+  });
 
   const onSubmit = async (data: FormData) => {
     try {

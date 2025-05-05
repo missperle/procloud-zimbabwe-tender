@@ -64,11 +64,11 @@ export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ ch
       const subscription: Subscription = {
         id: data.id,
         userId: data.userId,
-        plan: data.plan,
-        status: data.status,
+        plan: data.plan as SubscriptionPlan,
+        status: data.status as SubscriptionStatus,
         startDate: new Date(data.startDate),
         nextBillingDate: data.nextBillingDate ? new Date(data.nextBillingDate) : null,
-        paymentMethod: data.paymentMethod
+        paymentMethod: data.paymentMethod as PaymentMethod
       };
       
       setSubscription(subscription);
