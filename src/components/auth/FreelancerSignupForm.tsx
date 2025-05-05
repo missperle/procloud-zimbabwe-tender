@@ -24,12 +24,7 @@ const personalEmailDomains = [
 
 const freelancerSignupSchema = z.object({
   email: z.string()
-    .email({ message: "Please enter a valid email address" })
-    .refine((email) => {
-      const domain = email.split('@')[1]?.toLowerCase();
-      // For freelancer accounts, we WANT personal email domains
-      return personalEmailDomains.includes(domain);
-    }, { message: "Please use a personal email address for freelancer accounts" }),
+    .email({ message: "Please enter a valid email address" }),
   password: z.string().min(6, { message: "Password must be at least 6 characters" }),
   fullName: z.string().min(2, { message: "Full name is required" }),
   acceptTerms: z.boolean().refine(val => val === true, { message: "You must accept the terms and conditions" }),

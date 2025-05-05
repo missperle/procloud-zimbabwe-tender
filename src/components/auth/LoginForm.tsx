@@ -24,11 +24,11 @@ import { supabase } from "@/integrations/supabase/client";
 // Define credentials for dev mode login with valid email formats
 const DEV_CREDENTIALS = {
   client: {
-    email: "client@company-test.com",
+    email: "client123@gmail.com",
     password: "password123"
   },
   freelancer: {
-    email: "freelancer@personal-test.com",
+    email: "freelancer123@gmail.com",
     password: "freelancer123"
   }
 };
@@ -111,7 +111,7 @@ const LoginForm = () => {
           data: {
             role
           },
-          // Bypass email confirmation in development
+          // Skip email verification in development
           emailRedirectTo: window.location.origin + "/login"
         }
       });
