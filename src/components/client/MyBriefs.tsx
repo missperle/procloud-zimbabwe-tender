@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,12 +14,31 @@ import { useBriefs } from "@/hooks/useBriefs";
 import { format } from "date-fns";
 import { AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import BriefDetailView from "./brief/BriefDetailView";
+import BriefRevisionForm from "./brief/BriefRevisionForm";
+import { BriefStatus } from "./brief/BriefStatusBadge";
+
+// Mock feedback data for demonstration
+const mockFeedback = [
+  {
+    message: "Please provide more specific details about your project requirements. What specific deliverables do you expect?",
+    createdAt: new Date('2025-04-30'),
+    fromAdmin: "Sarah from Proverb Digital"
+  },
+  {
+    message: "Your budget seems low for the scope of work. Consider adjusting it to attract higher quality proposals.",
+    createdAt: new Date('2025-05-01'),
+    fromAdmin: "Michael from Proverb Digital"
+  }
+];
 
 const MyBriefs = () => {
   const [briefs, setBriefs] = useState<Brief[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
-  const { getClientBriefs } = useBriefs();
+  const [selectedBriefId, setSelectedBriefId] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const { getClientBriefs, submitBrief } = useBriefs();
 
   useEffect(() => {
     const fetchBriefs = async () => {
@@ -33,7 +51,8 @@ const MyBriefs = () => {
         title: brief.title,
         budget: brief.budget,
         deadline: new Date(brief.deadline),
-        status: brief.status,
+        status: brief.status as BriefStatus,
+        attachment_url: brief.attachment_url
       }));
       
       setBriefs(formattedBriefs);
@@ -48,7 +67,7 @@ const MyBriefs = () => {
     setBriefs(
       briefs.map((brief) =>
         brief.id === id
-          ? { ...brief, status: brief.status === "Open" ? "Closed" : "Open" }
+          ? { ...brief, status: brief.status === "published" ? "draft" as BriefStatus : "published" as BriefStatus }
           : brief
       )
     );
@@ -62,11 +81,47 @@ const MyBriefs = () => {
       title: data.title,
       budget: data.budget,
       deadline: new Date(data.deadline),
-      status: "draft",
+      status: "draft" as BriefStatus,
+      attachment_url: data.attachment_url
     };
     
     setBriefs([newBrief, ...briefs]);
     setDialogOpen(false);
+  };
+
+  const handleViewBrief = (id: string) => {
+    setSelectedBriefId(id);
+    setIsEditing(false);
+  };
+
+  const handleEditBrief = (id: string) => {
+    setSelectedBriefId(id);
+    setIsEditing(true);
+  };
+
+  const handleBackToBriefs = () => {
+    setSelectedBriefId(null);
+    setIsEditing(false);
+  };
+
+  const handleRevisionSubmit = async (data: BriefFormData) => {
+    // In a real implementation, this would update the brief in the database
+    // and change the status back to 'submitted'
+    const updatedBriefs = briefs.map((brief) => 
+      brief.id === selectedBriefId ? 
+        { 
+          ...brief, 
+          title: data.title,
+          budget: data.budget,
+          deadline: new Date(data.deadline),
+          status: "submitted" as BriefStatus,
+          attachment_url: data.attachment_url
+        } : brief
+    );
+    
+    setBriefs(updatedBriefs);
+    setSelectedBriefId(null);
+    setIsEditing(false);
   };
 
   const getStatusDescription = (status: string) => {
@@ -90,6 +145,43 @@ const MyBriefs = () => {
     }
   };
 
+  // Render the brief detail view or revision form if a brief is selected
+  if (selectedBriefId) {
+    const selectedBrief = briefs.find(brief => brief.id === selectedBriefId);
+    
+    if (!selectedBrief) return null;
+    
+    if (isEditing && selectedBrief.status === 'changes_requested') {
+      const briefData: BriefFormData = {
+        title: selectedBrief.title,
+        original_description: "This is sample description content", // Would come from the real brief
+        budget: selectedBrief.budget,
+        deadline: format(selectedBrief.deadline, "yyyy-MM-dd"),
+        category: "design", // Would come from the real brief
+        attachment_url: selectedBrief.attachment_url
+      };
+      
+      return (
+        <BriefRevisionForm 
+          briefId={selectedBrief.id}
+          initialData={briefData}
+          feedback={mockFeedback}
+          onSubmit={handleRevisionSubmit}
+          onCancel={handleBackToBriefs}
+        />
+      );
+    }
+    
+    return (
+      <BriefDetailView 
+        brief={selectedBrief} 
+        onBack={handleBackToBriefs}
+        feedback={selectedBrief.status === 'changes_requested' ? mockFeedback : []}
+      />
+    );
+  }
+
+  // Otherwise, render the brief list
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -137,7 +229,9 @@ const MyBriefs = () => {
       ) : briefs.length > 0 ? (
         <BriefTableList 
           briefs={briefs} 
-          onStatusChange={handleStatusChange} 
+          onStatusChange={handleStatusChange}
+          onViewBrief={handleViewBrief}
+          onEditBrief={handleEditBrief}
         />
       ) : (
         <div className="text-center py-12 bg-gray-50 rounded-lg">
@@ -171,7 +265,7 @@ const MyBriefs = () => {
                       : 'bg-red-100 text-red-800'
                   }`}
                 >
-                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                  {status.charAt(0).toUpperCase() + status.slice(1).replace(/_/g, ' ')}
                 </span>
                 <span className="text-gray-600">{getStatusDescription(status)}</span>
               </div>

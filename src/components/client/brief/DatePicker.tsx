@@ -10,7 +10,7 @@ import { UseFormRegister } from "react-hook-form";
 import { BriefFormData } from "../BriefCreationForm";
 
 interface DatePickerProps {
-  id: string;
+  id: keyof BriefFormData;  // Use keyof to ensure id is a valid field name
   value: string;
   onChange: (date: string) => void;
   register: UseFormRegister<BriefFormData>;

@@ -14,12 +14,17 @@ import SubscriptionPage from "@/components/client/SubscriptionPage";
 import BuyTokensPage from "@/pages/BuyTokens";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Coins, Bell } from "lucide-react";
+import { Coins, Bell, MessageSquare, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import AdminChat from "@/components/client/communication/AdminChat";
+import MeetingScheduler from "@/components/client/communication/MeetingScheduler";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 
 const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
-  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(3);
+  const [chatDialogOpen, setChatDialogOpen] = useState(false);
+  const [meetingDialogOpen, setMeetingDialogOpen] = useState(false);
   const location = useLocation();
 
   useEffect(() => {
@@ -52,6 +57,30 @@ const ClientDashboard = () => {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold">Client Dashboard</h1>
           <div className="flex items-center space-x-3">
+            <Dialog open={chatDialogOpen} onOpenChange={setChatDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="relative" aria-label="Chat with Proverb Digital">
+                  <MessageSquare className="h-5 w-5" />
+                  <span className="ml-2">Support</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px] h-[650px] p-0">
+                <AdminChat />
+              </DialogContent>
+            </Dialog>
+            
+            <Dialog open={meetingDialogOpen} onOpenChange={setMeetingDialogOpen}>
+              <DialogTrigger asChild>
+                <Button variant="outline" className="relative" aria-label="Schedule Meeting">
+                  <Calendar className="h-5 w-5" />
+                  <span className="ml-2">Schedule</span>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[700px]">
+                <MeetingScheduler />
+              </DialogContent>
+            </Dialog>
+            
             <div className="relative">
               <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
                 <Bell className="h-5 w-5" />

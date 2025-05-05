@@ -1,19 +1,43 @@
 
 import React from "react";
 import ProposalCard, { ProposalData } from "./ProposalCard";
+import { Button } from "@/components/ui/button";
+import { Award } from "lucide-react";
 
 interface ProposalsListProps {
   proposals: ProposalData[];
   activeTab: string;
-  onAccept: (proposalId: string) => void;
-  onReject: (proposalId: string) => void;
+  onRequestCreator: (proposalId: string) => void;
+  onMessageCreator: (proposalId: string) => void;
+  recommendedProposals?: string[]; // IDs of recommended proposals
 }
 
-const ProposalsList = ({ proposals, activeTab, onAccept, onReject }: ProposalsListProps) => {
+const ProposalsList = ({ 
+  proposals, 
+  activeTab, 
+  onRequestCreator, 
+  onMessageCreator,
+  recommendedProposals = []
+}: ProposalsListProps) => {
   return (
     <>
-      <h3 className="text-lg font-medium mb-4">
-        {activeTab === "all" ? "All Proposals" : "Submitted Proposals"}
+      <h3 className="text-lg font-medium mb-4 flex items-center gap-2">
+        {activeTab === "all" 
+          ? "All Proposals" 
+          : (
+            <>
+              Submitted Proposals
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="ml-2 text-indigo-600 border-indigo-200 hover:text-indigo-700 hover:bg-indigo-50"
+              >
+                <Award className="h-4 w-4 mr-1" />
+                View Recommended Only
+              </Button>
+            </>
+          )
+        }
       </h3>
       
       {proposals.length > 0 ? (
@@ -22,8 +46,9 @@ const ProposalsList = ({ proposals, activeTab, onAccept, onReject }: ProposalsLi
             <ProposalCard 
               key={proposal.id} 
               proposal={proposal} 
-              onAccept={onAccept} 
-              onReject={onReject} 
+              onRequestCreator={onRequestCreator} 
+              onMessageCreator={onMessageCreator}
+              recommended={recommendedProposals.includes(proposal.id)} 
             />
           ))}
         </div>
