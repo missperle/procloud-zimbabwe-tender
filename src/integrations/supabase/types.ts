@@ -9,6 +9,123 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      brief_drafts: {
+        Row: {
+          client_id: string
+          completed: boolean
+          created_at: string
+          current_step: number
+          id: string
+          progress: Json
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          completed?: boolean
+          created_at?: string
+          current_step?: number
+          id?: string
+          progress?: Json
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          completed?: boolean
+          created_at?: string
+          current_step?: number
+          id?: string
+          progress?: Json
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      brief_questions: {
+        Row: {
+          category: string
+          created_at: string
+          field_type: string
+          help_text: string | null
+          id: string
+          options: Json | null
+          order_in_category: number
+          placeholder: string | null
+          question: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          field_type?: string
+          help_text?: string | null
+          id?: string
+          options?: Json | null
+          order_in_category: number
+          placeholder?: string | null
+          question: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          field_type?: string
+          help_text?: string | null
+          id?: string
+          options?: Json | null
+          order_in_category?: number
+          placeholder?: string | null
+          question?: string
+        }
+        Relationships: []
+      }
+      brief_responses: {
+        Row: {
+          ai_suggested_response: string | null
+          brief_draft_id: string
+          created_at: string
+          id: string
+          question_id: string
+          response: string | null
+          updated_at: string
+          used_suggestion: boolean
+        }
+        Insert: {
+          ai_suggested_response?: string | null
+          brief_draft_id: string
+          created_at?: string
+          id?: string
+          question_id: string
+          response?: string | null
+          updated_at?: string
+          used_suggestion?: boolean
+        }
+        Update: {
+          ai_suggested_response?: string | null
+          brief_draft_id?: string
+          created_at?: string
+          id?: string
+          question_id?: string
+          response?: string | null
+          updated_at?: string
+          used_suggestion?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "brief_responses_brief_draft_id_fkey"
+            columns: ["brief_draft_id"]
+            isOneToOne: false
+            referencedRelation: "brief_drafts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "brief_responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "brief_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_briefs: {
         Row: {
           admin_notes: string | null
