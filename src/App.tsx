@@ -4,7 +4,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "@/contexts/SupabaseAuthContext";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import Index from "./pages/Index";
 import Jobs from "./pages/Jobs";
@@ -13,30 +13,24 @@ import Freelancers from "./pages/Freelancers";
 import FreelancerProfile from "./pages/FreelancerProfile";
 import ClientDashboard from "./pages/ClientDashboard";
 import Dashboard from "./pages/Dashboard";
+import ExploreFeed from "./pages/ExploreFeed";
 import Login from "./pages/Login";
-import ClientLogin from "./pages/ClientLogin";
-import FreelancerLogin from "./pages/FreelancerLogin";
 import Register from "./pages/Register";
 import BuyTokens from "./pages/BuyTokens";
 import Pricing from "./pages/Pricing";
 import NotFound from "./pages/NotFound";
 import ImageGenerator from './components/client/ImageGenerator';
 import SubmitProposalPage from "./pages/SubmitProposalPage";
-import AgencyReview from "./pages/AgencyReview";
 import ChatWidget from "./components/chat/ChatWidget";
-import RoleSelection from "./pages/RoleSelection";
-import Auth from "./pages/Auth";
-import FreelancerDashboard from "./pages/FreelancerDashboard";
-import FreelancerProfileEdit from "./pages/FreelancerProfileEdit";
 
 const queryClient = new QueryClient();
 
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AuthProvider>
-          <SubscriptionProvider>
+      <AuthProvider>
+        <SubscriptionProvider>
+          <BrowserRouter>
             <TooltipProvider>
               <Toaster />
               <Sonner />
@@ -48,27 +42,21 @@ const App = () => {
                 <Route path="/freelancers/:id" element={<FreelancerProfile />} />
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/client-dashboard" element={<ClientDashboard />} />
-                <Route path="/freelancer-dashboard" element={<FreelancerDashboard />} />
-                <Route path="/freelancer-profile-edit" element={<FreelancerProfileEdit />} />
+                <Route path="/explore" element={<ExploreFeed />} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/client-login" element={<ClientLogin />} />
-                <Route path="/freelancer-login" element={<FreelancerLogin />} />
                 <Route path="/signup" element={<Register />} />
-                <Route path="/role-selection" element={<RoleSelection />} />
-                <Route path="/auth" element={<Auth />} />
                 <Route path="/buy-tokens" element={<BuyTokens />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/generate-images" element={<ImageGenerator />} />
                 <Route path="/jobs/:jobId/submit-proposal" element={<SubmitProposalPage />} />
-                <Route path="/agency/review" element={<AgencyReview />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
               <ChatWidget />
             </TooltipProvider>
-          </SubscriptionProvider>
-        </AuthProvider>
-      </BrowserRouter>
+          </BrowserRouter>
+        </SubscriptionProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 };

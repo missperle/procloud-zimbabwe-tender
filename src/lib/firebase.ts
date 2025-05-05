@@ -2,9 +2,6 @@
 // Import the functions you need from the SDKs
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore, doc, setDoc, getDoc, collection } from "firebase/firestore";
-
-// NOTE: This file is kept for backward compatibility but the app now uses Supabase instead of Firebase
 
 // Your web app's Firebase configuration
 // Use environment variables in production
@@ -20,36 +17,42 @@ const firebaseConfig = {
 // Initialize Firebase - with a named instance to avoid duplicate app error
 const app = initializeApp(firebaseConfig, "proverb-digital-client");
 const auth = getAuth(app);
-const db = getFirestore(app);
 
-// Firebase is no longer used for authentication or database in this application.
-// These test user functions are now handled in LoginForm.tsx with Supabase.
-
-// Function to get Firestore security rules for subscriptions collection
-export const getSubscriptionSecurityRules = () => {
-  return `
-    // Firestore security rules for subscriptions collection
-    rules_version = '2';
-    service cloud.firestore {
-      match /databases/{database}/documents {
-        match /subscriptions/{subscriptionId} {
-          // Allow users to create subscriptions only for their own userId
-          allow create: if request.auth != null && 
-                         request.resource.data.userId == request.auth.uid;
-          
-          // Allow users to read only their own subscription documents
-          allow read: if request.auth != null && 
-                       resource.data.userId == request.auth.uid;
-          
-          // Only allow admins (with role="admin") to update status to "active"
-          allow update: if request.auth != null && 
-                         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == "admin" || 
-                         (request.auth.uid == resource.data.userId && 
-                         request.resource.data.status != "active");
-        }
-      }
+// For testing purposes, create a test user
+// Note: In a real app, you should create users through Firebase console or registration
+const createTestUser = async () => {
+  // This import is only used in development
+  const { createUserWithEmailAndPassword } = await import("firebase/auth");
+  
+  try {
+    // Check if we're in development mode
+    if (import.meta.env.DEV) {
+      console.log("Setting up test user for development environment");
+      const testEmail = "test@proverb.digital";
+      const testPassword = "password123";
+      
+      // Try to create the test user
+      await createUserWithEmailAndPassword(auth, testEmail, testPassword)
+        .then(() => {
+          console.log("Test user created successfully");
+        })
+        .catch((err) => {
+          // If error is because user already exists, that's fine
+          if (err.code === 'auth/email-already-in-use') {
+            console.log("Test user already exists, ready to use");
+          } else {
+            console.error("Error creating test user:", err.message);
+          }
+        });
     }
-  `;
+  } catch (error) {
+    console.error("Error setting up test user:", error);
+  }
 };
 
-export { auth, db };
+// Call this function on development environment initialization
+if (import.meta.env.DEV) {
+  createTestUser();
+}
+
+export { auth };

@@ -96,15 +96,15 @@ const HeroSection = () => {
                      transform: `translateY(${scrollProgress * 0.6}px)`,
                      opacity: Math.max(0, 1 - scrollProgress/30)
                    }}>
-                <Link to="/role-selection">
+                <Link to="/post-job">
                   <Button 
                     size="lg" 
                     className="btn-primary text-lg font-medium bg-indigo-ink text-white hover:opacity-90 hover:bg-indigo-ink"
                   >
-                    Get Started
+                    Hire a Freelancer
                   </Button>
                 </Link>
-                <Link to="/pricing">
+                <Link to="/jobs">
                   <Button 
                     size="lg" 
                     variant="outline" 

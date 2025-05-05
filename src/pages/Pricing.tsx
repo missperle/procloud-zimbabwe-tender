@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,14 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Check, CreditCard, Wallet, AlertCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/SupabaseAuthContext";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useAuth } from "@/contexts/AuthContext";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { db } from "@/lib/firebase";
-import { addDoc, collection, serverTimestamp, query, where, getDocs, orderBy, limit } from "firebase/firestore";
-import type { SubscriptionPlan, PaymentMethod } from "@/hooks/useSubscriptionGuard";
+import { auth } from "@/lib/firebase";
+import { getFirestore, collection, addDoc, serverTimestamp } from "firebase/firestore";
 
 // Define subscription plan interfaces
 interface PlanFeature {
@@ -21,8 +21,8 @@ interface PlanFeature {
   included: boolean;
 }
 
-interface SubscriptionPlanUI {
-  id: SubscriptionPlan;
+interface SubscriptionPlan {
+  id: string;
   name: string;
   description: string;
   price: number;
@@ -35,18 +35,16 @@ const Pricing = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { currentUser } = useAuth();
-  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlanUI | null>(null);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("Visa");
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
+  const [paymentMethod, setPaymentMethod] = useState<"card" | "ecocash" | "mukuru" | "innbucks">("card");
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [purchaseRequestSent, setPurchaseRequestSent] = useState(false);
-  const [currentSubscription, setCurrentSubscription] = useState<any>(null);
-  const [loadingSubscription, setLoadingSubscription] = useState(true);
 
   // Define subscription plans
-  const subscriptionPlans: SubscriptionPlanUI[] = [
+  const subscriptionPlans: SubscriptionPlan[] = [
     {
-      id: "Free",
+      id: "free",
       name: "Free",
       description: "Limited AI features (try us out!)",
       price: 0,
@@ -65,7 +63,7 @@ const Pricing = () => {
       ],
     },
     {
-      id: "Basic",
+      id: "basic",
       name: "Basic",
       description: "Core AI features",
       price: 2500, // $25.00
@@ -85,7 +83,7 @@ const Pricing = () => {
       ],
     },
     {
-      id: "Pro",
+      id: "pro",
       name: "Pro",
       description: "All AI features & priority support",
       price: 10000, // $100.00
@@ -105,49 +103,7 @@ const Pricing = () => {
     },
   ];
 
-  // Fetch user's current subscription on component mount
-  useEffect(() => {
-    const fetchCurrentSubscription = async () => {
-      if (!currentUser) {
-        setLoadingSubscription(false);
-        return;
-      }
-
-      try {
-        const subscriptionsRef = collection(db, 'subscriptions');
-        const q = query(
-          subscriptionsRef,
-          where('userId', '==', currentUser.id), // Changed from uid to id
-          orderBy('startDate', 'desc'),
-          limit(1)
-        );
-
-        const querySnapshot = await getDocs(q);
-        
-        if (!querySnapshot.empty) {
-          const subData = querySnapshot.docs[0].data();
-          
-          // Convert timestamps to Date objects for display
-          if (subData.startDate) {
-            subData.startDate = new Date(subData.startDate.seconds * 1000);
-          }
-          if (subData.nextBillingDate) {
-            subData.nextBillingDate = new Date(subData.nextBillingDate.seconds * 1000);
-          }
-          
-          setCurrentSubscription(subData);
-        }
-      } catch (error) {
-        console.error('Error fetching subscription:', error);
-      } finally {
-        setLoadingSubscription(false);
-      }
-    };
-
-    fetchCurrentSubscription();
-  }, [currentUser]);
-
-  const handleSelectPlan = (plan: SubscriptionPlanUI) => {
+  const handleSelectPlan = (plan: SubscriptionPlan) => {
     setSelectedPlan(plan);
     if (!currentUser) {
       toast({
@@ -159,8 +115,8 @@ const Pricing = () => {
       return;
     }
     
-    if (plan.id === "Free") {
-      // For free plan, just create the subscription directly
+    if (plan.id === "free") {
+      // For free plan, just update the user record
       handleSubmitFreeSubscription();
       return;
     }
@@ -170,14 +126,18 @@ const Pricing = () => {
   const handleSubmitFreeSubscription = async () => {
     setIsProcessing(true);
     try {
-      // Create the subscription document
+      const db = getFirestore();
+      
+      // Create the subscription document - following security rules
       await addDoc(collection(db, 'subscriptions'), {
-        userId: currentUser.id, // Changed from uid to id
-        plan: 'Free' as SubscriptionPlan,
+        userId: currentUser.uid, // Security rule ensures this matches auth user
+        tier: 'free',
         status: 'active',
-        startDate: serverTimestamp(),
+        currentPeriodEnd: null,
+        paymentMethod: null,
+        createdAt: serverTimestamp(),
         nextBillingDate: null,
-        paymentMethod: null
+        startDate: serverTimestamp()
       });
       
       toast({
@@ -200,7 +160,7 @@ const Pricing = () => {
     }
   };
 
-  const handlePaymentMethodSelect = (method: PaymentMethod) => {
+  const handlePaymentMethodSelect = (method: "card" | "ecocash" | "mukuru" | "innbucks") => {
     setPaymentMethod(method);
   };
 
@@ -218,32 +178,32 @@ const Pricing = () => {
     setIsProcessing(true);
 
     try {
-      // Create the subscription with pending status
+      const db = getFirestore();
+      
+      // Create the subscription according to security rules
       await addDoc(collection(db, 'subscriptions'), {
-        userId: currentUser.id, // Changed from uid to id
-        plan: selectedPlan?.id || 'Basic',
+        userId: currentUser.uid,
+        tier: selectedPlan?.id || 'basic',
         status: 'pending',
-        startDate: serverTimestamp(),
+        currentPeriodEnd: null,
+        paymentMethod: paymentMethod,
+        createdAt: serverTimestamp(),
         nextBillingDate: null,
-        paymentMethod: paymentMethod
+        startDate: serverTimestamp()
       });
       
-      // Show success message based on payment method
-      if (paymentMethod === "Visa") {
-        // In a real app, this would redirect to a payment processor
+      if (paymentMethod === "card") {
+        // Simulate redirect to Stripe checkout
         toast({
-          title: "Credit Card Payment Selected",
-          description: "Redirecting to payment processor...",
+          title: "Redirecting to payment",
+          description: "Preparing your subscription...",
         });
-        // Simulate redirect delay
-        setTimeout(() => {
-          setPurchaseRequestSent(true);
-        }, 1500);
+        // In a real implementation, this would call the Stripe checkout edge function
       } else {
-        // Show local payment instructions for mobile money options
+        // Show local payment instructions
         setPurchaseRequestSent(true);
         toast({
-          title: `${paymentMethod} Payment Selected`,
+          title: `${paymentMethod.charAt(0).toUpperCase() + paymentMethod.slice(1)} Payment Selected`,
           description: "Instructions will be sent to your email",
         });
       }
@@ -264,73 +224,6 @@ const Pricing = () => {
     // Format price in USD
     return `$${(price / 100).toFixed(2)}`;
   };
-
-  const formatDate = (date: Date | null) => {
-    if (!date) return 'N/A';
-    return date.toLocaleDateString('en-US', { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    });
-  };
-
-  // Show current subscription if available
-  if (!loadingSubscription && currentSubscription && currentSubscription.status === 'active') {
-    return (
-      <Layout>
-        <div className="container mx-auto px-4 py-12">
-          <div className="text-center mb-10">
-            <h1 className="text-3xl font-bold mb-3">Your Current Subscription</h1>
-            <p className="text-muted-foreground max-w-2xl mx-auto">
-              You're currently on the {currentSubscription.plan} plan.
-            </p>
-          </div>
-
-          <div className="max-w-md mx-auto">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  {currentSubscription.plan} Plan
-                  <Badge variant={currentSubscription.status === 'active' ? 'default' : 'outline'}>
-                    {currentSubscription.status === 'active' ? 'Active' : currentSubscription.status}
-                  </Badge>
-                </CardTitle>
-                <CardDescription>
-                  Your subscription details
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Start Date:</span>
-                  <span className="font-medium">{formatDate(currentSubscription.startDate)}</span>
-                </div>
-                {currentSubscription.nextBillingDate && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Next Billing Date:</span>
-                    <span className="font-medium">{formatDate(currentSubscription.nextBillingDate)}</span>
-                  </div>
-                )}
-                {currentSubscription.paymentMethod && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Payment Method:</span>
-                    <span className="font-medium">{currentSubscription.paymentMethod}</span>
-                  </div>
-                )}
-              </CardContent>
-              <CardFooter className="flex justify-between">
-                <Button variant="outline" onClick={() => navigate('/client-dashboard')}>
-                  Return to Dashboard
-                </Button>
-                <Button onClick={() => setCurrentSubscription(null)}>
-                  Change Plan
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-        </div>
-      </Layout>
-    );
-  }
 
   return (
     <Layout>
@@ -384,7 +277,7 @@ const Pricing = () => {
                   variant={plan.popular ? "default" : "outline"}
                   disabled={isProcessing}
                 >
-                  {isProcessing && selectedPlan?.id === plan.id ? "Processing..." : "Select Plan"}
+                  {isProcessing ? "Processing..." : plan.id === "free" ? "Get Started" : "Subscribe"}
                 </Button>
               </CardFooter>
             </Card>
@@ -404,13 +297,13 @@ const Pricing = () => {
               <>
                 <RadioGroup 
                   value={paymentMethod} 
-                  onValueChange={(value) => handlePaymentMethodSelect(value as PaymentMethod)} 
+                  onValueChange={(value) => handlePaymentMethodSelect(value as any)} 
                   className="grid grid-cols-2 gap-4 py-4"
                 >
                   <div className={`border rounded-md p-3 flex flex-col items-center cursor-pointer ${
-                    paymentMethod === "Visa" ? "border-procloud-green bg-primary/10" : ""
+                    paymentMethod === "card" ? "border-procloud-green bg-primary/10" : ""
                   }`}>
-                    <RadioGroupItem value="Visa" id="card" className="sr-only" />
+                    <RadioGroupItem value="card" id="card" className="sr-only" />
                     <Label htmlFor="card" className="flex flex-col items-center cursor-pointer">
                       <CreditCard className="h-6 w-6 mb-2" />
                       <span className="text-sm font-medium">Credit Card</span>
@@ -419,9 +312,9 @@ const Pricing = () => {
                   </div>
                   
                   <div className={`border rounded-md p-3 flex flex-col items-center cursor-pointer ${
-                    paymentMethod === "Ecocash" ? "border-procloud-green bg-primary/10" : ""
+                    paymentMethod === "ecocash" ? "border-procloud-green bg-primary/10" : ""
                   }`}>
-                    <RadioGroupItem value="Ecocash" id="ecocash" className="sr-only" />
+                    <RadioGroupItem value="ecocash" id="ecocash" className="sr-only" />
                     <Label htmlFor="ecocash" className="flex flex-col items-center cursor-pointer">
                       <Wallet className="h-6 w-6 mb-2" />
                       <span className="text-sm font-medium">EcoCash</span>
@@ -430,9 +323,9 @@ const Pricing = () => {
                   </div>
                   
                   <div className={`border rounded-md p-3 flex flex-col items-center cursor-pointer ${
-                    paymentMethod === "Mukuru" ? "border-procloud-green bg-primary/10" : ""
+                    paymentMethod === "mukuru" ? "border-procloud-green bg-primary/10" : ""
                   }`}>
-                    <RadioGroupItem value="Mukuru" id="mukuru" className="sr-only" />
+                    <RadioGroupItem value="mukuru" id="mukuru" className="sr-only" />
                     <Label htmlFor="mukuru" className="flex flex-col items-center cursor-pointer">
                       <Wallet className="h-6 w-6 mb-2" />
                       <span className="text-sm font-medium">Mukuru</span>
@@ -441,9 +334,9 @@ const Pricing = () => {
                   </div>
                   
                   <div className={`border rounded-md p-3 flex flex-col items-center cursor-pointer ${
-                    paymentMethod === "Innbucks" ? "border-procloud-green bg-primary/10" : ""
+                    paymentMethod === "innbucks" ? "border-procloud-green bg-primary/10" : ""
                   }`}>
-                    <RadioGroupItem value="Innbucks" id="innbucks" className="sr-only" />
+                    <RadioGroupItem value="innbucks" id="innbucks" className="sr-only" />
                     <Label htmlFor="innbucks" className="flex flex-col items-center cursor-pointer">
                       <Wallet className="h-6 w-6 mb-2" />
                       <span className="text-sm font-medium">Innbucks</span>
@@ -458,7 +351,7 @@ const Pricing = () => {
                   </Button>
                   <Button onClick={handleProceedToCheckout} disabled={isProcessing}>
                     {isProcessing ? "Processing..." : 
-                     paymentMethod === "Visa" ? "Proceed to Payment" : "Submit Purchase Request"}
+                     paymentMethod === "card" ? "Proceed to Payment" : "Submit Purchase Request"}
                   </Button>
                 </DialogFooter>
               </>
@@ -490,3 +383,4 @@ const Pricing = () => {
 };
 
 export default Pricing;
+

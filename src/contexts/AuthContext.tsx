@@ -1,13 +1,17 @@
 
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from "@/integrations/supabase/client";
+import { 
+  User, 
+  createUserWithEmailAndPassword, 
+  signInWithEmailAndPassword,
+  signOut, 
+  onAuthStateChanged
+} from "firebase/auth";
+import { auth } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate, useLocation } from "react-router-dom";
 
 interface AuthContextType {
   currentUser: User | null;
-  session: Session | null;
   loading: boolean;
   signup: (email: string, password: string) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
@@ -26,61 +30,27 @@ export const useAuth = () => {
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const location = useLocation();
 
   useEffect(() => {
-    console.log("Setting up Supabase auth state listener");
-    
-    // Get initial session
-    const getInitialSession = async () => {
-      try {
-        const { data } = await supabase.auth.getSession();
-        setSession(data.session);
-        setCurrentUser(data.session?.user || null);
-      } catch (error) {
-        console.error("Error getting initial session:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    getInitialSession();
-    
-    // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
-        console.log("Auth state changed:", event, session ? `User: ${session.user.email}` : "No user");
-        setSession(session);
-        setCurrentUser(session?.user || null);
-        setLoading(false);
-      }
-    );
+    console.log("Setting up auth state listener");
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log("Auth state changed:", user ? `User: ${user.email}` : "No user");
+      setCurrentUser(user);
+      setLoading(false);
+    });
 
-    return () => {
-      if (subscription) subscription.unsubscribe();
-    };
+    return unsubscribe;
   }, []);
 
   const signup = async (email: string, password: string) => {
     try {
-      const { error } = await supabase.auth.signUp({ 
-        email, 
-        password
-      });
-      
-      if (error) throw error;
-      
+      await createUserWithEmailAndPassword(auth, email, password);
       toast({
         title: "Account created",
-        description: "Please check your email to verify your account.",
+        description: "Your account has been created successfully!",
       });
-      
-      // Navigate to login page after signup
-      navigate("/login");
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
       toast({
@@ -95,13 +65,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const login = async (email: string, password: string) => {
     console.log("Login attempt with:", email);
     try {
-      const { error } = await supabase.auth.signInWithPassword({ 
-        email, 
-        password 
-      });
-      
-      if (error) throw error;
-      
+      await signInWithEmailAndPassword(auth, email, password);
       toast({
         title: "Welcome back!",
         description: "You have been logged in successfully.",
@@ -120,9 +84,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const logout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      
+      await signOut(auth);
       toast({
         title: "Logged out",
         description: "You have been logged out successfully.",
@@ -140,7 +102,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const value = {
     currentUser,
-    session,
     loading,
     signup,
     login,

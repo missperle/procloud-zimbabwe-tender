@@ -16,7 +16,7 @@ const SideNav = () => {
       </div>
       
       <div className="sidenav-footer">
-        <Link to="/pricing" className="hover:text-procloud-gold transition-colors">
+        <Link to="/subscribe" className="hover:text-procloud-gold transition-colors">
           Subscribe
         </Link>
         <a href="https://instagram.com/proverbdigital" target="_blank" rel="noopener noreferrer" className="sidenav-icon hover:text-procloud-gold transition-colors">

@@ -1,12 +1,11 @@
 
 import { useState, useEffect } from "react";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Check, X } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { getFirestore, doc, getDoc, query, collection, where, getDocs, onSnapshot } from "firebase/firestore";
+import { getFirestore, doc, getDoc, query, collection, where, getDocs } from "firebase/firestore";
 import { getApp } from "firebase/app";
 
 // Mock data for briefs with proposals
@@ -82,27 +81,16 @@ const mockProposals = [
   },
 ];
 
-// Define types for the sentiment classes
-interface SentimentClasses {
-  card?: string;
-  enthusiasmBadge?: string;
-}
-
 const ReviewProposals = () => {
   const [activeTab, setActiveTab] = useState("all");
   const [filteredProposals, setFilteredProposals] = useState(mockProposals);
   const [recommendedFreelancers, setRecommendedFreelancers] = useState<Array<{
     id: string;
     name: string;
-    pseudonym?: string;
     avatar?: string;
     skills: string[];
     rating: number;
   }>>([]);
-  const [sentimentData, setSentimentData] = useState<Record<string, { 
-    clarity: number; 
-    enthusiasm: number 
-  }>>({});
   
   const handleTabChange = (value: string) => {
     setActiveTab(value);
@@ -119,36 +107,6 @@ const ReviewProposals = () => {
       }
     }
   };
-
-  useEffect(() => {
-    // Watch for sentiment updates on proposals
-    const watchProposals = async () => {
-      try {
-        const db = getFirestore(getApp("proverb-digital-client"));
-        
-        // Setup listeners for each proposal
-        filteredProposals.forEach(proposal => {
-          const proposalRef = doc(db, 'proposals', proposal.id);
-          
-          onSnapshot(proposalRef, (snap) => {
-            if (snap.exists()) {
-              const data = snap.data();
-              if (data && data.sentiment) {
-                setSentimentData(prev => ({
-                  ...prev,
-                  [proposal.id]: data.sentiment
-                }));
-              }
-            }
-          });
-        });
-      } catch (error) {
-        console.error("Error setting up proposal listeners:", error);
-      }
-    };
-    
-    watchProposals();
-  }, [filteredProposals]);
 
   const loadRecommendations = async (briefId: string) => {
     try {
@@ -177,15 +135,10 @@ const ReviewProposals = () => {
           const userSnap = await getDoc(doc(db, 'users', uid));
           if (userSnap.exists()) {
             const userData = userSnap.data();
-            
-            // Use pseudonym if available, otherwise fall back to name
-            const displayName = userData.pseudonym || userData.name || 'Unknown';
-            
             recommendedFreelancersData.push({
               id: uid,
-              name: displayName,
-              pseudonym: userData.pseudonym,
-              avatar: userData.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${displayName}`,
+              name: userData.name || 'Unknown',
+              avatar: userData.avatar || `https://randomuser.me/api/portraits/${Math.random() > 0.5 ? 'men' : 'women'}/${Math.floor(Math.random() * 50) + 1}.jpg`,
               skills: userData.skills || [],
               rating: userData.rating || 0
             });
@@ -216,30 +169,6 @@ const ReviewProposals = () => {
     // Then remove the proposal from the list or mark it as rejected
   };
 
-  // Helper function to get sentiment display classes
-  const getSentimentClasses = (proposalId: string): SentimentClasses => {
-    const sentiment = sentimentData[proposalId];
-    
-    if (!sentiment) return {};
-    
-    const classes: SentimentClasses = {
-      card: "",
-      enthusiasmBadge: ""
-    };
-    
-    // Low clarity - highlight card
-    if (sentiment.clarity < 0.5) {
-      classes.card = "border-2 border-red-400";
-    }
-    
-    // High enthusiasm - show badge
-    if (sentiment.enthusiasm > 0.8) {
-      classes.enthusiasmBadge = "ml-2 bg-amber-400 text-black";
-    }
-    
-    return classes;
-  };
-
   return (
     <div className="space-y-6">
       <h2 className="text-xl font-semibold">Review Proposals</h2>
@@ -264,13 +193,13 @@ const ReviewProposals = () => {
                     <CardContent className="p-6">
                       <div className="flex items-center space-x-4 mb-4">
                         <Avatar>
-                          <AvatarImage src={freelancer.avatar} alt={freelancer.pseudonym || freelancer.name} />
+                          <AvatarImage src={freelancer.avatar} alt={freelancer.name} />
                           <AvatarFallback>
-                            {(freelancer.pseudonym || freelancer.name).substr(0, 2).toUpperCase()}
+                            {freelancer.name.substr(0, 2).toUpperCase()}
                           </AvatarFallback>
                         </Avatar>
                         <div>
-                          <h3 className="font-semibold">{freelancer.pseudonym || freelancer.name}</h3>
+                          <h3 className="font-semibold">{freelancer.name}</h3>
                           <div className="flex items-center">
                             <span className="text-xs text-amber-burst mr-1">★</span>
                             <span className="text-xs">{freelancer.rating}/5</span>
@@ -324,83 +253,59 @@ const ReviewProposals = () => {
           <h3 className="text-lg font-medium mb-4">{activeTab === "all" ? "All Proposals" : "Submitted Proposals"}</h3>
           {filteredProposals.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProposals.map((proposal) => {
-                const sentimentClasses = getSentimentClasses(proposal.id);
-                
-                return (
-                  <Card 
-                    key={proposal.id} 
-                    className={`overflow-hidden hover:shadow-md transition-shadow ${sentimentClasses.card || ''}`}
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex items-center space-x-4 mb-4">
-                        <Avatar>
-                          <AvatarImage src={proposal.freelancer.avatar} alt={proposal.freelancer.name} />
-                          <AvatarFallback>
-                            {proposal.freelancer.name.substr(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h3 className="font-semibold">{proposal.freelancer.name}</h3>
-                          <div className="flex items-center">
-                            <span className="text-xs text-amber-burst mr-1">★</span>
-                            <span className="text-xs">{proposal.freelancer.rating}/5</span>
-                          </div>
-                        </div>
-                        <div className="ml-auto font-bold text-indigo-ink">
-                          {proposal.bidAmount}
+              {filteredProposals.map((proposal) => (
+                <Card key={proposal.id} className="overflow-hidden hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-center space-x-4 mb-4">
+                      <Avatar>
+                        <AvatarImage src={proposal.freelancer.avatar} alt={proposal.freelancer.name} />
+                        <AvatarFallback>
+                          {proposal.freelancer.name.substr(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h3 className="font-semibold">{proposal.freelancer.name}</h3>
+                        <div className="flex items-center">
+                          <span className="text-xs text-amber-burst mr-1">★</span>
+                          <span className="text-xs">{proposal.freelancer.rating}/5</span>
                         </div>
                       </div>
-                      
-                      <p className="text-sm text-gray-600 line-clamp-4 mb-4">
-                        {proposal.text}
-                      </p>
-                      
-                      {sentimentData[proposal.id] && (
-                        <div className="flex items-center mt-2 mb-2 text-xs text-gray-600">
-                          <div className="flex items-center">
-                            <span className="font-semibold mr-1">Clarity:</span>
-                            <span>{(sentimentData[proposal.id].clarity * 100).toFixed(0)}%</span>
-                          </div>
-                          <div className="mx-2">•</div>
-                          <div className="flex items-center">
-                            <span className="font-semibold mr-1">Enthusiasm:</span>
-                            <span>{(sentimentData[proposal.id].enthusiasm * 100).toFixed(0)}%</span>
-                            {sentimentClasses.enthusiasmBadge && (
-                              <Badge className={sentimentClasses.enthusiasmBadge}>🔥</Badge>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                      
-                      <Button variant="link" className="px-0 text-xs">
-                        View Full Proposal
-                      </Button>
-                    </CardContent>
+                      <div className="ml-auto font-bold text-indigo-ink">
+                        {proposal.bidAmount}
+                      </div>
+                    </div>
                     
-                    <CardFooter className="bg-gray-50 p-4 flex justify-between">
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleAccept(proposal.id)}
-                        className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                      >
-                        <Check className="h-4 w-4 mr-1" />
-                        Accept
-                      </Button>
-                      <Button 
-                        variant="outline" 
-                        size="sm"
-                        onClick={() => handleReject(proposal.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                      >
-                        <X className="h-4 w-4 mr-1" />
-                        Reject
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                );
-              })}
+                    <p className="text-sm text-gray-600 line-clamp-4 mb-4">
+                      {proposal.text}
+                    </p>
+                    
+                    <Button variant="link" className="px-0 text-xs">
+                      View Full Proposal
+                    </Button>
+                  </CardContent>
+                  
+                  <CardFooter className="bg-gray-50 p-4 flex justify-between">
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleAccept(proposal.id)}
+                      className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                    >
+                      <Check className="h-4 w-4 mr-1" />
+                      Accept
+                    </Button>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => handleReject(proposal.id)}
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Reject
+                    </Button>
+                  </CardFooter>
+                </Card>
+              ))}
             </div>
           ) : (
             <div className="text-center py-12 bg-gray-50 rounded-lg">

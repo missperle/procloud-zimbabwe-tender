@@ -1,119 +1,119 @@
-
-import { createContext, useContext, ReactNode, useState, useEffect } from "react";
-import { useAuth } from "./SupabaseAuthContext";
-import { supabase } from "@/integrations/supabase/client";
-
-export type SubscriptionPlan = "Free" | "Basic" | "Pro";
-export type SubscriptionStatus = "pending" | "active" | "canceled";
-export type PaymentMethod = "Visa" | "Ecocash" | "Mukuru" | "Innbucks" | null;
-export type AIFeature = "brief-builder" | "image-generator" | "proposal-ai" | "matching" | "budget-calculator" | "ai-chat";
+import React, { createContext, useState, useEffect, useContext } from 'react';
+import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import { useAuth } from './AuthContext';
 
 interface Subscription {
-  userId: string;
-  plan: SubscriptionPlan;
-  status: SubscriptionStatus;
-  startDate: Date;
-  nextBillingDate: Date | null;
-  paymentMethod: PaymentMethod;
+  tier: string;
+  status: string;
+  currentPeriodEnd: Date | null;
+  paymentMethod: string | null;
 }
 
-interface SubscriptionContextType {
+interface SubscriptionContextProps {
   subscription: Subscription | null;
   isLoading: boolean;
-  refreshSubscription: () => Promise<void>;
   hasFeatureAccess: (feature: AIFeature) => boolean;
 }
 
-const SubscriptionContext = createContext<SubscriptionContextType | null>(null);
+const SubscriptionContext = createContext<SubscriptionContextProps | undefined>(undefined);
 
-export const useSubscription = () => {
-  const context = useContext(SubscriptionContext);
-  if (!context) {
-    throw new Error("useSubscription must be used within a SubscriptionProvider");
-  }
-  return context;
-};
+export type AIFeature = 'ai_completion' | 'ai_image_generation' | 'ai_summarization' | 'ai_translation';
 
-export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
+interface SubscriptionProviderProps {
+  children: React.ReactNode;
+}
+
+export const SubscriptionProvider: React.FC<SubscriptionProviderProps> = ({ children }) => {
   const { currentUser } = useAuth();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchSubscription = async () => {
-    if (!currentUser) {
-      setSubscription(null);
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      setIsLoading(true);
-      
-      // Query the subscription table in Supabase
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('userid', currentUser.id)
-        .order('startdate', { ascending: false })
-        .limit(1)
-        .single();
-        
-      if (error) {
-        console.error("Error fetching subscription:", error);
-        setSubscription(null);
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      if (!currentUser) {
+        setIsLoading(false);
         return;
       }
-      
-      if (data) {
-        // Map database fields to our Subscription interface
-        const subscriptionData: Subscription = {
-          userId: data.userid,
-          plan: data.plan as SubscriptionPlan,
-          status: data.status as SubscriptionStatus,
-          startDate: new Date(data.startdate),
-          nextBillingDate: data.nextbillingdate ? new Date(data.nextbillingdate) : null,
-          paymentMethod: data.paymentmethod as PaymentMethod
-        };
-        
-        setSubscription(subscriptionData);
-      } else {
-        setSubscription(null);
-      }
-    } catch (error) {
-      console.error("Error in subscription context:", error);
-      setSubscription(null);
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
-  useEffect(() => {
+      try {
+        const db = getFirestore();
+        const userDocRef = doc(db, 'users', currentUser.uid);
+        const userDocSnap = await getDoc(userDocRef);
+
+        if (userDocSnap.exists()) {
+          const userData = userDocSnap.data();
+          if (userData && userData.subscriptionId) {
+            const subscriptionDocRef = doc(db, 'subscriptions', userData.subscriptionId);
+            const subscriptionDocSnap = await getDoc(subscriptionDocRef);
+
+            if (subscriptionDocSnap.exists()) {
+              const subscriptionData = subscriptionDocSnap.data() as Subscription;
+              // Convert timestamp to Date object
+              const currentPeriodEnd = subscriptionData.currentPeriodEnd ? new Date(subscriptionData.currentPeriodEnd) : null;
+              setSubscription({
+                ...subscriptionData,
+                currentPeriodEnd: currentPeriodEnd,
+              });
+            } else {
+              setSubscription(null);
+            }
+          } else {
+            setSubscription(null);
+          }
+        } else {
+          setSubscription(null);
+        }
+      } catch (error) {
+        console.error("Error fetching subscription:", error);
+        setSubscription(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
     fetchSubscription();
   }, [currentUser]);
 
-  const refreshSubscription = async () => {
-    await fetchSubscription();
-  };
-  
-  // Check if user has access to specific AI feature based on subscription plan
   const hasFeatureAccess = (feature: AIFeature): boolean => {
-    if (!subscription || subscription.status !== 'active') {
-      return false;
+    if (!subscription) return false;
+    
+    const { tier, status } = subscription;
+    
+    // Ensure subscription is active
+    if (status !== 'active') return false;
+    
+    // Feature access based on tier
+    switch (feature) {
+      case 'ai_completion':
+        return tier === 'pro' || tier === 'basic';
+      case 'ai_summarization':
+        return tier === 'pro';
+      case 'ai_translation':
+        return tier === 'pro';
+      case 'ai_image_generation':
+        return tier === 'pro'; // Only pro users can generate images
+      default:
+        return false;
     }
-    
-    // Feature access mapping based on subscription plan
-    const featureAccess: Record<SubscriptionPlan, AIFeature[]> = {
-      'Free': ['brief-builder'],
-      'Basic': ['brief-builder', 'image-generator', 'matching', 'budget-calculator'],
-      'Pro': ['brief-builder', 'image-generator', 'matching', 'budget-calculator', 'proposal-ai', 'ai-chat']
-    };
-    
-    return featureAccess[subscription.plan].includes(feature);
+  };
+
+  const value: SubscriptionContextProps = {
+    subscription,
+    isLoading,
+    hasFeatureAccess,
   };
 
   return (
-    <SubscriptionContext.Provider value={{ subscription, isLoading, refreshSubscription, hasFeatureAccess }}>
+    <SubscriptionContext.Provider value={value}>
       {children}
     </SubscriptionContext.Provider>
   );
+};
+
+export const useSubscription = () => {
+  const context = useContext(SubscriptionContext);
+  if (context === undefined) {
+    throw new Error("useSubscription must be used within a SubscriptionProvider");
+  }
+  return context;
 };

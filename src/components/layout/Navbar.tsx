@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Menu } from 'lucide-react';
-import { useAuth } from '@/contexts/SupabaseAuthContext';
+import { useAuth } from '@/contexts/AuthContext';
 import LogoutButton from '@/components/auth/LogoutButton';
 
 const Navbar = () => {
@@ -41,26 +41,6 @@ const Navbar = () => {
             >
               Jobs
             </Link>
-            {currentUser && (
-              <>
-                <Link 
-                  to="/client-dashboard" 
-                  className={`text-sm font-medium transition-colors px-6 ${
-                    location.pathname === '/client-dashboard' ? 'text-procloud-green' : 'hover:text-procloud-green'
-                  }`}
-                >
-                  Dashboard
-                </Link>
-                <Link 
-                  to="/pricing" 
-                  className={`text-sm font-medium transition-colors px-6 ${
-                    location.pathname === '/pricing' ? 'text-procloud-green' : 'hover:text-procloud-green'
-                  }`}
-                >
-                  Your Plan
-                </Link>
-              </>
-            )}
           </nav>
           
           <div className="hidden md:flex items-center space-x-3">
@@ -73,17 +53,12 @@ const Navbar = () => {
               </div>
             ) : (
               <>
-                <Link to="/client-login">
+                <Link to="/login">
                   <Button variant="outline" size="sm">
-                    Client Login
+                    Log in
                   </Button>
                 </Link>
-                <Link to="/freelancer-login">
-                  <Button variant="outline" size="sm">
-                    Freelancer Login
-                  </Button>
-                </Link>
-                <Link to="/role-selection">
+                <Link to="/signup">
                   <Button size="sm" className="text-white">
                     Sign up
                   </Button>
@@ -124,29 +99,6 @@ const Navbar = () => {
                 Jobs
               </Link>
               
-              {currentUser && (
-                <>
-                  <Link 
-                    to="/client-dashboard" 
-                    className={`px-4 py-2 text-sm font-medium hover:bg-procloud-gray-100 rounded-md ${
-                      location.pathname === '/client-dashboard' ? 'text-procloud-green' : ''
-                    }`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Dashboard
-                  </Link>
-                  <Link 
-                    to="/pricing" 
-                    className={`px-4 py-2 text-sm font-medium hover:bg-procloud-gray-100 rounded-md ${
-                      location.pathname === '/pricing' ? 'text-procloud-green' : ''
-                    }`}
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Your Plan
-                  </Link>
-                </>
-              )}
-              
               {currentUser ? (
                 <div className="pt-2 flex flex-col space-y-2">
                   <div className="px-4 py-2 text-sm font-medium">
@@ -158,17 +110,12 @@ const Navbar = () => {
                 </div>
               ) : (
                 <div className="pt-2 flex flex-col space-y-2">
-                  <Link to="/client-login" onClick={() => setIsMenuOpen(false)}>
+                  <Link to="/login" onClick={() => setIsMenuOpen(false)}>
                     <Button variant="outline" className="w-full">
-                      Client Login
+                      Log in
                     </Button>
                   </Link>
-                  <Link to="/freelancer-login" onClick={() => setIsMenuOpen(false)}>
-                    <Button variant="outline" className="w-full">
-                      Freelancer Login
-                    </Button>
-                  </Link>
-                  <Link to="/role-selection" onClick={() => setIsMenuOpen(false)}>
+                  <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
                     <Button className="w-full text-white">
                       Sign up
                     </Button>
