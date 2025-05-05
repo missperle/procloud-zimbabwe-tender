@@ -2,7 +2,11 @@
 import { createContext, useContext, ReactNode, useState, useEffect } from "react";
 import { useAuth } from "./SupabaseAuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { SubscriptionPlan, SubscriptionStatus, PaymentMethod } from "@/hooks/useSubscriptionGuard";
+
+export type SubscriptionPlan = "Free" | "Basic" | "Pro";
+export type SubscriptionStatus = "pending" | "active" | "canceled";
+export type PaymentMethod = "Visa" | "Ecocash" | "Mukuru" | "Innbucks" | null;
+export type AIFeature = "brief-builder" | "image-generator" | "proposal-ai" | "matching" | "budget-calculator" | "ai-chat";
 
 interface Subscription {
   userId: string;
@@ -17,6 +21,7 @@ interface SubscriptionContextType {
   subscription: Subscription | null;
   isLoading: boolean;
   refreshSubscription: () => Promise<void>;
+  hasFeatureAccess: (feature: AIFeature) => boolean;
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | null>(null);
@@ -89,9 +94,25 @@ export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   const refreshSubscription = async () => {
     await fetchSubscription();
   };
+  
+  // Check if user has access to specific AI feature based on subscription plan
+  const hasFeatureAccess = (feature: AIFeature): boolean => {
+    if (!subscription || subscription.status !== 'active') {
+      return false;
+    }
+    
+    // Feature access mapping based on subscription plan
+    const featureAccess: Record<SubscriptionPlan, AIFeature[]> = {
+      'Free': ['brief-builder'],
+      'Basic': ['brief-builder', 'image-generator', 'matching', 'budget-calculator'],
+      'Pro': ['brief-builder', 'image-generator', 'matching', 'budget-calculator', 'proposal-ai', 'ai-chat']
+    };
+    
+    return featureAccess[subscription.plan].includes(feature);
+  };
 
   return (
-    <SubscriptionContext.Provider value={{ subscription, isLoading, refreshSubscription }}>
+    <SubscriptionContext.Provider value={{ subscription, isLoading, refreshSubscription, hasFeatureAccess }}>
       {children}
     </SubscriptionContext.Provider>
   );

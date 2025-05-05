@@ -36,7 +36,7 @@ export function useSubscriptionGuard() {
         const subscriptionsRef = collection(db, 'subscriptions');
         const q = query(
           subscriptionsRef,
-          where('userId', '==', currentUser.id), // Changed from uid to id for Supabase User
+          where('userId', '==', currentUser.id), // Changed from uid to id
           orderBy('startDate', 'desc'),
           limit(1)
         );

@@ -21,7 +21,7 @@ const AgencyReview = () => {
       }
       
       try {
-        const userDocRef = doc(db, "users", currentUser.uid);
+        const userDocRef = doc(db, "users", currentUser.id); // Changed from uid to id
         const userDoc = await getDoc(userDocRef);
         
         if (userDoc.exists()) {

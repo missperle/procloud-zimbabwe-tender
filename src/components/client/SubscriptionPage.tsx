@@ -40,7 +40,7 @@ const SubscriptionPage: React.FC = () => {
       
       // Find the subscription document by userId (per security rules)
       const subscriptionsRef = collection(db, 'subscriptions');
-      const q = query(subscriptionsRef, where("userId", "==", currentUser.uid));
+      const q = query(subscriptionsRef, where("userId", "==", currentUser.id)); // Changed from uid to id
       const querySnapshot = await getDocs(q);
       
       if (!querySnapshot.empty) {
