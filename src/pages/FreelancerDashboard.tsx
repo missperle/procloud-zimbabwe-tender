@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { Navigate, Link } from "react-router-dom";
+import { Navigate, Link, useNavigate } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import { useAuth } from "@/contexts/SupabaseAuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Calendar, DollarSign, File, FileText, Edit } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const FreelancerDashboard = () => {
   const { currentUser, loading: authLoading } = useAuth();
@@ -17,16 +17,20 @@ const FreelancerDashboard = () => {
   const [freelancerAlias, setFreelancerAlias] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
   const [profileData, setProfileData] = useState<any>(null);
+  const [roleChecked, setRoleChecked] = useState(false);
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkUserInfo = async () => {
       if (!currentUser) {
         setLoading(false);
+        setRoleChecked(true);
         return;
       }
       
       try {
-        console.log("Fetching user info for:", currentUser.id);
+        console.log("FreelancerDashboard: Fetching user info for:", currentUser.id);
         
         // Get user role and alias
         const { data: userData, error: userError } = await supabase
@@ -36,11 +40,26 @@ const FreelancerDashboard = () => {
           .maybeSingle();
         
         if (userError) {
-          console.error("Error fetching user role:", userError);
+          console.error("FreelancerDashboard: Error fetching user role:", userError);
         } else if (userData) {
-          console.log("User data retrieved:", userData);
+          console.log("FreelancerDashboard: User data retrieved:", userData);
           setUserRole(userData.role);
           setFreelancerAlias(userData.alias);
+          
+          // If user is not a freelancer, show toast and redirect
+          if (userData.role !== "freelancer") {
+            console.log("FreelancerDashboard: User is not a freelancer, role is:", userData.role);
+            toast({
+              title: "Access restricted",
+              description: "You're being redirected to the appropriate dashboard for your account type.",
+              variant: "default"
+            });
+            
+            // Navigate based on role
+            if (userData.role === "client") {
+              navigate("/client-dashboard", { replace: true });
+            }
+          }
         }
         
         // Get freelancer profile
@@ -51,20 +70,21 @@ const FreelancerDashboard = () => {
           .maybeSingle();
           
         if (profileError && profileError.code !== "PGRST116") {
-          console.error("Error fetching freelancer profile:", profileError);
+          console.error("FreelancerDashboard: Error fetching freelancer profile:", profileError);
         } else if (profileData) {
-          console.log("Profile data retrieved:", profileData);
+          console.log("FreelancerDashboard: Profile data retrieved:", profileData);
           setProfileData(profileData);
         }
       } catch (error) {
-        console.error("Error in checkUserInfo:", error);
+        console.error("FreelancerDashboard: Error in checkUserInfo:", error);
       } finally {
         setLoading(false);
+        setRoleChecked(true);
       }
     };
     
     checkUserInfo();
-  }, [currentUser]);
+  }, [currentUser, navigate, toast]);
 
   if (authLoading || loading) {
     return (
@@ -80,14 +100,15 @@ const FreelancerDashboard = () => {
     );
   }
   
-  // Redirect if not logged in or not a freelancer
+  // Redirect if not logged in
   if (!currentUser) {
-    console.log("No current user, redirecting to login");
+    console.log("FreelancerDashboard: No current user, redirecting to login");
     return <Navigate to="/login" replace />;
   }
   
-  if (userRole !== "freelancer" && userRole !== null) {
-    console.log("User is not a freelancer, redirecting to appropriate dashboard");
+  // Add a stronger role check with explicit redirect
+  if (roleChecked && userRole !== "freelancer" && userRole !== null) {
+    console.log("FreelancerDashboard: User role is not freelancer, redirecting. Role:", userRole);
     return <Navigate to={userRole === "client" ? "/client-dashboard" : "/login"} replace />;
   }
 

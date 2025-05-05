@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import DashboardOverview from "@/components/client/DashboardOverview";
@@ -17,12 +16,18 @@ import { Coins, Bell } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/SupabaseAuthContext";
 import RoleGuard from "@/components/auth/RoleGuard";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const location = useLocation();
   const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     // If no user is logged in, redirect would happen in RoleGuard
@@ -30,13 +35,54 @@ const ClientDashboard = () => {
       return;
     }
 
+    // Check user role when component mounts
+    const checkUserRole = async () => {
+      try {
+        console.log("ClientDashboard: Checking role for user:", currentUser.id);
+        const { data, error } = await supabase
+          .from('users')
+          .select('role')
+          .eq('id', currentUser.id)
+          .maybeSingle();
+        
+        if (error) {
+          console.error("ClientDashboard: Error fetching user role:", error);
+        } else if (data) {
+          console.log("ClientDashboard: User role retrieved:", data.role);
+          setUserRole(data.role);
+          
+          // If user is not a client, redirect with notification
+          if (data.role !== "client") {
+            console.log("ClientDashboard: User is not a client, redirecting. Role:", data.role);
+            toast({
+              title: "Access restricted",
+              description: "You're being redirected to the appropriate dashboard for your account type.",
+              variant: "default",
+            });
+            
+            if (data.role === "freelancer") {
+              navigate("/freelancer-dashboard", { replace: true });
+            } else if (data.role === "agency") {
+              navigate("/agency/review", { replace: true });
+            }
+          }
+        }
+      } catch (error) {
+        console.error("ClientDashboard: Error checking user role:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    checkUserRole();
+
     // Check for tab parameter in URL
     const searchParams = new URLSearchParams(location.search);
     const tabParam = searchParams.get('tab');
     if (tabParam && ['dashboard', 'briefs', 'proposals', 'payments', 'analytics', 'tokens', 'subscription', 'account'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
-  }, [location, currentUser]);
+  }, [location, currentUser, navigate, toast]);
   
   // Mock notification count - in a real app, this would come from Firestore
   useEffect(() => {

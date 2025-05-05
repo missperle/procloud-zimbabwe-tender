@@ -106,10 +106,11 @@ const LoginFormContent = ({ loginType }: LoginFormContentProps) => {
       
       if (profileError) {
         console.error("Error fetching user role:", profileError);
+        throw new Error(`Error fetching user role: ${profileError.message}`);
       }
       
       const userRole = userProfile?.role || null;
-      console.log("User role:", userRole);
+      console.log("User role detected:", userRole);
       
       // Verify role matches the login type
       if ((loginType === "client" && userRole !== "client") || 
@@ -127,14 +128,18 @@ const LoginFormContent = ({ loginType }: LoginFormContentProps) => {
         description: "Redirecting to your dashboard...",
       });
       
-      // Redirect based on role
+      // Enhanced redirect logic with explicit role-based routing
+      console.log(`Redirecting based on detected role: ${userRole}`);
       if (userRole === "freelancer") {
-        navigate("/freelancer-dashboard");
+        console.log("Navigating to freelancer dashboard");
+        navigate("/freelancer-dashboard", { replace: true });
       } else if (userRole === "client") {
-        navigate("/client-dashboard");
+        console.log("Navigating to client dashboard");
+        navigate("/client-dashboard", { replace: true });
       } else {
-        // Default fallback
-        navigate("/client-dashboard");
+        // Default fallback - now explicitly log this decision
+        console.log("No specific role detected or role unknown, using default redirect to client dashboard");
+        navigate("/client-dashboard", { replace: true });
       }
     } catch (err) {
       const errorMessage = err instanceof Error 
