@@ -11,7 +11,11 @@ export const attemptLogin = async (email: string, password: string, isDev: boole
   try {
     // If we're in development mode, let's handle unconfirmed emails
     if (isDev) {
-      return await handleDevModeLogin(email, password);
+      const devModeResult = await handleDevModeLogin(email, password);
+      return {
+        data: devModeResult.data || { user: null, session: null },
+        error: devModeResult.error || null
+      };
     } else {
       // Normal login flow for production
       const { error: signOutError } = await supabase.auth.signOut();
@@ -24,12 +28,18 @@ export const attemptLogin = async (email: string, password: string, isDev: boole
         password: password
       });
       
-      return result;
+      return {
+        data: result.data || { user: null, session: null },
+        error: result.error || null
+      };
     }
   } catch (err) {
     // Ensure we always return a structured error response
     const errorMessage = err instanceof Error ? err.message : "An unknown error occurred";
-    return { data: { user: null, session: null }, error: { message: errorMessage } };
+    return { 
+      data: { user: null, session: null }, 
+      error: { message: errorMessage } 
+    };
   }
 };
 

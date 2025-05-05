@@ -39,7 +39,10 @@ export const handleDevModeLogin = async (email: string, password: string) => {
     });
     
     if (signUpError) {
-      throw new Error(signUpError.message);
+      return { 
+        data: null, 
+        error: { message: signUpError.message } 
+      };
     }
     
     // Try login again
@@ -49,16 +52,28 @@ export const handleDevModeLogin = async (email: string, password: string) => {
     });
     
     if (secondLoginError) {
-      throw new Error("Failed to login after signup workaround: " + secondLoginError.message);
+      return {
+        data: null,
+        error: { message: "Failed to login after signup workaround: " + secondLoginError.message }
+      };
     }
     
-    return { data: secondLoginData };
+    return { 
+      data: secondLoginData,
+      error: null
+    };
   } 
   
   // If there was another error or the login was successful
   if (loginError) {
-    throw new Error(loginError.message);
+    return {
+      data: null,
+      error: loginError
+    };
   }
   
-  return { data: loginData };
+  return { 
+    data: loginData,
+    error: null
+  };
 };

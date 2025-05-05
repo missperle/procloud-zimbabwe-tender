@@ -29,18 +29,18 @@ const LoginFormContent = ({ loginType }: LoginFormContentProps) => {
       setIsLoading(true);
       
       // Attempt login with provided credentials
-      const loginResult = await attemptLogin(
+      const { data: loginData, error: loginError } = await attemptLogin(
         data.email, 
         data.password,
         import.meta.env.DEV
       );
       
       // Handle potential error from login attempt
-      if (loginResult.error) {
-        throw new Error(loginResult.error.message);
+      if (loginError) {
+        throw new Error(loginError.message);
       }
       
-      if (!loginResult.data?.user) {
+      if (!loginData?.user) {
         throw new Error("No user returned from login");
       }
       
