@@ -1,5 +1,6 @@
 
-import { useSubscription, AIFeature } from '@/contexts/SubscriptionContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
+import { AIFeature } from '@/contexts/SubscriptionContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from './use-toast';
 
