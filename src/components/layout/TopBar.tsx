@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Bell, ChevronDown, CreditCard, LogOut, Search, Settings, User } from 'lucide-react';
@@ -92,12 +93,20 @@ const TopBar = () => {
               Explore
             </Link>
             <Link 
-              to="/dashboard" 
+              to="/client-dashboard" 
               className={`text-sm font-medium transition-colors hidden md:block ${
-                location.pathname === '/dashboard' ? 'text-procloud-green' : 'hover:text-procloud-green'
+                location.pathname === '/client-dashboard' ? 'text-procloud-green' : 'hover:text-procloud-green'
               }`}
             >
               Dashboard
+            </Link>
+            <Link 
+              to="/pricing" 
+              className={`text-sm font-medium transition-colors hidden md:block ${
+                location.pathname === '/pricing' ? 'text-procloud-green' : 'hover:text-procloud-green'
+              }`}
+            >
+              Your Plan
             </Link>
             {userRole === "agency" && (
               <Link 
@@ -131,9 +140,15 @@ const TopBar = () => {
                 </div>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link to="/dashboard" className="flex cursor-pointer items-center">
+                  <Link to="/client-dashboard" className="flex cursor-pointer items-center">
                     <User className="mr-2 h-4 w-4" />
                     <span>Dashboard</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/pricing" className="flex cursor-pointer items-center">
+                    <CreditCard className="mr-2 h-4 w-4" />
+                    <span>Your Plan</span>
                   </Link>
                 </DropdownMenuItem>
                 {userRole === "agency" && (
