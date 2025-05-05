@@ -36,11 +36,19 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     console.log("Setting up Supabase auth state listener");
     
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setCurrentUser(session?.user || null);
-      setLoading(false);
-    });
+    const getInitialSession = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        setSession(data.session);
+        setCurrentUser(data.session?.user || null);
+      } catch (error) {
+        console.error("Error getting initial session:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    getInitialSession();
     
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -52,7 +60,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     );
 
-    return () => subscription.unsubscribe();
+    return () => {
+      if (subscription) subscription.unsubscribe();
+    };
   }, []);
 
   const signup = async (email: string, password: string) => {
