@@ -35,13 +35,15 @@ const Login = () => {
           setUserRole(data.role);
           
           // Redirect based on role
-          if (data.role === 'client') {
-            navigate('/client-dashboard');
-          } else if (data.role === 'freelancer') {
-            navigate('/freelancer-dashboard');
+          if (data.role === 'freelancer') {
+            navigate('/freelancer-dashboard', { replace: true });
+          } else if (data.role === 'client') {
+            navigate('/client-dashboard', { replace: true });
+          } else if (data.role === 'agency') {
+            navigate('/agency/review', { replace: true });
           } else {
             // Default fallback
-            navigate('/client-dashboard');
+            navigate('/client-dashboard', { replace: true });
           }
         }
       } catch (error) {

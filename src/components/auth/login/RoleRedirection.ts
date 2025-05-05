@@ -28,7 +28,7 @@ export const handleRoleRedirection = (
     description: "Redirecting to your dashboard...",
   });
   
-  // Enhanced redirect logic with explicit role-based routing
+  // Role-based redirection logic
   if (userRole === "freelancer") {
     console.log("Navigating to freelancer dashboard");
     navigate("/freelancer-dashboard", { replace: true });
@@ -36,8 +36,12 @@ export const handleRoleRedirection = (
     console.log("Navigating to client dashboard");
     navigate("/client-dashboard", { replace: true });
   } else {
-    // Default fallback - now explicitly log this decision
-    console.log("No specific role detected or role unknown, using default redirect to client dashboard");
-    navigate("/client-dashboard", { replace: true });
+    // Default fallback - now based on login type instead of always client
+    console.log(`No specific role detected, using login type (${loginType}) for redirect`);
+    if (loginType === "freelancer") {
+      navigate("/freelancer-dashboard", { replace: true });
+    } else {
+      navigate("/client-dashboard", { replace: true });
+    }
   }
 };

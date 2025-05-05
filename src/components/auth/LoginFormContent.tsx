@@ -18,11 +18,6 @@ const LoginFormContent = ({ loginType }: LoginFormContentProps) => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Update form values when login type changes
-  useEffect(() => {
-    // This effect is now handled in the EmailPasswordForm component
-  }, [loginType]);
-
   const onSubmit = async (data: FormData) => {
     try {
       setError(null);
@@ -47,7 +42,7 @@ const LoginFormContent = ({ loginType }: LoginFormContentProps) => {
       // Get user profile to check role
       const userRole = await fetchUserRole((await supabase.auth.getUser()).data.user?.id || "");
       
-      // Handle redirection based on role
+      // Ensure we're passing the loginType to handle redirection properly
       handleRoleRedirection(userRole, loginType, navigate);
       
     } catch (err) {
