@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import Layout from "@/components/layout/Layout";
 import ReviewQueue from "@/components/agency/ReviewQueue";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/SupabaseAuthContext";
 import { Navigate } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";

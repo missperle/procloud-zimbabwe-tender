@@ -6,7 +6,7 @@ import { AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from "@/components/ui/use-toast";
 import UploadModal from './UploadModal';
 import '../../styles/feed.css';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/contexts/SupabaseAuthContext';
 import { categories } from '@/components/layout/CategoryNav';
 import { getFirestore, collection, query, where, orderBy, getDocs, doc, getDoc } from 'firebase/firestore';
 import { getApp } from 'firebase/app';

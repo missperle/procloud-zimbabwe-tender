@@ -1,13 +1,10 @@
 
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import { createContext, useContext, ReactNode, useState, useEffect } from "react";
+import { useAuth } from "./SupabaseAuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from './SupabaseAuthContext';
-import { SubscriptionPlan, SubscriptionStatus, PaymentMethod } from '@/hooks/useSubscriptionGuard';
+import { SubscriptionPlan, SubscriptionStatus, PaymentMethod } from "@/hooks/useSubscriptionGuard";
 
-export type AIFeature = 'image-generation' | 'brief-builder' | 'proposal-assistance' | 'analytics' | 'job-matching';
-
-export interface Subscription {
-  id: string;
+interface Subscription {
   userId: string;
   plan: SubscriptionPlan;
   status: SubscriptionStatus;
@@ -16,16 +13,23 @@ export interface Subscription {
   paymentMethod: PaymentMethod;
 }
 
-interface SubscriptionContextProps {
+interface SubscriptionContextType {
   subscription: Subscription | null;
   isLoading: boolean;
   refreshSubscription: () => Promise<void>;
-  hasFeatureAccess: (feature: AIFeature) => boolean;
 }
 
-const SubscriptionContext = createContext<SubscriptionContextProps | undefined>(undefined);
+const SubscriptionContext = createContext<SubscriptionContextType | null>(null);
 
-export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ children }) => {
+export const useSubscription = () => {
+  const context = useContext(SubscriptionContext);
+  if (!context) {
+    throw new Error("useSubscription must be used within a SubscriptionProvider");
+  }
+  return context;
+};
+
+export const SubscriptionProvider = ({ children }: { children: ReactNode }) => {
   const { currentUser } = useAuth();
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -40,7 +44,7 @@ export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ ch
     try {
       setIsLoading(true);
       
-      // Query subscriptions table for the current user
+      // Query the subscription table in Supabase
       const { data, error } = await supabase
         .from('subscriptions')
         .select('*')
@@ -48,32 +52,30 @@ export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ ch
         .order('startdate', { ascending: false })
         .limit(1)
         .single();
-      
+        
       if (error) {
-        console.error('Error fetching subscription:', error);
+        console.error("Error fetching subscription:", error);
         setSubscription(null);
         return;
       }
       
-      if (!data) {
+      if (data) {
+        // Map database fields to our Subscription interface
+        const subscriptionData: Subscription = {
+          userId: data.userid,
+          plan: data.plan as SubscriptionPlan,
+          status: data.status as SubscriptionStatus,
+          startDate: new Date(data.startdate),
+          nextBillingDate: data.nextbillingdate ? new Date(data.nextbillingdate) : null,
+          paymentMethod: data.paymentmethod as PaymentMethod
+        };
+        
+        setSubscription(subscriptionData);
+      } else {
         setSubscription(null);
-        return;
       }
-      
-      // Convert Supabase timestamps to Date objects
-      const subscription: Subscription = {
-        id: data.id,
-        userId: data.userid,
-        plan: data.plan as SubscriptionPlan,
-        status: data.status as SubscriptionStatus,
-        startDate: new Date(data.startdate),
-        nextBillingDate: data.nextbillingdate ? new Date(data.nextbillingdate) : null,
-        paymentMethod: data.paymentmethod as PaymentMethod
-      };
-      
-      setSubscription(subscription);
     } catch (error) {
-      console.error('Error fetching subscription:', error);
+      console.error("Error in subscription context:", error);
       setSubscription(null);
     } finally {
       setIsLoading(false);
@@ -88,40 +90,9 @@ export const SubscriptionProvider: React.FC<{children: React.ReactNode}> = ({ ch
     await fetchSubscription();
   };
 
-  // Implement feature access logic based on subscription plan
-  const hasFeatureAccess = (feature: AIFeature): boolean => {
-    if (!subscription || subscription.status !== 'active') {
-      return false;
-    }
-
-    // Define which features are available for each plan
-    const featureAccess: Record<SubscriptionPlan, AIFeature[]> = {
-      'Free': ['job-matching'],
-      'Basic': ['job-matching', 'brief-builder', 'proposal-assistance'],
-      'Pro': ['job-matching', 'brief-builder', 'proposal-assistance', 'image-generation', 'analytics']
-    };
-
-    return featureAccess[subscription.plan]?.includes(feature) || false;
-  };
-
-  const value = {
-    subscription,
-    isLoading,
-    refreshSubscription,
-    hasFeatureAccess
-  };
-
   return (
-    <SubscriptionContext.Provider value={value}>
+    <SubscriptionContext.Provider value={{ subscription, isLoading, refreshSubscription }}>
       {children}
     </SubscriptionContext.Provider>
   );
-};
-
-export const useSubscription = () => {
-  const context = useContext(SubscriptionContext);
-  if (context === undefined) {
-    throw new Error('useSubscription must be used within a SubscriptionProvider');
-  }
-  return context;
 };

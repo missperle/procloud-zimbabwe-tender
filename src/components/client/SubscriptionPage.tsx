@@ -9,7 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getFirestore, collection, query, where, getDocs, doc, updateDoc } from "firebase/firestore";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/SupabaseAuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 const SubscriptionPage: React.FC = () => {

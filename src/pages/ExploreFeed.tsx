@@ -2,7 +2,7 @@
 import { useState } from "react";
 import Layout from "@/components/layout/Layout";
 import Feed from "@/components/explore/Feed";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/contexts/SupabaseAuthContext";
 import SubscriptionGuard from "@/components/subscription/SubscriptionGuard";
 
 const ExploreFeed = () => {
