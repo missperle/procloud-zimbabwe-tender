@@ -19,7 +19,7 @@ const SideNav = () => {
         <Link to="/explore" className="hover:text-procloud-green transition-colors mb-4">
           Explore
         </Link>
-        <Link to="/subscribe" className="hover:text-procloud-gold transition-colors">
+        <Link to="/pricing" className="hover:text-procloud-gold transition-colors">
           Subscribe
         </Link>
         <a href="https://instagram.com/proverbdigital" target="_blank" rel="noopener noreferrer" className="sidenav-icon hover:text-procloud-gold transition-colors">
