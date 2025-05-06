@@ -1,10 +1,9 @@
-
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card } from '@/components/ui/card';
-import { FileUpload, File, X, Check, AlertCircle } from 'lucide-react';
+import { Upload, File, X, Check, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -218,7 +217,7 @@ const DocumentUploadStep = ({ formData, updateFormData, userId }: DocumentUpload
               className="w-full flex items-center justify-center gap-2 h-10"
               disabled={uploading}
             >
-              <FileUpload size={16} />
+              <Upload size={16} />
               {uploading ? 'Uploading...' : 'Choose File'}
             </Button>
           </div>
