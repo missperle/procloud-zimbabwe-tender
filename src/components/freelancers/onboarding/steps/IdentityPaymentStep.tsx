@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/tabs";
 import { 
   CreditCard, 
-  Bank, 
+  Banknote, 
   DollarSign
 } from "lucide-react";
 
@@ -190,7 +190,7 @@ const IdentityPaymentStep = ({ formData, updateFormData }: IdentityPaymentStepPr
               htmlFor="bank_transfer" 
               className={`flex flex-col items-center justify-center border rounded-lg p-4 w-full cursor-pointer hover:bg-gray-50 ${selectedPaymentType === 'bank_transfer' ? 'border-primary bg-primary/5' : 'border-gray-200'}`}
             >
-              <Bank className="h-6 w-6 mb-2" />
+              <Banknote className="h-6 w-6 mb-2" />
               <span className="font-medium">Bank Transfer</span>
             </Label>
           </div>

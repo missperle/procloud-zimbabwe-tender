@@ -7,7 +7,11 @@ import {
   FreelancerOnboardingFormData, 
   Step, 
   DEFAULT_FREELANCER_ONBOARDING_STEPS,
-  DEFAULT_FREELANCER_FORM_DATA
+  DEFAULT_FREELANCER_FORM_DATA,
+  PaymentMethod,
+  PortfolioItem,
+  PriceTier,
+  DayAvailability
 } from "@/types/freelancerOnboarding";
 import { 
   loadOnboardingStep,
@@ -17,7 +21,14 @@ import {
 } from "./freelancer/onboardingDbOperations";
 import { validateStep } from "./freelancer/onboardingValidation";
 
-export type { FreelancerOnboardingFormData, Step } from "@/types/freelancerOnboarding";
+export type { 
+  FreelancerOnboardingFormData, 
+  Step,
+  PaymentMethod,
+  PortfolioItem,
+  PriceTier,
+  DayAvailability
+} from "@/types/freelancerOnboarding";
 
 export function useFreelancerOnboarding() {
   const [currentStep, setCurrentStep] = useState(1);
