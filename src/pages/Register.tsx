@@ -6,18 +6,42 @@ import { Navigate, useSearchParams } from "react-router-dom";
 import { useSubscription } from "@/contexts/SubscriptionContext";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Register = () => {
   const { currentUser } = useAuth();
   const { userRole } = useSubscription();
   const [searchParams] = useSearchParams();
   const userType = searchParams.get('type') || 'freelancer';
+  const [shouldRedirect, setShouldRedirect] = useState(false);
+  const [redirectPath, setRedirectPath] = useState('');
 
-  if (currentUser) {
-    if (userRole === 'freelancer') {
-      return <Navigate to="/freelancer-onboarding" />;
-    }
-    return <Navigate to="/client-dashboard" />;
+  useEffect(() => {
+    const checkUserStatus = async () => {
+      if (currentUser) {
+        const { data, error } = await supabase
+          .from('users')
+          .select('role, onboarding_completed')
+          .eq('id', currentUser.id)
+          .single();
+
+        if (!error && data) {
+          if (data.role === 'freelancer') {
+            setRedirectPath('/freelancer-onboarding');
+          } else if (data.role === 'client') {
+            setRedirectPath(data.onboarding_completed ? '/client-dashboard' : '/client-onboarding');
+          }
+          setShouldRedirect(true);
+        }
+      }
+    };
+
+    checkUserStatus();
+  }, [currentUser]);
+
+  if (shouldRedirect) {
+    return <Navigate to={redirectPath} />;
   }
 
   return (

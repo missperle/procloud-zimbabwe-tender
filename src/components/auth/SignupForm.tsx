@@ -62,18 +62,18 @@ const SignupForm = ({ initialUserType = "freelancer" }: SignupFormProps) => {
         title: "Account Created",
         description: data.userType === "freelancer" 
           ? "Welcome to proCloud! Let's set up your freelancer profile." 
-          : "Account created successfully! Redirecting to your dashboard.",
+          : "Welcome to proCloud! Let's set up your client profile.",
       });
       
       // Redirect to appropriate dashboard based on user type
       if (data.userType === "freelancer") {
         navigate("/freelancer-onboarding");
       } else {
-        navigate("/client-dashboard");
+        navigate("/client-onboarding");
       }
     } catch (error) {
       console.error("Signup error:", error);
-      const errorMessage = error instanceof Error ? error.message : "An error occurred during signup";
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
       setError(errorMessage);
     } finally {
       setLoading(false);

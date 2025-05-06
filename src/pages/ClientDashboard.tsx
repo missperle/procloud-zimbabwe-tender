@@ -11,12 +11,15 @@ import AccountSettings from "@/components/client/AccountSettings";
 import ChatWidget from "@/components/chat/ChatWidget";
 import { useAuth } from "@/contexts/AuthContext";
 import Profile from "@/components/client/Profile";
+import { supabase } from "@/integrations/supabase/client";
 
 const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { currentUser, loading } = useAuth();
+  const [onboardingCompleted, setOnboardingCompleted] = useState<boolean | null>(null);
+  const [checkingStatus, setCheckingStatus] = useState(true);
 
   // Set active tab based on URL query param or default to "overview"
   useEffect(() => {
@@ -33,16 +36,51 @@ const ClientDashboard = () => {
     setSearchParams(searchParams);
   };
 
-  // Redirect to login if user is not logged in and not in loading state
+  // Check if the user is a client and has completed onboarding
   useEffect(() => {
-    if (!loading && !currentUser) {
-      // In a real app, you might want to redirect to login here
-      // navigate("/login");
-      console.log("User not logged in - this would typically redirect to login");
+    const checkClientStatus = async () => {
+      if (!currentUser) return;
+
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('role, onboarding_completed')
+          .eq('id', currentUser.id)
+          .single();
+
+        if (error) {
+          console.error("Error fetching user data:", error);
+          return;
+        }
+
+        // If not a client, redirect to the general dashboard
+        if (data.role !== 'client') {
+          navigate('/dashboard');
+          return;
+        }
+
+        // Set onboarding completion status
+        setOnboardingCompleted(data.onboarding_completed);
+
+        // If onboarding is not completed, redirect to client onboarding
+        if (data.onboarding_completed === false) {
+          navigate('/client-onboarding');
+        }
+      } catch (error) {
+        console.error("Error checking client status:", error);
+      } finally {
+        setCheckingStatus(false);
+      }
+    };
+
+    if (!loading && currentUser) {
+      checkClientStatus();
+    } else if (!loading && !currentUser) {
+      navigate('/login');
     }
   }, [currentUser, loading, navigate]);
 
-  if (loading) {
+  if (loading || checkingStatus) {
     return (
       <Layout>
         <div className="client-dashboard p-6">
@@ -55,6 +93,11 @@ const ClientDashboard = () => {
         </div>
       </Layout>
     );
+  }
+
+  // If onboarding not completed and not still checking status, the redirection will happen in the useEffect
+  if (onboardingCompleted === false && !checkingStatus) {
+    return null;
   }
 
   return (

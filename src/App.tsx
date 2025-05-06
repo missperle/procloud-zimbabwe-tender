@@ -12,6 +12,7 @@ import Freelancers from "./pages/Freelancers";
 import FreelancerProfile from "./pages/FreelancerProfile";
 import ExploreFeed from "./pages/ExploreFeed";
 import FreelancerOnboardingPage from "./pages/FreelancerOnboardingPage";
+import ClientOnboardingPage from "./pages/ClientOnboardingPage";
 import SubmitProposalPage from "./pages/SubmitProposalPage";
 import Pricing from "./pages/Pricing";
 import BuyTokens from "./pages/BuyTokens";
@@ -29,6 +30,7 @@ function App() {
         <Route path="/signup" element={<Register />} /> {/* Add an alias for signup to register */}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/client-dashboard" element={<ClientDashboard />} />
+        <Route path="/client-onboarding" element={<ClientOnboardingPage />} />
         <Route path="/jobs" element={<Jobs />} />
         <Route path="/jobs/:id" element={<JobDetailsPage />} />
         <Route path="/freelancers" element={<Freelancers />} />
