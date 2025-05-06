@@ -1,6 +1,8 @@
 
 import { Card, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import LoadingState from "@/components/dashboard/LoadingState";
+import { useState, useEffect } from "react";
 
 // Example job data - this would come from an API in a real app
 const jobStatuses = [
@@ -10,7 +12,25 @@ const jobStatuses = [
 ];
 
 const ActiveJobsList = () => {
-  const activeJobs = jobStatuses.filter(job => job.status === "in_progress");
+  const [loading, setLoading] = useState(true);
+  const [activeJobs, setActiveJobs] = useState<typeof jobStatuses>([]);
+  
+  // Simulate API fetch
+  useEffect(() => {
+    const fetchJobs = async () => {
+      // In a real app, this would be an API call
+      setTimeout(() => {
+        setActiveJobs(jobStatuses.filter(job => job.status === "in_progress"));
+        setLoading(false);
+      }, 1000);
+    };
+    
+    fetchJobs();
+  }, []);
+  
+  if (loading) {
+    return <LoadingState variant="skeleton" showLayout={false} items={2} />;
+  }
   
   return (
     <div className="space-y-4">

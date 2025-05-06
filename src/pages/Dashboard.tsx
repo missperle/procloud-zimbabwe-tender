@@ -29,7 +29,7 @@ const Dashboard = () => {
   }, [currentUser, loading, userRole, navigate]);
 
   if (loading) {
-    return <LoadingState message="Loading..." />;
+    return <LoadingState variant="skeleton" message="Loading dashboard..." />;
   }
 
   return (

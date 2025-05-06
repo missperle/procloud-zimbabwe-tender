@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import Layout from "@/components/layout/Layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -12,6 +11,7 @@ import ChatWidget from "@/components/chat/ChatWidget";
 import { useAuth } from "@/contexts/AuthContext";
 import Profile from "@/components/client/Profile";
 import { supabase } from "@/integrations/supabase/client";
+import LoadingState from "@/components/dashboard/LoadingState";
 
 const ClientDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -81,18 +81,7 @@ const ClientDashboard = () => {
   }, [currentUser, loading, navigate]);
 
   if (loading || checkingStatus) {
-    return (
-      <Layout>
-        <div className="client-dashboard p-6">
-          <div className="flex justify-center items-center min-h-[50vh]">
-            <div className="text-center">
-              <div className="h-8 w-8 border-4 border-t-accent rounded-full animate-spin mx-auto mb-4"></div>
-              <p className="text-gray-500">Loading dashboard...</p>
-            </div>
-          </div>
-        </div>
-      </Layout>
-    );
+    return <LoadingState variant="skeleton" message="Loading dashboard..." items={4} />;
   }
 
   // If onboarding not completed and not still checking status, the redirection will happen in the useEffect
