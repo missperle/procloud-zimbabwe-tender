@@ -3,56 +3,20 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { OnboardingFormData, Step, DEFAULT_ONBOARDING_STEPS, DEFAULT_FORM_DATA } from '@/types/onboarding';
+import { 
+  loadOnboardingStep, 
+  updateOnboardingStep, 
+  completeOnboarding, 
+  saveClientData 
+} from './onboarding/onboardingDbOperations';
+import { validateStep } from './onboarding/onboardingValidation';
 
-export interface OnboardingFormData {
-  companyName: string;
-  tradingName: string;
-  registrationNumber: string;
-  taxId: string;
-  address: {
-    street: string;
-    city: string;
-    state: string;
-    postalCode: string;
-    country: string;
-  };
-  contact: {
-    name: string;
-    email: string;
-    phone: string;
-  };
-  documents: any[];
-  selectedPlan: any;
-}
-
-export interface Step {
-  id: number;
-  name: string;
-}
+export { OnboardingFormData, Step } from '@/types/onboarding';
 
 export function useOnboardingWizard() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [formData, setFormData] = useState<OnboardingFormData>({
-    companyName: '',
-    tradingName: '',
-    registrationNumber: '',
-    taxId: '',
-    address: {
-      street: '',
-      city: '',
-      state: '',
-      postalCode: '',
-      country: ''
-    },
-    contact: {
-      name: '',
-      email: '',
-      phone: ''
-    },
-    documents: [],
-    selectedPlan: null
-  });
+  const [formData, setFormData] = useState<OnboardingFormData>(DEFAULT_FORM_DATA);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
@@ -60,35 +24,16 @@ export function useOnboardingWizard() {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const steps: Step[] = [
-    { id: 1, name: 'Company Info' },
-    { id: 2, name: 'Contact Details' },
-    { id: 3, name: 'Documents' },
-    { id: 4, name: 'Subscription' },
-    { id: 5, name: 'Finish' }
-  ];
+  const steps: Step[] = DEFAULT_ONBOARDING_STEPS;
 
   // Load the current onboarding step from database when component mounts
   useEffect(() => {
-    const loadOnboardingStep = async () => {
-      if (!currentUser) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('onboarding_step')
-          .eq('id', currentUser.id)
-          .single();
-          
-        if (!error && data && data.onboarding_step) {
-          setCurrentStep(data.onboarding_step);
-        }
-      } catch (error) {
-        console.error('Error loading onboarding step:', error);
-      }
+    const fetchOnboardingStep = async () => {
+      const step = await loadOnboardingStep(currentUser?.id);
+      setCurrentStep(step);
     };
     
-    loadOnboardingStep();
+    fetchOnboardingStep();
   }, [currentUser]);
 
   const updateFormData = (stepData: Partial<OnboardingFormData>) => {
@@ -98,19 +43,17 @@ export function useOnboardingWizard() {
   const handleNext = async () => {
     setError(null);
     
-    if (currentStep === 1) {
-      // Validate basic info
-      if (!formData.companyName) {
-        toast({
-          title: "Required Field Missing",
-          description: "Please enter your company name",
-          variant: "destructive",
-        });
-        return;
-      }
-    } else if (currentStep === 4) {
-      // Save all data to the database before proceeding
-      await saveClientData();
+    // Validate current step
+    if (!validateStep(currentStep, formData)) {
+      return;
+    }
+
+    // For subscription step, save all data before proceeding
+    if (currentStep === 4) {
+      setIsLoading(true);
+      const success = await saveClientData(currentUser?.id, formData);
+      setIsLoading(false);
+      if (!success) return;
     }
 
     if (currentStep < steps.length) {
@@ -118,14 +61,7 @@ export function useOnboardingWizard() {
       setCurrentStep(nextStep);
       // Update onboarding step in database
       if (currentUser) {
-        try {
-          await supabase
-            .from('users')
-            .update({ onboarding_step: nextStep })
-            .eq('id', currentUser.id);
-        } catch (error) {
-          console.error('Error updating onboarding step:', error);
-        }
+        await updateOnboardingStep(currentUser.id, nextStep);
       }
     }
   };
@@ -142,22 +78,20 @@ export function useOnboardingWizard() {
     
     try {
       if (currentUser) {
-        await supabase
-          .from('users')
-          .update({ 
-            onboarding_completed: true,
-            onboarding_step: 5
-          })
-          .eq('id', currentUser.id);
-          
-        // Refresh user status to update the user context
-        await refreshUserStatus();
+        const success = await completeOnboarding(currentUser.id);
         
-        navigate('/client-dashboard');
-        toast({
-          title: "Onboarding Completed!",
-          description: "Welcome to proCloud. Your account is ready to use.",
-        });
+        if (success) {
+          // Refresh user status to update the user context
+          await refreshUserStatus();
+          
+          navigate('/client-dashboard');
+          toast({
+            title: "Onboarding Completed!",
+            description: "Welcome to proCloud. Your account is ready to use.",
+          });
+        } else {
+          throw new Error("Failed to complete onboarding");
+        }
       }
     } catch (error) {
       console.error('Error completing onboarding:', error);
@@ -165,59 +99,6 @@ export function useOnboardingWizard() {
       toast({
         title: "Error",
         description: "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const saveClientData = async () => {
-    if (!currentUser) return;
-    
-    setIsLoading(true);
-    setError(null);
-    
-    try {
-      // Update user profile with company details
-      const { error } = await supabase
-        .from('users')
-        .update({
-          company_name: formData.companyName,
-          trading_name: formData.tradingName,
-          company_registration_number: formData.registrationNumber,
-          tax_id: formData.taxId,
-          company_address: formData.address,
-        })
-        .eq('id', currentUser.id);
-
-      if (error) throw error;
-
-      // If subscription plan is selected, create or update subscription
-      if (formData.selectedPlan) {
-        const { error: subError } = await supabase
-          .from('subscriptions')
-          .upsert({
-            userid: currentUser.id,
-            plan_id: formData.selectedPlan.id,
-            status: 'pending',
-            plan: formData.selectedPlan.name,
-            paymentmethod: 'card'
-          }, { onConflict: 'userid' });
-
-        if (subError) throw subError;
-      }
-
-      toast({
-        title: "Information Saved",
-        description: "Your company details have been saved successfully."
-      });
-    } catch (error) {
-      console.error('Error saving client data:', error);
-      setError("Failed to save your information. Please try again.");
-      toast({
-        title: "Error",
-        description: "There was a problem saving your information. Please try again.",
         variant: "destructive",
       });
     } finally {
