@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { 
   Card, 
@@ -45,7 +44,8 @@ const ReferralWidget = ({ referral, totalRewards }: ReferralWidgetProps) => {
   };
 
   const generateNewCode = () => {
-    const newCode = generateReferralCode();
+    // Fix: Pass the required length parameter to generateReferralCode function
+    const newCode = generateReferralCode(10);
     setReferralCode(newCode);
     toast({
       title: "New referral code generated!",
