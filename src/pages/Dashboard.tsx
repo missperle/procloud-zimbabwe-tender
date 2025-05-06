@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
@@ -105,7 +104,7 @@ const Dashboard = () => {
                 )}
               </CardContent>
               <CardFooter>
-                <ProfileCompletionWidget percentage={profileCompletionPercentage} />
+                <ProfileCompletionWidget />
               </CardFooter>
             </Card>
 
