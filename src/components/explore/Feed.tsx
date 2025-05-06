@@ -3,7 +3,7 @@ import { Heart, MoreHorizontal, Plus } from 'lucide-react';
 import { Avatar } from '@/components/ui/avatar';
 import { AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { toast } from "@/components/ui/use-toast";
-import UploadModal from './UploadModal';
+import UploadModal from './upload/UploadModal';
 import '../../styles/feed.css';
 import { useAuth } from '@/contexts/AuthContext';
 import { categories } from '@/components/layout/CategoryNav';
