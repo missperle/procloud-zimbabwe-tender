@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import OnboardingProgressBar from "./onboarding/OnboardingProgressBar";
 import BasicInfoForm, { StepOneFormValues, stepOneSchema } from "./onboarding/BasicInfoForm";
 import DetailsForm, { StepTwoFormValues, stepTwoSchema } from "./onboarding/DetailsForm";
+import StepNavigation from "@/components/onboarding/StepNavigation";
 
 const FreelancerOnboarding = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -85,6 +86,18 @@ const FreelancerOnboarding = () => {
     }
   };
 
+  const handleNext = () => {
+    stepOneForm.handleSubmit(handleStepOneSubmit)();
+  };
+
+  const handlePrevious = () => {
+    setCurrentStep(1);
+  };
+
+  const handleComplete = () => {
+    stepTwoForm.handleSubmit(handleStepTwoSubmit)();
+  };
+
   return (
     <Card className="w-full max-w-md mx-auto">
       <CardHeader>
@@ -112,6 +125,16 @@ const FreelancerOnboarding = () => {
             isLoading={isLoading}
           />
         )}
+        
+        <StepNavigation 
+          currentStep={currentStep}
+          totalSteps={2}
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onComplete={handleComplete}
+          isLoading={isLoading}
+          showBackButton={false}
+        />
       </CardContent>
     </Card>
   );

@@ -1,33 +1,32 @@
 
-import { Check } from "lucide-react";
+import { StepIndicator } from "@/components/onboarding/StepIndicator";
+import { StepConnector } from "@/components/onboarding/StepConnector";
 
 interface OnboardingProgressBarProps {
   currentStep: number;
 }
 
 const OnboardingProgressBar = ({ currentStep }: OnboardingProgressBarProps) => {
+  const steps = [
+    { id: 1, name: "Basic Info" },
+    { id: 2, name: "Details" }
+  ];
+
   return (
-    <div className="flex justify-between mb-8">
-      <div className="flex flex-col items-center">
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-          currentStep >= 1 ? "bg-procloud-green border-procloud-green text-white" : "border-gray-300"
-        }`}>
-          {currentStep > 1 ? <Check className="h-5 w-5" /> : "1"}
-        </div>
-        <span className="text-xs mt-1">Basic Info</span>
+    <div className="flex flex-col mb-8">
+      <div className="flex justify-between items-center">
+        {steps.map(step => (
+          <StepIndicator 
+            key={step.id}
+            step={step.id}
+            currentStep={currentStep}
+            label={step.name}
+          />
+        ))}
       </div>
       
-      <div className="flex-1 flex items-center justify-center">
-        <div className={`h-0.5 w-full ${currentStep > 1 ? "bg-procloud-green" : "bg-gray-200"}`}></div>
-      </div>
-      
-      <div className="flex flex-col items-center">
-        <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-          currentStep >= 2 ? "bg-procloud-green border-procloud-green text-white" : "border-gray-300"
-        }`}>
-          {currentStep > 2 ? <Check className="h-5 w-5" /> : "2"}
-        </div>
-        <span className="text-xs mt-1">Details</span>
+      <div className="flex items-center justify-center mt-2">
+        <StepConnector isCompleted={currentStep > 1} />
       </div>
     </div>
   );

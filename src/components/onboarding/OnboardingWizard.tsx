@@ -1,26 +1,21 @@
 
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import StepProgress from './StepProgress';
+import StepNavigation from './StepNavigation';
 import BasicInfoStep from './steps/BasicInfoStep';
 import CompanyDetailsStep from './steps/CompanyDetailsStep';
 import DocumentUploadStep from './steps/DocumentUploadStep';
 import SubscriptionStep from './steps/SubscriptionStep';
 import FinalStep from './steps/FinalStep';
-import OnboardingProgress from './OnboardingProgress';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
-
-type OnboardingStep = {
-  id: number;
-  name: string;
-  component: React.ReactNode;
-};
+import { Step } from './StepProgress';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const OnboardingWizard = () => {
   const [currentStep, setCurrentStep] = useState(1);
@@ -49,6 +44,15 @@ const OnboardingWizard = () => {
   const { currentUser, refreshUserStatus } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
+  
+  const steps: Step[] = [
+    { id: 1, name: 'Company Info' },
+    { id: 2, name: 'Contact Details' },
+    { id: 3, name: 'Documents' },
+    { id: 4, name: 'Subscription' },
+    { id: 5, name: 'Finish' }
+  ];
   
   // Load the current onboarding step from database when component mounts
   useEffect(() => {
@@ -207,39 +211,26 @@ const OnboardingWizard = () => {
     }
   };
 
-  const steps: OnboardingStep[] = [
-    {
-      id: 1,
-      name: 'Company Info',
-      component: <BasicInfoStep formData={formData} updateFormData={updateFormData} />
-    },
-    {
-      id: 2,
-      name: 'Contact Details',
-      component: <CompanyDetailsStep formData={formData} updateFormData={updateFormData} />
-    },
-    {
-      id: 3,
-      name: 'Documents',
-      component: <DocumentUploadStep formData={formData} updateFormData={updateFormData} userId={currentUser?.id} />
-    },
-    {
-      id: 4,
-      name: 'Subscription',
-      component: <SubscriptionStep formData={formData} updateFormData={updateFormData} />
-    },
-    {
-      id: 5,
-      name: 'Finish',
-      component: <FinalStep />
+  const renderCurrentStep = () => {
+    switch (currentStep) {
+      case 1:
+        return <BasicInfoStep formData={formData} updateFormData={updateFormData} />;
+      case 2:
+        return <CompanyDetailsStep formData={formData} updateFormData={updateFormData} />;
+      case 3:
+        return <DocumentUploadStep formData={formData} updateFormData={updateFormData} userId={currentUser?.id} />;
+      case 4:
+        return <SubscriptionStep formData={formData} updateFormData={updateFormData} />;
+      case 5:
+        return <FinalStep />;
+      default:
+        return <BasicInfoStep formData={formData} updateFormData={updateFormData} />;
     }
-  ];
-
-  const currentStepData = steps[currentStep - 1];
+  };
 
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
-      <OnboardingProgress currentStep={currentStep} totalSteps={steps.length} />
+      <StepProgress steps={steps} currentStep={currentStep} />
       
       {error && (
         <Alert variant="destructive" className="mb-6">
@@ -250,47 +241,20 @@ const OnboardingWizard = () => {
       )}
       
       <Card className="mt-8 p-6">
-        <h2 className="text-2xl font-bold mb-6">Step {currentStep}: {currentStepData.name}</h2>
+        <h2 className="text-2xl font-bold mb-6">Step {currentStep}: {steps.find(s => s.id === currentStep)?.name}</h2>
         
         <div className="mb-8">
-          {currentStepData.component}
+          {renderCurrentStep()}
         </div>
         
-        <div className="flex justify-between">
-          {currentStep > 1 ? (
-            <Button 
-              variant="outline" 
-              onClick={handlePrevious}
-              className="flex items-center gap-2"
-              disabled={isLoading}
-            >
-              <ArrowLeft size={16} />
-              Previous
-            </Button>
-          ) : (
-            <div />
-          )}
-          
-          {currentStep < steps.length ? (
-            <Button 
-              onClick={handleNext}
-              className="flex items-center gap-2"
-              disabled={isLoading}
-            >
-              {isLoading ? "Saving..." : "Next"}
-              {!isLoading && <ArrowRight size={16} />}
-            </Button>
-          ) : (
-            <Button 
-              onClick={handleComplete}
-              className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
-              disabled={isLoading}
-            >
-              {isLoading ? "Completing..." : "Complete"}
-              {!isLoading && <Check size={16} />}
-            </Button>
-          )}
-        </div>
+        <StepNavigation 
+          currentStep={currentStep}
+          totalSteps={steps.length - 1} // Subtract 1 because the last step is the "Finish" step
+          onPrevious={handlePrevious}
+          onNext={handleNext}
+          onComplete={handleComplete}
+          isLoading={isLoading}
+        />
       </Card>
     </div>
   );
