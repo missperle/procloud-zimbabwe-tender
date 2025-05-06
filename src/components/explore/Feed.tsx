@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Plus } from 'lucide-react';
 import { toast } from "@/components/ui/use-toast";
 import UploadModal from './upload/UploadModal';
-import '../../../styles/feed.css';
+import '@/styles/feed.css'; // Fixed import path using alias
 import { useAuth } from '@/contexts/AuthContext';
 import { categories } from '@/components/layout/CategoryNav';
 import { useFeed, FeedItem } from './feed/useFeed';
