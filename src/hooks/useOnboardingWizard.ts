@@ -12,7 +12,7 @@ import {
 } from './onboarding/onboardingDbOperations';
 import { validateStep } from './onboarding/onboardingValidation';
 
-export { OnboardingFormData, Step } from '@/types/onboarding';
+export type { OnboardingFormData, Step } from '@/types/onboarding';
 
 export function useOnboardingWizard() {
   const [currentStep, setCurrentStep] = useState(1);
