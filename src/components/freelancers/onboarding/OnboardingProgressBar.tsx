@@ -1,32 +1,24 @@
 
-import { StepIndicator } from "@/components/onboarding/StepIndicator";
-import { StepConnector } from "@/components/onboarding/StepConnector";
+import { Step } from "@/hooks/useFreelancerOnboarding";
+import { Progress } from "@/components/ui/progress";
 
 interface OnboardingProgressBarProps {
   currentStep: number;
+  totalSteps?: number;
 }
 
-const OnboardingProgressBar = ({ currentStep }: OnboardingProgressBarProps) => {
-  const steps = [
-    { id: 1, name: "Basic Info" },
-    { id: 2, name: "Details" }
-  ];
-
+const OnboardingProgressBar = ({ 
+  currentStep,
+  totalSteps = 7 
+}: OnboardingProgressBarProps) => {
+  // Calculate progress percentage
+  const progress = (currentStep / totalSteps) * 100;
+  
   return (
-    <div className="flex flex-col mb-8">
-      <div className="flex justify-between items-center">
-        {steps.map(step => (
-          <StepIndicator 
-            key={step.id}
-            step={step.id}
-            currentStep={currentStep}
-            label={step.name}
-          />
-        ))}
-      </div>
-      
-      <div className="flex items-center justify-center mt-2">
-        <StepConnector isCompleted={currentStep > 1} />
+    <div className="mb-8">
+      <Progress value={progress} className="h-2" />
+      <div className="mt-2 text-sm text-gray-500 text-right">
+        Step {currentStep} of {totalSteps}
       </div>
     </div>
   );
