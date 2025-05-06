@@ -33,22 +33,35 @@ const ProtectedRoute = ({ children, isAllowed, redirectPath = '/login' }) => {
   return children;
 };
 
-// Role-specific route component
-const RoleRoute = ({ children, allowedRole, currentRole, redirectPath = '/login' }) => {
-  if (currentRole !== allowedRole) {
+// Role-specific route component with more strict checking
+const RoleRoute = ({ children, allowedRole, currentRole, redirectPath = '/login', onboardingCompleted }) => {
+  // If not the allowed role, redirect
+  if (!currentRole || currentRole !== allowedRole) {
     return <Navigate to={redirectPath} replace />;
   }
+  
   return children;
 };
 
 function App() {
-  const { currentUser, loading } = useAuth();
+  const { currentUser, loading, userStatus } = useAuth();
   const { userRole } = useSubscription();
   
-  // Determine the dashboard path based on user role
+  // Determine the dashboard path based on user role and onboarding status
   const getDashboardPath = () => {
     if (!currentUser) return '/login';
-    return userRole === 'freelancer' ? '/freelancer-dashboard' : '/client-dashboard';
+    
+    // Use userStatus if available (it contains more reliable role information)
+    const role = userStatus?.role || userRole;
+    const onboardingCompleted = userStatus?.onboardingCompleted || false;
+    
+    if (role === 'freelancer') {
+      return onboardingCompleted ? '/dashboard' : '/freelancer-onboarding';
+    } else if (role === 'client') {
+      return onboardingCompleted ? '/client-dashboard' : '/client-onboarding';
+    }
+    
+    return '/register';
   };
 
   if (loading) {
@@ -87,21 +100,19 @@ function App() {
         {/* Role-specific routes for freelancers */}
         <Route path="/freelancer-onboarding" element={
           <ProtectedRoute isAllowed={!!currentUser}>
-            <RoleRoute allowedRole="freelancer" currentRole={userRole} redirectPath={getDashboardPath()}>
-              <FreelancerOnboardingPage />
-            </RoleRoute>
+            <FreelancerOnboardingPage />
           </ProtectedRoute>
         } />
         <Route path="/edit-profile" element={
           <ProtectedRoute isAllowed={!!currentUser}>
-            <RoleRoute allowedRole="freelancer" currentRole={userRole} redirectPath={getDashboardPath()}>
+            <RoleRoute allowedRole="freelancer" currentRole={userStatus?.role || userRole} redirectPath={getDashboardPath()}>
               <EditProfilePage />
             </RoleRoute>
           </ProtectedRoute>
         } />
         <Route path="/submit-proposal/:id" element={
           <ProtectedRoute isAllowed={!!currentUser}>
-            <RoleRoute allowedRole="freelancer" currentRole={userRole} redirectPath={getDashboardPath()}>
+            <RoleRoute allowedRole="freelancer" currentRole={userStatus?.role || userRole} redirectPath={getDashboardPath()}>
               <SubmitProposalPage />
             </RoleRoute>
           </ProtectedRoute>
@@ -110,21 +121,19 @@ function App() {
         {/* Role-specific routes for clients */}
         <Route path="/client-onboarding" element={
           <ProtectedRoute isAllowed={!!currentUser}>
-            <RoleRoute allowedRole="client" currentRole={userRole} redirectPath={getDashboardPath()}>
-              <ClientOnboardingPage />
-            </RoleRoute>
+            <ClientOnboardingPage />
           </ProtectedRoute>
         } />
         <Route path="/create-brief" element={
           <ProtectedRoute isAllowed={!!currentUser}>
-            <RoleRoute allowedRole="client" currentRole={userRole} redirectPath={getDashboardPath()}>
+            <RoleRoute allowedRole="client" currentRole={userStatus?.role || userRole} redirectPath={getDashboardPath()}>
               <CreateBrief />
             </RoleRoute>
           </ProtectedRoute>
         } />
         <Route path="/client-dashboard" element={
           <ProtectedRoute isAllowed={!!currentUser}>
-            <RoleRoute allowedRole="client" currentRole={userRole} redirectPath={getDashboardPath()}>
+            <RoleRoute allowedRole="client" currentRole={userStatus?.role || userRole} redirectPath={getDashboardPath()}>
               <ClientDashboard />
             </RoleRoute>
           </ProtectedRoute>

@@ -4,28 +4,35 @@ import { useNavigate } from 'react-router-dom';
 import OnboardingWizard from '@/components/onboarding/OnboardingWizard';
 import Layout from '@/components/layout/Layout';
 import { useAuth } from '@/contexts/AuthContext';
-import { shouldRedirect } from '@/utils/authRedirect';
-import { useToast } from '@/hooks/use-toast';
 
 const ClientOnboardingPage = () => {
   const { currentUser, loading, userStatus } = useAuth();
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   useEffect(() => {
-    // Check if user should be redirected
-    const redirectPath = shouldRedirect(
-      currentUser, 
-      loading,
-      userStatus?.role || null,
-      userStatus?.onboardingCompleted || null,
-      ['client']
-    );
-    
-    if (redirectPath && redirectPath !== '/client-onboarding') {
-      navigate(redirectPath);
+    // Redirect if not logged in
+    if (!loading && !currentUser) {
+      navigate('/login');
+      return;
     }
-  }, [currentUser, loading, userStatus, navigate]);
+
+    // Check if the user has the correct role
+    if (!loading && userStatus && userStatus.role !== 'client') {
+      // If they're a freelancer, redirect to freelancer dashboard or onboarding
+      if (userStatus.role === 'freelancer') {
+        navigate(userStatus.onboardingCompleted ? '/dashboard' : '/freelancer-onboarding');
+      } else {
+        // If role is not set, redirect to signup page
+        navigate('/register');
+      }
+      return;
+    }
+
+    // If client onboarding is completed, redirect to client dashboard
+    if (!loading && userStatus && userStatus.role === 'client' && userStatus.onboardingCompleted) {
+      navigate('/client-dashboard');
+    }
+  }, [currentUser, loading, navigate, userStatus]);
 
   if (loading) {
     return (

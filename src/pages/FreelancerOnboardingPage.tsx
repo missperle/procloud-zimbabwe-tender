@@ -2,20 +2,38 @@
 import Layout from "@/components/layout/Layout";
 import FreelancerOnboarding from "@/components/freelancers/FreelancerOnboarding";
 import { useAuth } from "@/contexts/AuthContext";
-import { useSubscription } from "@/contexts/SubscriptionContext";
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 
 const FreelancerOnboardingPage = () => {
-  const { currentUser, loading } = useAuth();
-  const { userRole } = useSubscription();
+  const { currentUser, loading, userStatus } = useAuth();
+  const navigate = useNavigate();
   const [alias, setAlias] = useState<string | null>(null);
   const [aliasLoading, setAliasLoading] = useState(true);
   
   useEffect(() => {
+    // Redirect if not logged in
+    if (!loading && !currentUser) {
+      navigate("/login");
+      return;
+    }
+
+    // Check if the user has the correct role
+    if (!loading && userStatus && userStatus.role !== 'freelancer') {
+      // If they're a client, redirect to client dashboard or onboarding
+      if (userStatus.role === 'client') {
+        navigate(userStatus.onboardingCompleted ? "/client-dashboard" : "/client-onboarding");
+      } else {
+        // If role is not set, redirect to signup page
+        navigate("/register");
+      }
+      return;
+    }
+
+    // Only fetch alias if user is logged in and is a freelancer
     const fetchUserAlias = async () => {
       if (currentUser) {
         try {
@@ -32,11 +50,13 @@ const FreelancerOnboardingPage = () => {
         } finally {
           setAliasLoading(false);
         }
+      } else {
+        setAliasLoading(false);
       }
     };
 
     fetchUserAlias();
-  }, [currentUser]);
+  }, [currentUser, loading, navigate, userStatus]);
 
   // Show loading state while auth initializes
   if (loading || aliasLoading) {
@@ -50,16 +70,6 @@ const FreelancerOnboardingPage = () => {
         </div>
       </Layout>
     );
-  }
-
-  // Redirect if not logged in
-  if (!currentUser) {
-    return <Navigate to="/login" />;
-  }
-  
-  // Redirect if not a freelancer
-  if (userRole !== 'freelancer') {
-    return <Navigate to="/client-dashboard" />;
   }
 
   return (
