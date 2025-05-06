@@ -119,3 +119,10 @@ export const getPricePerToken = (tier: LoyaltyTier, packageId: string): number =
 export const formatCurrency = (amount: number): string => {
   return `$${(amount / 100).toFixed(2)}`;
 };
+
+// Generate a referral code
+export const generateReferralCode = (userId: string): string => {
+  // Create a referral code based on user ID and a random string
+  const randomStr = Math.random().toString(36).substring(2, 8).toUpperCase();
+  return `${userId.substring(0, 4)}-${randomStr}`;
+};
