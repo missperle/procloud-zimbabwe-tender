@@ -1,16 +1,17 @@
 
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Eye, EyeOff, Mail, Briefcase, UserPlus } from "lucide-react";
+import { Form } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useToast } from "@/hooks/use-toast";
+import UserTypeSelector from "./UserTypeSelector";
+import EmailField from "./EmailField";
+import PasswordField from "./PasswordField";
+import SignupFormFooter from "./SignupFormFooter";
 
 const signupSchema = z.object({
   email: z.string().email({ message: "Please enter a valid email address" }),
@@ -93,115 +94,26 @@ const SignupForm = ({ initialUserType = "freelancer" }: SignupFormProps) => {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="userType"
-            render={({ field }) => (
-              <FormItem className="space-y-3">
-                <FormLabel>I want to join as a</FormLabel>
-                <FormControl>
-                  <RadioGroup
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                    className="flex flex-col space-y-1"
-                  >
-                    <div className="flex items-center space-x-2 rounded-md border p-3 cursor-pointer hover:bg-slate-50">
-                      <RadioGroupItem value="client" id="client" />
-                      <label htmlFor="client" className="flex items-center gap-2 cursor-pointer font-medium">
-                        <Briefcase className="h-5 w-5 text-indigo-ink" />
-                        Client
-                      </label>
-                    </div>
-                    <div className="flex items-center space-x-2 rounded-md border p-3 cursor-pointer hover:bg-slate-50">
-                      <RadioGroupItem value="freelancer" id="freelancer" />
-                      <label htmlFor="freelancer" className="flex items-center gap-2 cursor-pointer font-medium">
-                        <UserPlus className="h-5 w-5 text-indigo-ink" />
-                        Freelancer
-                      </label>
-                    </div>
-                  </RadioGroup>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+          <UserTypeSelector control={form.control} disabled={loading} />
+
+          <EmailField control={form.control} disabled={loading} />
+
+          <PasswordField 
+            control={form.control} 
+            name="password" 
+            label="Password" 
+            showToggle={true}
+            showPasswordState={showPassword}
+            onTogglePassword={togglePasswordVisibility}
+            disabled={loading}
           />
 
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input 
-                      placeholder="your.email@example.com" 
-                      type="email" 
-                      className="pl-10" 
-                      disabled={loading}
-                      {...field} 
-                    />
-                    <Mail className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input 
-                      placeholder="••••••••" 
-                      type={showPassword ? "text" : "password"} 
-                      className="pl-10" 
-                      disabled={loading}
-                      {...field} 
-                    />
-                    <button 
-                      type="button"
-                      onClick={togglePasswordVisibility}
-                      className="absolute right-3 top-2.5 text-gray-400"
-                    >
-                      {showPassword ? (
-                        <EyeOff className="h-5 w-5" />
-                      ) : (
-                        <Eye className="h-5 w-5" />
-                      )}
-                    </button>
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="confirmPassword"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirm Password</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Input 
-                      placeholder="••••••••" 
-                      type={showPassword ? "text" : "password"} 
-                      className="pl-10" 
-                      disabled={loading}
-                      {...field} 
-                    />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+          <PasswordField 
+            control={form.control} 
+            name="confirmPassword" 
+            label="Confirm Password" 
+            showPasswordState={showPassword}
+            disabled={loading}
           />
 
           {error && <p className="text-destructive text-sm">{error}</p>}
@@ -216,12 +128,7 @@ const SignupForm = ({ initialUserType = "freelancer" }: SignupFormProps) => {
         </form>
       </Form>
 
-      <div className="text-center text-sm">
-        <span className="text-gray-600">Already have an account? </span>
-        <Link to="/login" className="text-procloud-green font-medium hover:underline">
-          Log in
-        </Link>
-      </div>
+      <SignupFormFooter />
     </div>
   );
 };
