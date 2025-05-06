@@ -12,25 +12,34 @@ const ClientOnboardingPage = () => {
   useEffect(() => {
     // Redirect if not logged in
     if (!loading && !currentUser) {
+      console.log("User not logged in, redirecting to login");
       navigate('/login');
       return;
     }
 
     // Check if the user has the correct role
-    if (!loading && userStatus && userStatus.role !== 'client') {
-      // If they're a freelancer, redirect to freelancer dashboard or onboarding
-      if (userStatus.role === 'freelancer') {
-        navigate(userStatus.onboardingCompleted ? '/dashboard' : '/freelancer-onboarding');
-      } else {
-        // If role is not set, redirect to signup page
-        navigate('/register');
+    if (!loading && userStatus) {
+      console.log("User status:", userStatus);
+      
+      if (userStatus.role !== 'client') {
+        // If they're a freelancer, redirect to freelancer dashboard or onboarding
+        if (userStatus.role === 'freelancer') {
+          console.log("User is a freelancer, redirecting to appropriate page");
+          navigate(userStatus.onboardingCompleted ? '/dashboard' : '/freelancer-onboarding');
+        } else {
+          // If role is not set, redirect to signup page
+          console.log("User role not set, redirecting to register");
+          navigate('/register');
+        }
+        return;
       }
-      return;
-    }
 
-    // If client onboarding is completed, redirect to client dashboard
-    if (!loading && userStatus && userStatus.role === 'client' && userStatus.onboardingCompleted) {
-      navigate('/client-dashboard');
+      // If client onboarding is completed, redirect to client dashboard
+      if (userStatus.role === 'client' && userStatus.onboardingCompleted) {
+        console.log("Client onboarding already completed, redirecting to dashboard");
+        navigate('/client-dashboard');
+        return;
+      }
     }
   }, [currentUser, loading, navigate, userStatus]);
 

@@ -105,14 +105,14 @@ function App() {
         } />
         <Route path="/edit-profile" element={
           <ProtectedRoute isAllowed={!!currentUser}>
-            <RoleRoute allowedRole="freelancer" currentRole={userStatus?.role || userRole} redirectPath={getDashboardPath()}>
+            <RoleRoute allowedRole="freelancer" currentRole={userStatus?.role || userRole} redirectPath={getDashboardPath()} onboardingCompleted={userStatus?.onboardingCompleted || false}>
               <EditProfilePage />
             </RoleRoute>
           </ProtectedRoute>
         } />
         <Route path="/submit-proposal/:id" element={
           <ProtectedRoute isAllowed={!!currentUser}>
-            <RoleRoute allowedRole="freelancer" currentRole={userStatus?.role || userRole} redirectPath={getDashboardPath()}>
+            <RoleRoute allowedRole="freelancer" currentRole={userStatus?.role || userRole} redirectPath={getDashboardPath()} onboardingCompleted={userStatus?.onboardingCompleted || false}>
               <SubmitProposalPage />
             </RoleRoute>
           </ProtectedRoute>
@@ -126,14 +126,14 @@ function App() {
         } />
         <Route path="/create-brief" element={
           <ProtectedRoute isAllowed={!!currentUser}>
-            <RoleRoute allowedRole="client" currentRole={userStatus?.role || userRole} redirectPath={getDashboardPath()}>
+            <RoleRoute allowedRole="client" currentRole={userStatus?.role || userRole} redirectPath={getDashboardPath()} onboardingCompleted={userStatus?.onboardingCompleted || false}>
               <CreateBrief />
             </RoleRoute>
           </ProtectedRoute>
         } />
         <Route path="/client-dashboard" element={
           <ProtectedRoute isAllowed={!!currentUser}>
-            <RoleRoute allowedRole="client" currentRole={userStatus?.role || userRole} redirectPath={getDashboardPath()}>
+            <RoleRoute allowedRole="client" currentRole={userStatus?.role || userRole} redirectPath={getDashboardPath()} onboardingCompleted={userStatus?.onboardingCompleted || false}>
               <ClientDashboard />
             </RoleRoute>
           </ProtectedRoute>

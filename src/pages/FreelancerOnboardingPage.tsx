@@ -17,20 +17,34 @@ const FreelancerOnboardingPage = () => {
   useEffect(() => {
     // Redirect if not logged in
     if (!loading && !currentUser) {
+      console.log("User not logged in, redirecting to login");
       navigate("/login");
       return;
     }
 
     // Check if the user has the correct role
-    if (!loading && userStatus && userStatus.role !== 'freelancer') {
-      // If they're a client, redirect to client dashboard or onboarding
-      if (userStatus.role === 'client') {
-        navigate(userStatus.onboardingCompleted ? "/client-dashboard" : "/client-onboarding");
-      } else {
-        // If role is not set, redirect to signup page
-        navigate("/register");
+    if (!loading && userStatus) {
+      console.log("User status:", userStatus);
+      
+      if (userStatus.role !== 'freelancer') {
+        // If they're a client, redirect to client dashboard or onboarding
+        if (userStatus.role === 'client') {
+          console.log("User is a client, redirecting to appropriate page");
+          navigate(userStatus.onboardingCompleted ? "/client-dashboard" : "/client-onboarding");
+        } else {
+          // If role is not set, redirect to signup page
+          console.log("User role not set, redirecting to register");
+          navigate("/register");
+        }
+        return;
       }
-      return;
+      
+      // If freelancer onboarding is completed, redirect to freelancer dashboard
+      if (userStatus.role === 'freelancer' && userStatus.onboardingCompleted) {
+        console.log("Freelancer onboarding already completed, redirecting to dashboard");
+        navigate('/dashboard');
+        return;
+      }
     }
 
     // Only fetch alias if user is logged in and is a freelancer
@@ -58,7 +72,7 @@ const FreelancerOnboardingPage = () => {
     fetchUserAlias();
   }, [currentUser, loading, navigate, userStatus]);
 
-  // Show loading state while auth initializes
+  // Show loading state while auth initializes or alias is loading
   if (loading || aliasLoading) {
     return (
       <Layout>
