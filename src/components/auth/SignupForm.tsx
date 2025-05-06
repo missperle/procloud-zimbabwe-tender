@@ -66,7 +66,7 @@ const SignupForm = ({ initialUserType = "freelancer" }: SignupFormProps) => {
           : "Welcome to proCloud! Let's set up your client profile.",
       });
       
-      // Redirect to appropriate dashboard based on user type
+      // Redirect to appropriate onboarding page based on user type
       if (data.userType === "freelancer") {
         navigate("/freelancer-onboarding");
       } else {
@@ -85,16 +85,25 @@ const SignupForm = ({ initialUserType = "freelancer" }: SignupFormProps) => {
     setShowPassword(!showPassword);
   };
 
+  // If the form is on a dedicated page, hide the user type selector
+  const showUserTypeSelector = initialUserType === "freelancer" || initialUserType === "client" ? false : true;
+
   return (
     <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-lg">
       <div className="text-center">
-        <h2 className="text-2xl font-bold">Create an Account</h2>
+        <h2 className="text-2xl font-bold">
+          {initialUserType === "freelancer" ? "Create a Creator Account" : 
+           initialUserType === "client" ? "Create a Client Account" : 
+           "Create an Account"}
+        </h2>
         <p className="mt-2 text-sm text-gray-600">Sign up to get started</p>
       </div>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <UserTypeSelector control={form.control} disabled={loading} />
+          {showUserTypeSelector && (
+            <UserTypeSelector control={form.control} disabled={loading} />
+          )}
 
           <EmailField control={form.control} disabled={loading} />
 

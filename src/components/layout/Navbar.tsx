@@ -58,24 +58,11 @@ const Navbar = () => {
                   </Button>
                 </Link>
                 
-                {/* Update the sign up link to use a dropdown or keep a generic signup link */}
-                <div className="relative group">
-                  <Link to="/signup">
-                    <Button size="sm" className="text-white">
-                      Sign up
-                    </Button>
-                  </Link>
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg overflow-hidden z-20 hidden group-hover:block">
-                    <div className="py-1">
-                      <Link to="/signup/client" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        Sign up as Client
-                      </Link>
-                      <Link to="/signup/freelancer" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                        Sign up as Freelancer
-                      </Link>
-                    </div>
-                  </div>
-                </div>
+                <Link to="/signup">
+                  <Button size="sm" className="text-white">
+                    Sign up
+                  </Button>
+                </Link>
               </>
             )}
           </div>
@@ -128,18 +115,11 @@ const Navbar = () => {
                       Log in
                     </Button>
                   </Link>
-                  <div className="space-y-2">
-                    <Link to="/signup/client" onClick={() => setIsMenuOpen(false)}>
-                      <Button className="w-full text-white">
-                        Sign up as Client
-                      </Button>
-                    </Link>
-                    <Link to="/signup/freelancer" onClick={() => setIsMenuOpen(false)}>
-                      <Button variant="outline" className="w-full">
-                        Sign up as Freelancer
-                      </Button>
-                    </Link>
-                  </div>
+                  <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
+                    <Button className="w-full text-white">
+                      Sign up
+                    </Button>
+                  </Link>
                 </div>
               )}
             </nav>
