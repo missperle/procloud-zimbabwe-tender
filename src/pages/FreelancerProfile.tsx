@@ -1,58 +1,50 @@
 
-import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import PortfolioItem from "@/components/freelancers/PortfolioItem";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CheckCircle, MapPin, User } from "lucide-react";
+import { CheckCircle, MapPin, User, Edit, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
-// Mock data
-const mockPortfolio = [
-  {
-    id: "p1",
-    title: "Brand Identity for Local Café",
-    image: "",
-    category: "Branding",
-    description: "Complete brand identity for a specialty coffee shop in Harare."
-  },
-  {
-    id: "p2",
-    title: "E-commerce Website for Fashion Brand",
-    image: "",
-    category: "Development",
-    description: "Fully functional online store built with React and Node.js."
-  },
-  {
-    id: "p3",
-    title: "Social Media Campaign for Tourism",
-    image: "",
-    category: "Marketing",
-    description: "Strategic social media campaign to promote tourism in Zimbabwe."
-  },
-  {
-    id: "p4",
-    title: "Corporate Video Production",
-    image: "",
-    category: "Video",
-    description: "Professional company introduction video for a tech startup."
-  },
-  {
-    id: "p5",
-    title: "Mobile App UI Design",
-    image: "",
-    category: "UI/UX",
-    description: "Clean, modern user interface design for a fitness tracking app."
-  },
-  {
-    id: "p6",
-    title: "Product Photography",
-    image: "",
-    category: "Photography",
-    description: "High-quality product photography for an online jewelry store."
-  }
-];
+// Portfolio item type
+interface PortfolioItem {
+  id: string;
+  title: string;
+  description: string | null;
+  category: string | null;
+  image_url: string | null;
+  project_url: string | null;
+}
+
+// Freelancer profile type
+interface FreelancerProfileData {
+  id: string;
+  name: string;
+  title: string | null;
+  location: string | null;
+  avatar: string | null;
+  verified: boolean | null;
+  bio: string | null;
+  rating: number;
+  skills: string[];
+  completedJobs: number;
+  email: string | null;
+  isCurrentUser: boolean;
+}
+
+// Review type
+interface Review {
+  id: string;
+  clientName: string;
+  clientCompany: string;
+  rating: number;
+  date: string;
+  comment: string;
+}
 
 const mockReviews = [
   {
@@ -83,25 +75,86 @@ const mockReviews = [
 
 const FreelancerProfile = () => {
   const { id } = useParams<{ id: string }>();
-  const [selectedItem, setSelectedItem] = useState<any | null>(null);
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
+  const [portfolioItems, setPortfolioItems] = useState<PortfolioItem[]>([]);
+  const [freelancer, setFreelancer] = useState<FreelancerProfileData | null>(null);
+  const [selectedItem, setSelectedItem] = useState<PortfolioItem | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   
-  // In a real app, we would fetch the freelancer data based on the id
-  // For now, we'll use static data
-  const freelancer = {
-    id: "user1",
-    name: "Tatenda M.",
-    title: "Graphic Designer",
-    location: "Harare, Zimbabwe",
-    avatar: "",
-    verified: true,
-    bio: "Experienced graphic designer with over 5 years of professional experience working with local and international clients. Specializing in branding, print design, and digital media. Bachelor's degree in Graphic Design from University of Zimbabwe.",
-    rating: 4.8,
-    skills: ["Logo Design", "Branding", "UI/UX Design", "Print Design", "Illustration", "Typography"],
-    completedJobs: 34,
-  };
+  // Fetch freelancer profile and portfolio items
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      if (!id) return;
+      
+      setIsLoading(true);
+      
+      try {
+        // Fetch freelancer profile
+        const { data: profileData, error: profileError } = await supabase
+          .from("freelancer_profiles")
+          .select(`
+            id,
+            title,
+            bio,
+            location,
+            verified,
+            profile_image_url,
+            hourly_rate,
+            years_experience
+          `)
+          .eq("id", id)
+          .single();
+          
+        if (profileError) throw profileError;
+        
+        // Fetch user data
+        const { data: userData, error: userError } = await supabase
+          .from("users")
+          .select("email, full_name, alias")
+          .eq("id", id)
+          .single();
+          
+        if (userError) throw userError;
+        
+        // Fetch portfolio items
+        const { data: portfolioData, error: portfolioError } = await supabase
+          .from("portfolio_items")
+          .select("*")
+          .eq("freelancer_id", id);
+          
+        if (portfolioError) throw portfolioError;
+        
+        // Set freelancer data
+        setFreelancer({
+          id: profileData.id,
+          name: userData.full_name || userData.alias || userData.email?.split("@")[0] || "Anonymous",
+          title: profileData.title,
+          location: profileData.location,
+          avatar: profileData.profile_image_url,
+          verified: profileData.verified,
+          bio: profileData.bio,
+          rating: 4.8, // Placeholder
+          skills: ["Logo Design", "Branding", "UI/UX Design", "Print Design"], // Placeholder
+          completedJobs: 34, // Placeholder
+          email: userData.email,
+          isCurrentUser: currentUser?.id === id
+        });
+        
+        // Set portfolio items
+        setPortfolioItems(portfolioData || []);
+      } catch (error) {
+        console.error("Error fetching freelancer data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchProfileData();
+  }, [id, currentUser]);
 
-  const handleOpenModal = (item: any) => {
+  const handleOpenModal = (item: PortfolioItem) => {
     setSelectedItem(item);
     setShowModal(true);
   };
@@ -110,6 +163,36 @@ const FreelancerProfile = () => {
     setShowModal(false);
     setSelectedItem(null);
   };
+
+  const handleEditProfile = () => {
+    navigate("/edit-profile");
+  };
+
+  if (isLoading) {
+    return (
+      <Layout>
+        <div className="flex justify-center items-center py-20">
+          <Loader2 className="h-12 w-12 animate-spin text-accent" />
+        </div>
+      </Layout>
+    );
+  }
+
+  if (!freelancer) {
+    return (
+      <Layout>
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center py-16">
+            <h2 className="text-2xl font-bold">Freelancer not found</h2>
+            <p className="mt-2 text-gray-600">The freelancer profile you're looking for doesn't exist or has been removed.</p>
+            <Button onClick={() => navigate("/freelancers")} className="mt-6">
+              Browse Freelancers
+            </Button>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
 
   return (
     <Layout>
@@ -134,12 +217,25 @@ const FreelancerProfile = () => {
                 </div>
                 
                 <div className="flex-grow">
-                  <div className="flex items-center mb-2">
-                    <h1 className="text-3xl font-bold mr-2">{freelancer.name}</h1>
-                    {freelancer.verified && (
-                      <div className="bg-procloud-green rounded-full p-1">
-                        <CheckCircle className="h-5 w-5 text-black" />
-                      </div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center">
+                      <h1 className="text-3xl font-bold mr-2">{freelancer.name}</h1>
+                      {freelancer.verified && (
+                        <div className="bg-procloud-green rounded-full p-1">
+                          <CheckCircle className="h-5 w-5 text-black" />
+                        </div>
+                      )}
+                    </div>
+                    
+                    {freelancer.isCurrentUser && (
+                      <Button 
+                        variant="outline" 
+                        className="flex items-center gap-2"
+                        onClick={handleEditProfile}
+                      >
+                        <Edit className="h-4 w-4" />
+                        Edit Profile
+                      </Button>
                     )}
                   </div>
                   
@@ -167,9 +263,11 @@ const FreelancerProfile = () => {
                     ))}
                   </div>
                   
-                  <Button className="bg-procloud-green hover:bg-procloud-green-dark text-black">
-                    Contact Freelancer
-                  </Button>
+                  {!freelancer.isCurrentUser && (
+                    <Button className="bg-procloud-green hover:bg-procloud-green-dark text-black">
+                      Contact Freelancer
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -184,24 +282,49 @@ const FreelancerProfile = () => {
             </TabsList>
             
             <TabsContent value="portfolio" className="mt-0">
-              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {mockPortfolio.map((item) => (
-                  <PortfolioItem 
-                    key={item.id} 
-                    title={item.title} 
-                    image={item.image} 
-                    category={item.category} 
-                    onClick={() => handleOpenModal(item)}
-                  />
-                ))}
-              </div>
+              {portfolioItems.length > 0 ? (
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {portfolioItems.map((item) => (
+                    <PortfolioItem 
+                      key={item.id} 
+                      title={item.title} 
+                      image={item.image_url || ""} 
+                      category={item.category || "Other"} 
+                      onClick={() => handleOpenModal(item)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="bg-white rounded-lg shadow-sm border border-procloud-gray-200 p-8 text-center">
+                  <h3 className="text-xl font-bold mb-2">No portfolio items yet</h3>
+                  <p className="text-procloud-gray-600 mb-6">
+                    {freelancer.isCurrentUser 
+                      ? "Add some projects to your portfolio to showcase your work to potential clients."
+                      : "This freelancer hasn't added any portfolio items yet."}
+                  </p>
+                  
+                  {freelancer.isCurrentUser && (
+                    <Button onClick={handleEditProfile}>
+                      Add Portfolio Items
+                    </Button>
+                  )}
+                </div>
+              )}
             </TabsContent>
             
             <TabsContent value="about" className="mt-0">
               <div className="bg-white rounded-lg shadow-sm border border-procloud-gray-200 p-6">
                 <h3 className="text-xl font-bold mb-4">About Me</h3>
                 <div className="space-y-4">
-                  <p className="text-procloud-gray-700">{freelancer.bio}</p>
+                  {freelancer.bio ? (
+                    <p className="text-procloud-gray-700">{freelancer.bio}</p>
+                  ) : (
+                    <p className="text-procloud-gray-500 italic">
+                      {freelancer.isCurrentUser 
+                        ? "You haven't added a bio yet. Edit your profile to add one."
+                        : "This freelancer hasn't added a bio yet."}
+                    </p>
+                  )}
                 </div>
               </div>
             </TabsContent>
@@ -249,12 +372,20 @@ const FreelancerProfile = () => {
               </div>
               
               <div className="aspect-video bg-procloud-gray-200 mb-4 rounded-md overflow-hidden">
-                {selectedItem.image ? (
-                  <img 
-                    src={selectedItem.image} 
-                    alt={selectedItem.title} 
-                    className="w-full h-full object-cover" 
-                  />
+                {selectedItem.image_url ? (
+                  selectedItem.image_url.includes(".mp4") || selectedItem.image_url.includes(".webm") ? (
+                    <video 
+                      src={selectedItem.image_url} 
+                      className="w-full h-full object-cover" 
+                      controls
+                    />
+                  ) : (
+                    <img 
+                      src={selectedItem.image_url} 
+                      alt={selectedItem.title} 
+                      className="w-full h-full object-cover" 
+                    />
+                  )
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-procloud-gray-300 text-procloud-gray-600">
                     No Image Available
@@ -263,14 +394,29 @@ const FreelancerProfile = () => {
               </div>
               
               <div className="mb-4">
-                <Badge className="bg-procloud-green text-black hover:bg-procloud-green-dark">
-                  {selectedItem.category}
-                </Badge>
+                {selectedItem.category && (
+                  <Badge className="bg-procloud-green text-black hover:bg-procloud-green-dark">
+                    {selectedItem.category}
+                  </Badge>
+                )}
               </div>
               
               <div className="text-procloud-gray-700">
-                <p>{selectedItem.description}</p>
+                <p>{selectedItem.description || "No description available."}</p>
               </div>
+              
+              {selectedItem.project_url && (
+                <div className="mt-4">
+                  <a 
+                    href={selectedItem.project_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-accent hover:underline"
+                  >
+                    View Project
+                  </a>
+                </div>
+              )}
             </div>
           </div>
         </div>

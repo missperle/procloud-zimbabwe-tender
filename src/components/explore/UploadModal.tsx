@@ -3,6 +3,11 @@ import React, { useState, useRef } from 'react';
 import { X, Upload, Image, Video } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { v4 as uuidv4 } from "uuid";
+import { useAuth } from "@/contexts/AuthContext";
+import { Loader2 } from 'lucide-react';
 
 type UploadModalProps = {
   isOpen: boolean;
@@ -16,24 +21,25 @@ const UploadModal = ({ isOpen, onClose, onSubmit, categories }: UploadModalProps
   const [preview, setPreview] = useState<string | null>(null);
   const [caption, setCaption] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>(['All']);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isFileTypeVideo, setIsFileTypeVideo] = useState(false);
+  const { toast } = useToast();
+  const { currentUser } = useAuth();
 
-  // Handle file selection
+  // Handle file selection - Fix the cleanup function
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setSelectedFile(file);
       
       // Check if file is video
-      setIsFileTypeVideo(file.type.startsWith('video/'));
+      const isVideo = file.type.startsWith('video/');
+      setIsFileTypeVideo(isVideo);
       
       // Create and set preview URL
       const objectUrl = URL.createObjectURL(file);
       setPreview(objectUrl);
-      
-      // Clean up previous object URL to avoid memory leaks
-      return () => URL.revokeObjectURL(objectUrl);
     }
   };
 
@@ -59,23 +65,94 @@ const UploadModal = ({ isOpen, onClose, onSubmit, categories }: UploadModalProps
     e.preventDefault();
   };
 
+  // Upload file to Supabase storage
+  const uploadToStorage = async (file: File): Promise<string | null> => {
+    if (!currentUser) {
+      toast({
+        title: "Authentication Error",
+        description: "You must be logged in to upload files.",
+        variant: "destructive"
+      });
+      return null;
+    }
+    
+    try {
+      const fileExt = file.name.split('.').pop();
+      const filePath = `${currentUser.id}/${uuidv4()}.${fileExt}`;
+      
+      const { error } = await supabase.storage
+        .from('explore_posts')
+        .upload(filePath, file);
+        
+      if (error) throw error;
+      
+      // Get public URL
+      const { data } = supabase.storage
+        .from('explore_posts')
+        .getPublicUrl(filePath);
+        
+      return data.publicUrl;
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      toast({
+        title: "Upload Failed",
+        description: "There was a problem uploading your file.",
+        variant: "destructive"
+      });
+      return null;
+    }
+  };
+
   // Handle form submission
-  const handleSubmit = () => {
-    if (!selectedFile) return;
+  const handleSubmit = async () => {
+    if (!selectedFile) {
+      toast({
+        title: "No File Selected",
+        description: "Please select an image or video to upload.",
+        variant: "destructive"
+      });
+      return;
+    }
     
-    const formData = new FormData();
-    formData.append('file', selectedFile);
-    formData.append('caption', caption);
-    formData.append('categories', JSON.stringify(selectedCategories));
+    setIsUploading(true);
     
-    onSubmit(formData);
-    
-    // Reset form
-    setSelectedFile(null);
-    setPreview(null);
-    setCaption('');
-    setSelectedCategories(['All']);
-    onClose();
+    try {
+      // Upload file to Supabase storage
+      const fileUrl = await uploadToStorage(selectedFile);
+      if (!fileUrl) return;
+      
+      // Create FormData object
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+      formData.append('caption', caption);
+      formData.append('categories', JSON.stringify(selectedCategories));
+      formData.append('fileUrl', fileUrl);
+      formData.append('fileType', isFileTypeVideo ? 'video' : 'image');
+      
+      // Submit the form
+      onSubmit(formData);
+      
+      // Reset form
+      setSelectedFile(null);
+      setPreview(null);
+      setCaption('');
+      setSelectedCategories(['All']);
+      setIsUploading(false);
+      onClose();
+      
+      toast({
+        title: "Upload Successful",
+        description: "Your post has been created successfully!",
+      });
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast({
+        title: "Upload Failed",
+        description: "There was a problem creating your post.",
+        variant: "destructive"
+      });
+      setIsUploading(false);
+    }
   };
 
   // Handle category selection
@@ -142,6 +219,7 @@ const UploadModal = ({ isOpen, onClose, onSubmit, categories }: UploadModalProps
                   autoPlay 
                   loop 
                   muted 
+                  controls
                 />
               ) : (
                 <img 
@@ -156,6 +234,8 @@ const UploadModal = ({ isOpen, onClose, onSubmit, categories }: UploadModalProps
                   setSelectedFile(null);
                   setPreview(null);
                   setIsFileTypeVideo(false);
+                  // Revoke object URL to avoid memory leaks
+                  if (preview) URL.revokeObjectURL(preview);
                 }}
               >
                 <X size={16} />
@@ -169,6 +249,7 @@ const UploadModal = ({ isOpen, onClose, onSubmit, categories }: UploadModalProps
                 onChange={(e) => setCaption(e.target.value)}
                 placeholder="Write a caption..."
                 className="w-full"
+                disabled={isUploading}
               />
             </div>
             
@@ -178,12 +259,12 @@ const UploadModal = ({ isOpen, onClose, onSubmit, categories }: UploadModalProps
                 {categories.map((category) => (
                   <div 
                     key={category}
-                    onClick={() => handleCategoryChange(category)}
+                    onClick={() => !isUploading && handleCategoryChange(category)}
                     className={`px-3 py-1 rounded-full text-sm cursor-pointer transition-colors ${
                       selectedCategories.includes(category)
                         ? 'bg-accent text-white'
                         : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
+                    } ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
                   >
                     {category}
                   </div>
@@ -195,8 +276,14 @@ const UploadModal = ({ isOpen, onClose, onSubmit, categories }: UploadModalProps
               <Button 
                 onClick={handleSubmit}
                 className="bg-accent hover:bg-accent/90 text-white"
+                disabled={isUploading}
               >
-                Post
+                {isUploading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Uploading...
+                  </>
+                ) : "Post"}
               </Button>
             </div>
           </div>

@@ -17,6 +17,7 @@ import FreelancerProfile from "./pages/FreelancerProfile";
 import ExploreFeed from "./pages/ExploreFeed";
 import FreelancerOnboardingPage from "./pages/FreelancerOnboardingPage";
 import ClientOnboardingPage from "./pages/ClientOnboardingPage";
+import EditProfilePage from "./pages/EditProfilePage"; // Add this import
 import SubmitProposalPage from "./pages/SubmitProposalPage";
 import Pricing from "./pages/Pricing";
 import BuyTokens from "./pages/BuyTokens";
@@ -88,6 +89,13 @@ function App() {
           <ProtectedRoute isAllowed={!!currentUser}>
             <RoleRoute allowedRole="freelancer" currentRole={userRole} redirectPath={getDashboardPath()}>
               <FreelancerOnboardingPage />
+            </RoleRoute>
+          </ProtectedRoute>
+        } />
+        <Route path="/edit-profile" element={
+          <ProtectedRoute isAllowed={!!currentUser}>
+            <RoleRoute allowedRole="freelancer" currentRole={userRole} redirectPath={getDashboardPath()}>
+              <EditProfilePage />
             </RoleRoute>
           </ProtectedRoute>
         } />
