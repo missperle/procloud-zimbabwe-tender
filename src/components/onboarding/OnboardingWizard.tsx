@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -13,6 +13,7 @@ import DocumentUploadStep from './steps/DocumentUploadStep';
 import SubscriptionStep from './steps/SubscriptionStep';
 import FinalStep from './steps/FinalStep';
 import OnboardingProgress from './OnboardingProgress';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 
 type OnboardingStep = {
   id: number;
@@ -43,8 +44,32 @@ const OnboardingWizard = () => {
     selectedPlan: null
   });
   const { currentUser } = useAuth();
+  const { refreshSubscription, refreshTokenBalance } = useSubscription();
   const navigate = useNavigate();
   const { toast } = useToast();
+  
+  // Load the current onboarding step from database when component mounts
+  useEffect(() => {
+    const loadOnboardingStep = async () => {
+      if (!currentUser) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('onboarding_step')
+          .eq('id', currentUser.id)
+          .single();
+          
+        if (!error && data && data.onboarding_step) {
+          setCurrentStep(data.onboarding_step);
+        }
+      } catch (error) {
+        console.error('Error loading onboarding step:', error);
+      }
+    };
+    
+    loadOnboardingStep();
+  }, [currentUser]);
 
   const updateFormData = (stepData: any) => {
     setFormData({ ...formData, ...stepData });
@@ -67,13 +92,14 @@ const OnboardingWizard = () => {
     }
 
     if (currentStep < steps.length) {
-      setCurrentStep(currentStep + 1);
+      const nextStep = currentStep + 1;
+      setCurrentStep(nextStep);
       // Update onboarding step in database
       if (currentUser) {
         try {
           await supabase
             .from('users')
-            .update({ onboarding_step: currentStep + 1 })
+            .update({ onboarding_step: nextStep })
             .eq('id', currentUser.id);
         } catch (error) {
           console.error('Error updating onboarding step:', error);
@@ -98,6 +124,10 @@ const OnboardingWizard = () => {
             onboarding_step: 5
           })
           .eq('id', currentUser.id);
+          
+        // Refresh subscription and token balance
+        await refreshSubscription();
+        await refreshTokenBalance();
       }
       navigate('/client-dashboard');
       toast({

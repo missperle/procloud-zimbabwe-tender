@@ -54,7 +54,7 @@ export interface Subscription {
   tier: 'free' | 'basic' | 'pro';
   status: 'active' | 'canceled' | 'past_due' | 'pending';
   currentPeriodEnd: Date | null;
-  paymentMethod: 'card' | 'cash' | 'ecocash' | 'mukuru' | 'innbucks' | null;
+  paymentMethod: 'card' | 'cash' | 'ecocash' | 'mukuru' | 'innbucks' | 'paynow' | 'tokens' | null;
   createdAt: Date;
   nextBillingDate?: Date | null;
   startDate?: Date;

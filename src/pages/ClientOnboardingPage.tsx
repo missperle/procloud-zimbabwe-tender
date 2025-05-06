@@ -5,10 +5,12 @@ import OnboardingWizard from '@/components/onboarding/OnboardingWizard';
 import Layout from '@/components/layout/Layout';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const ClientOnboardingPage = () => {
   const { currentUser, loading } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkOnboardingStatus = async () => {
@@ -21,7 +23,15 @@ const ClientOnboardingPage = () => {
           .eq('id', currentUser.id)
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error checking onboarding status:', error);
+          toast({
+            title: "Error",
+            description: "Failed to check your onboarding status.",
+            variant: "destructive",
+          });
+          return;
+        }
 
         if (data) {
           // If user is not a client, redirect to appropriate page
@@ -37,6 +47,11 @@ const ClientOnboardingPage = () => {
         }
       } catch (error) {
         console.error('Error checking onboarding status:', error);
+        toast({
+          title: "Error",
+          description: "An error occurred while checking your account status.",
+          variant: "destructive",
+        });
       }
     };
 
@@ -48,7 +63,7 @@ const ClientOnboardingPage = () => {
         checkOnboardingStatus();
       }
     }
-  }, [currentUser, loading, navigate]);
+  }, [currentUser, loading, navigate, toast]);
 
   if (loading) {
     return (

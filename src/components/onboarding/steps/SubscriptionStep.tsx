@@ -132,7 +132,7 @@ const SubscriptionStep = ({ formData, updateFormData }: SubscriptionStepProps) =
                 
                 <h3 className="text-xl font-bold">{plan.name}</h3>
                 <div className="mt-2 mb-4">
-                  <span className="text-3xl font-bold">${plan.price.toFixed(2)}</span>
+                  <span className="text-3xl font-bold">${(plan.price / 100).toFixed(2)}</span>
                   <span className="text-gray-500 ml-1">/month</span>
                 </div>
                 
