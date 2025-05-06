@@ -1,6 +1,5 @@
 
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -18,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import { LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -32,8 +30,7 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 const LoginForm = () => {
-  const { login, currentUser } = useAuth();
-  const navigate = useNavigate();
+  const { login, refreshUserStatus } = useAuth();
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,55 +50,20 @@ const LoginForm = () => {
       console.log("Attempting login with:", data.email);
       await login(data.email, data.password);
       
-      // Toast notification is handled by the auth context
-      // Redirect will be handled after role check
+      // Refresh user status after login to ensure we have the latest data
+      await refreshUserStatus();
+      
+      // The navigation will happen in the Login page component based on userStatus
     } catch (err) {
       const errorMessage = err instanceof Error 
         ? err.message 
         : "An error occurred during login.";
       console.error("Login error:", errorMessage);
       setError(errorMessage);
+    } finally {
       setIsLoading(false);
     }
   };
-
-  // Check and redirect based on role after successful login
-  useEffect(() => {
-    const checkUserRoleAndRedirect = async () => {
-      if (!currentUser) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('role, onboarding_completed')
-          .eq('id', currentUser.id)
-          .single();
-          
-        if (error) {
-          console.error("Error fetching user data after login:", error);
-          return;
-        }
-          
-        if (data) {
-          if (data.role === 'freelancer') {
-            navigate(data.onboarding_completed ? '/dashboard' : '/freelancer-onboarding');
-          } else if (data.role === 'client') {
-            navigate(data.onboarding_completed ? '/client-dashboard' : '/client-onboarding');
-          } else {
-            navigate('/register'); // Default if role is not set
-          }
-        }
-      } catch (error) {
-        console.error("Error checking user role after login:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    
-    if (currentUser) {
-      checkUserRoleAndRedirect();
-    }
-  }, [currentUser, navigate]);
 
   // For development convenience
   const devLoginMessage = import.meta.env.DEV ? (

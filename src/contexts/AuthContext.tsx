@@ -3,11 +3,14 @@ import React, { createContext, useContext, useEffect, useState, ReactNode } from
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { getUserStatus, UserStatus } from "@/utils/authRedirect";
 
 interface AuthContextType {
   currentUser: User | null;
   session: Session | null;
   loading: boolean;
+  userStatus: UserStatus | null;
+  refreshUserStatus: () => Promise<void>;
   signup: (email: string, password: string, metadata?: any) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -27,7 +30,22 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
+  const [userStatus, setUserStatus] = useState<UserStatus | null>(null);
   const { toast } = useToast();
+
+  const refreshUserStatus = async () => {
+    if (!currentUser) {
+      setUserStatus(null);
+      return;
+    }
+    
+    try {
+      const status = await getUserStatus(currentUser.id);
+      setUserStatus(status);
+    } catch (error) {
+      console.error("Error refreshing user status:", error);
+    }
+  };
 
   useEffect(() => {
     console.log("Setting up auth state listener");
@@ -44,7 +62,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             title: "Welcome back!",
             description: "You have been logged in successfully.",
           });
+          
+          // When signed in, update user status
+          if (currentSession?.user) {
+            getUserStatus(currentSession.user.id).then(status => {
+              setUserStatus(status);
+            });
+          }
         } else if (event === 'SIGNED_OUT') {
+          setUserStatus(null);
           toast({
             title: "Logged out",
             description: "You have been logged out successfully.",
@@ -58,7 +84,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       console.log("Initial session:", currentSession ? `User: ${currentSession.user?.email}` : "No session");
       setSession(currentSession);
       setCurrentUser(currentSession?.user ?? null);
-      setLoading(false);
+      
+      // Get initial user status if logged in
+      if (currentSession?.user) {
+        getUserStatus(currentSession.user.id).then(status => {
+          setUserStatus(status);
+          setLoading(false);
+        });
+      } else {
+        setLoading(false);
+      }
     });
 
     return () => {
@@ -131,6 +166,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     currentUser,
     session,
     loading,
+    userStatus,
+    refreshUserStatus,
     signup,
     login,
     logout,

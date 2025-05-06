@@ -32,7 +32,7 @@ interface SignupFormProps {
 }
 
 const SignupForm = ({ initialUserType = "freelancer" }: SignupFormProps) => {
-  const { signup } = useAuth();
+  const { signup, refreshUserStatus } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
@@ -57,6 +57,9 @@ const SignupForm = ({ initialUserType = "freelancer" }: SignupFormProps) => {
       await signup(data.email, data.password, {
         role: data.userType
       });
+      
+      // Refresh user status to get the latest data
+      await refreshUserStatus();
       
       // Show success message
       toast({

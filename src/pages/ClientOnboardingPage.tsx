@@ -4,66 +4,28 @@ import { useNavigate } from 'react-router-dom';
 import OnboardingWizard from '@/components/onboarding/OnboardingWizard';
 import Layout from '@/components/layout/Layout';
 import { useAuth } from '@/contexts/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { shouldRedirect } from '@/utils/authRedirect';
 import { useToast } from '@/hooks/use-toast';
 
 const ClientOnboardingPage = () => {
-  const { currentUser, loading } = useAuth();
+  const { currentUser, loading, userStatus } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
   useEffect(() => {
-    const checkOnboardingStatus = async () => {
-      if (!currentUser) return;
-
-      try {
-        const { data, error } = await supabase
-          .from('users')
-          .select('onboarding_completed, role')
-          .eq('id', currentUser.id)
-          .single();
-
-        if (error) {
-          console.error('Error checking onboarding status:', error);
-          toast({
-            title: "Error",
-            description: "Failed to check your onboarding status.",
-            variant: "destructive",
-          });
-          return;
-        }
-
-        if (data) {
-          // If user is not a client, redirect to appropriate page
-          if (data.role !== 'client') {
-            navigate('/dashboard');
-            return;
-          }
-
-          // If onboarding is already completed, redirect to client dashboard
-          if (data.onboarding_completed) {
-            navigate('/client-dashboard');
-          }
-        }
-      } catch (error) {
-        console.error('Error checking onboarding status:', error);
-        toast({
-          title: "Error",
-          description: "An error occurred while checking your account status.",
-          variant: "destructive",
-        });
-      }
-    };
-
-    if (!loading) {
-      // If not logged in, redirect to login
-      if (!currentUser) {
-        navigate('/login');
-      } else {
-        checkOnboardingStatus();
-      }
+    // Check if user should be redirected
+    const redirectPath = shouldRedirect(
+      currentUser, 
+      loading,
+      userStatus?.role || null,
+      userStatus?.onboardingCompleted || null,
+      ['client']
+    );
+    
+    if (redirectPath && redirectPath !== '/client-onboarding') {
+      navigate(redirectPath);
     }
-  }, [currentUser, loading, navigate, toast]);
+  }, [currentUser, loading, userStatus, navigate]);
 
   if (loading) {
     return (

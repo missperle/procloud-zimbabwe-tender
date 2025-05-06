@@ -13,7 +13,8 @@ import DocumentUploadStep from './steps/DocumentUploadStep';
 import SubscriptionStep from './steps/SubscriptionStep';
 import FinalStep from './steps/FinalStep';
 import OnboardingProgress from './OnboardingProgress';
-import { useSubscription } from '@/contexts/SubscriptionContext';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 type OnboardingStep = {
   id: number;
@@ -43,8 +44,9 @@ const OnboardingWizard = () => {
     documents: [],
     selectedPlan: null
   });
-  const { currentUser } = useAuth();
-  const { refreshSubscription, refreshTokenBalance } = useSubscription();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { currentUser, refreshUserStatus } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   
@@ -76,6 +78,8 @@ const OnboardingWizard = () => {
   };
 
   const handleNext = async () => {
+    setError(null);
+    
     if (currentStep === 1) {
       // Validate basic info
       if (!formData.companyName) {
@@ -115,6 +119,9 @@ const OnboardingWizard = () => {
   };
 
   const handleComplete = async () => {
+    setIsLoading(true);
+    setError(null);
+    
     try {
       if (currentUser) {
         await supabase
@@ -125,27 +132,33 @@ const OnboardingWizard = () => {
           })
           .eq('id', currentUser.id);
           
-        // Refresh subscription and token balance
-        await refreshSubscription();
-        await refreshTokenBalance();
+        // Refresh user status to update the user context
+        await refreshUserStatus();
+        
+        navigate('/client-dashboard');
+        toast({
+          title: "Onboarding Completed!",
+          description: "Welcome to proCloud. Your account is ready to use.",
+        });
       }
-      navigate('/client-dashboard');
-      toast({
-        title: "Onboarding Completed!",
-        description: "Welcome to Proverb Digital. Your account is ready to use.",
-      });
     } catch (error) {
       console.error('Error completing onboarding:', error);
+      setError("Something went wrong. Please try again.");
       toast({
         title: "Error",
         description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const saveClientData = async () => {
     if (!currentUser) return;
+    
+    setIsLoading(true);
+    setError(null);
     
     try {
       // Update user profile with company details
@@ -154,10 +167,9 @@ const OnboardingWizard = () => {
         .update({
           company_name: formData.companyName,
           trading_name: formData.tradingName,
-          registration_number: formData.registrationNumber,
+          company_registration_number: formData.registrationNumber,
           tax_id: formData.taxId,
-          physical_address: formData.address,
-          primary_contact: formData.contact
+          company_address: formData.address,
         })
         .eq('id', currentUser.id);
 
@@ -184,11 +196,14 @@ const OnboardingWizard = () => {
       });
     } catch (error) {
       console.error('Error saving client data:', error);
+      setError("Failed to save your information. Please try again.");
       toast({
         title: "Error",
         description: "There was a problem saving your information. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -226,6 +241,14 @@ const OnboardingWizard = () => {
     <div className="max-w-4xl mx-auto py-8 px-4">
       <OnboardingProgress currentStep={currentStep} totalSteps={steps.length} />
       
+      {error && (
+        <Alert variant="destructive" className="mb-6">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+      
       <Card className="mt-8 p-6">
         <h2 className="text-2xl font-bold mb-6">Step {currentStep}: {currentStepData.name}</h2>
         
@@ -239,6 +262,7 @@ const OnboardingWizard = () => {
               variant="outline" 
               onClick={handlePrevious}
               className="flex items-center gap-2"
+              disabled={isLoading}
             >
               <ArrowLeft size={16} />
               Previous
@@ -251,17 +275,19 @@ const OnboardingWizard = () => {
             <Button 
               onClick={handleNext}
               className="flex items-center gap-2"
+              disabled={isLoading}
             >
-              Next
-              <ArrowRight size={16} />
+              {isLoading ? "Saving..." : "Next"}
+              {!isLoading && <ArrowRight size={16} />}
             </Button>
           ) : (
             <Button 
               onClick={handleComplete}
               className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
+              disabled={isLoading}
             >
-              Complete
-              <Check size={16} />
+              {isLoading ? "Completing..." : "Complete"}
+              {!isLoading && <Check size={16} />}
             </Button>
           )}
         </div>
