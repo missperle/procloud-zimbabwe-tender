@@ -1,6 +1,6 @@
 
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Layout from "@/components/layout/Layout";
 import EditFreelancerProfile from "@/components/freelancers/EditFreelancerProfile";
 import PortfolioManager from "@/components/freelancers/portfolio/PortfolioManager";
@@ -12,6 +12,19 @@ const EditProfilePage = () => {
   const { currentUser, loading } = useAuth();
   const { userRole } = useSubscription();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState<string>("profile");
+
+  // Parse query parameters to determine active tab
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get("tab");
+    if (tab === "portfolio") {
+      setActiveTab("portfolio");
+    } else {
+      setActiveTab("profile");
+    }
+  }, [location.search]);
   
   // Redirect if not logged in or not a freelancer
   useEffect(() => {
@@ -39,7 +52,7 @@ const EditProfilePage = () => {
       <div className="container mx-auto py-8 px-4">
         <h1 className="text-3xl font-bold mb-8">Edit Profile</h1>
         
-        <Tabs defaultValue="profile" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mb-8">
             <TabsTrigger value="profile">Profile Information</TabsTrigger>
             <TabsTrigger value="portfolio">Portfolio</TabsTrigger>

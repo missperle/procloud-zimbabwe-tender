@@ -27,24 +27,52 @@ const FeedItem = ({
   isLiked, 
   onLike 
 }: FeedItemProps) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [hasError, setHasError] = useState(false);
+
+  const handleLoad = () => {
+    setIsLoaded(true);
+  };
+
+  const handleError = () => {
+    setHasError(true);
+    console.error(`Failed to load media: ${src}`);
+  };
+
   return (
     <div 
       className={`card size-${size}`}
       key={id}
     >
+      {!isLoaded && !hasError && (
+        <div className="flex items-center justify-center h-full bg-gray-200 animate-pulse">
+          <span className="text-gray-400">Loading...</span>
+        </div>
+      )}
+      
+      {hasError && (
+        <div className="flex items-center justify-center h-full bg-gray-200">
+          <span className="text-gray-500">Failed to load media</span>
+        </div>
+      )}
+      
       {type === 'video' ? (
         <video 
           src={src}
           loop
           muted
           playsInline
-          className="feed-media"
+          className={`feed-media ${isLoaded ? 'block' : 'hidden'}`}
+          onLoadedData={handleLoad}
+          onError={handleError}
         />
       ) : (
         <img 
           src={src}
           alt={`Post by ${username}`}
-          className="feed-media"
+          className={`feed-media ${isLoaded ? 'block' : 'hidden'}`}
+          onLoad={handleLoad}
+          onError={handleError}
         />
       )}
       
