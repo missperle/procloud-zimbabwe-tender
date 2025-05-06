@@ -58,7 +58,7 @@ const Navbar = () => {
                     Log in
                   </Button>
                 </Link>
-                <Link to="/signup">
+                <Link to="/register">
                   <Button size="sm" className="text-white">
                     Sign up
                   </Button>
@@ -115,7 +115,7 @@ const Navbar = () => {
                       Log in
                     </Button>
                   </Link>
-                  <Link to="/signup" onClick={() => setIsMenuOpen(false)}>
+                  <Link to="/register" onClick={() => setIsMenuOpen(false)}>
                     <Button className="w-full text-white">
                       Sign up
                     </Button>

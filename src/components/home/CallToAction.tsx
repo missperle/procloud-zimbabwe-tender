@@ -14,13 +14,13 @@ const CallToAction = () => {
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center gap-6">
-            <Link to="/signup?type=freelancer">
+            <Link to="/register?type=freelancer">
               <Button size="lg" className="w-full sm:w-auto text-lg bg-procloud-green hover:bg-procloud-gold hover:text-black flex items-center gap-2">
                 <UserPlus size={20} />
                 Join as a Freelancer
               </Button>
             </Link>
-            <Link to="/signup?type=client">
+            <Link to="/register?type=client">
               <Button size="lg" variant="outline" className="w-full sm:w-auto text-lg border-white text-white hover:bg-white/10 flex items-center gap-2">
                 <Briefcase size={20} />
                 Sign up as a Client

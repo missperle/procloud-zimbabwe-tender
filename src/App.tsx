@@ -26,6 +26,7 @@ function App() {
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/signup" element={<Register />} /> {/* Add an alias for signup to register */}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/client-dashboard" element={<ClientDashboard />} />
         <Route path="/jobs" element={<Jobs />} />
