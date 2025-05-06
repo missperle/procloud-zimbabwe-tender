@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import SignupClient from "./pages/SignupClient";
+import SignupFreelancer from "./pages/SignupFreelancer";
 import Dashboard from "./pages/Dashboard";
 import ClientDashboard from "./pages/ClientDashboard";
 import NotFound from "./pages/NotFound";
@@ -27,7 +29,9 @@ function App() {
         <Route path="/" element={<Index />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/signup" element={<Register />} /> {/* Add an alias for signup to register */}
+        <Route path="/signup" element={<Register />} /> {/* Keep this as an alias for register */}
+        <Route path="/signup/client" element={<SignupClient />} /> {/* New dedicated client signup */}
+        <Route path="/signup/freelancer" element={<SignupFreelancer />} /> {/* New dedicated freelancer signup */}
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/client-dashboard" element={<ClientDashboard />} />
         <Route path="/client-onboarding" element={<ClientOnboardingPage />} />
