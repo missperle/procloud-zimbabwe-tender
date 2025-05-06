@@ -78,10 +78,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       
       if (error) throw error;
       
-      toast({
-        title: "Account created",
-        description: "Your account has been created successfully!",
-      });
+      // Don't add a toast here - we'll let the onAuthStateChange listener handle that
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "An unknown error occurred";
       toast({

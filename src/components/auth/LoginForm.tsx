@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,7 +18,7 @@ import { Input } from "@/components/ui/input";
 import { LogIn } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
-import { useSubscription } from "@/contexts/SubscriptionContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -32,8 +32,7 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 const LoginForm = () => {
-  const { login } = useAuth();
-  const { userRole } = useSubscription();
+  const { login, currentUser } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [error, setError] = useState<string | null>(null);
@@ -53,26 +52,56 @@ const LoginForm = () => {
       setIsLoading(true);
       console.log("Attempting login with:", data.email);
       await login(data.email, data.password);
-      toast({
-        title: "Login successful",
-        description: "Redirecting to your dashboard...",
-      });
-      // Redirect based on user role
-      if (userRole === 'freelancer') {
-        navigate("/dashboard");
-      } else {
-        navigate("/client-dashboard");
-      }
+      
+      // Toast notification is handled by the auth context
+      // Redirect will be handled after role check
     } catch (err) {
       const errorMessage = err instanceof Error 
         ? err.message 
         : "An error occurred during login.";
       console.error("Login error:", errorMessage);
       setError(errorMessage);
-    } finally {
       setIsLoading(false);
     }
   };
+
+  // Check and redirect based on role after successful login
+  useEffect(() => {
+    const checkUserRoleAndRedirect = async () => {
+      if (!currentUser) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('role, onboarding_completed')
+          .eq('id', currentUser.id)
+          .single();
+          
+        if (error) {
+          console.error("Error fetching user data after login:", error);
+          return;
+        }
+          
+        if (data) {
+          if (data.role === 'freelancer') {
+            navigate(data.onboarding_completed ? '/dashboard' : '/freelancer-onboarding');
+          } else if (data.role === 'client') {
+            navigate(data.onboarding_completed ? '/client-dashboard' : '/client-onboarding');
+          } else {
+            navigate('/register'); // Default if role is not set
+          }
+        }
+      } catch (error) {
+        console.error("Error checking user role after login:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    if (currentUser) {
+      checkUserRoleAndRedirect();
+    }
+  }, [currentUser, navigate]);
 
   // For development convenience
   const devLoginMessage = import.meta.env.DEV ? (

@@ -9,34 +9,68 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 const SignupClient = () => {
-  const { currentUser } = useAuth();
-  const [shouldRedirect, setShouldRedirect] = useState(false);
-  const [redirectPath, setRedirectPath] = useState('');
+  const { currentUser, loading } = useAuth();
+  const [checkingStatus, setCheckingStatus] = useState(true);
+  const [redirectPath, setRedirectPath] = useState<string | null>(null);
 
   useEffect(() => {
     const checkUserStatus = async () => {
-      if (currentUser) {
+      if (!currentUser) {
+        setCheckingStatus(false);
+        return;
+      }
+
+      try {
         const { data, error } = await supabase
           .from('users')
           .select('role, onboarding_completed')
           .eq('id', currentUser.id)
           .single();
 
-        if (!error && data) {
+        if (error) {
+          console.error("Error checking user status:", error);
+          setCheckingStatus(false);
+          return;
+        }
+
+        if (data) {
+          // Determine redirect path based on role and onboarding status
           if (data.role === 'freelancer') {
-            setRedirectPath('/freelancer-onboarding');
+            setRedirectPath(data.onboarding_completed ? '/dashboard' : '/freelancer-onboarding');
           } else if (data.role === 'client') {
             setRedirectPath(data.onboarding_completed ? '/client-dashboard' : '/client-onboarding');
           }
-          setShouldRedirect(true);
         }
+      } catch (error) {
+        console.error("Error in checkUserStatus:", error);
+      } finally {
+        setCheckingStatus(false);
       }
     };
 
-    checkUserStatus();
-  }, [currentUser]);
+    if (!loading && currentUser) {
+      checkUserStatus();
+    } else if (!loading) {
+      setCheckingStatus(false);
+    }
+  }, [currentUser, loading]);
 
-  if (shouldRedirect) {
+  // Show loading state while checking
+  if (loading || checkingStatus) {
+    return (
+      <Layout>
+        <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
+          <div className="text-center">
+            <div className="h-8 w-8 border-4 border-t-accent rounded-full animate-spin mx-auto mb-4"></div>
+            <p className="text-gray-500">Loading authentication...</p>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+
+  // Redirect if user is already logged in
+  if (currentUser && redirectPath) {
     return <Navigate to={redirectPath} />;
   }
 

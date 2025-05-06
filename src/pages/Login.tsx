@@ -5,12 +5,63 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Navigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Briefcase, UserPlus } from "lucide-react";
+import { useSubscription } from "@/contexts/SubscriptionContext";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const { currentUser, loading } = useAuth();
+  const { userRole, isLoading } = useSubscription();
+  const [checkingStatus, setCheckingStatus] = useState(true);
+  const [redirectPath, setRedirectPath] = useState<string | null>(null);
   
-  // Show loading state while auth initializes
-  if (loading) {
+  useEffect(() => {
+    const checkUserStatus = async () => {
+      if (!currentUser) {
+        setCheckingStatus(false);
+        return;
+      }
+
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('role, onboarding_completed')
+          .eq('id', currentUser.id)
+          .single();
+
+        if (error) {
+          console.error("Error checking user status:", error);
+          setCheckingStatus(false);
+          return;
+        }
+
+        if (data) {
+          // Determine redirect path based on role and onboarding status
+          if (data.role === 'freelancer') {
+            setRedirectPath(data.onboarding_completed ? '/dashboard' : '/freelancer-onboarding');
+          } else if (data.role === 'client') {
+            setRedirectPath(data.onboarding_completed ? '/client-dashboard' : '/client-onboarding');
+          } else {
+            // Default path if role is not set
+            setRedirectPath('/register');
+          }
+        }
+      } catch (error) {
+        console.error("Error in checkUserStatus:", error);
+      } finally {
+        setCheckingStatus(false);
+      }
+    };
+
+    if (!loading && currentUser) {
+      checkUserStatus();
+    } else if (!loading) {
+      setCheckingStatus(false);
+    }
+  }, [currentUser, loading, userRole]);
+
+  // Show loading state while auth initializes or checking status
+  if (loading || checkingStatus) {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">
@@ -23,10 +74,10 @@ const Login = () => {
     );
   }
 
-  // If user is already logged in, redirect to appropriate dashboard
-  if (currentUser) {
-    console.log("User already logged in, redirecting to dashboard");
-    return <Navigate to="/client-dashboard" replace />;
+  // If user is already logged in and we have a redirect path, redirect to it
+  if (currentUser && redirectPath) {
+    console.log("User already logged in, redirecting to:", redirectPath);
+    return <Navigate to={redirectPath} replace />;
   }
 
   return (
