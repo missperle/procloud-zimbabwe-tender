@@ -41,7 +41,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     try {
       const status = await getUserStatus(currentUser.id);
+      console.log("Refreshed user status:", status);
       setUserStatus(status);
+      return status;
     } catch (error) {
       console.error("Error refreshing user status:", error);
     }
@@ -52,7 +54,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     
     // First set up the auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, currentSession) => {
+      async (event, currentSession) => {
         console.log("Auth state changed:", event, currentSession ? `User: ${currentSession.user?.email}` : "No user");
         setSession(currentSession);
         setCurrentUser(currentSession?.user ?? null);
@@ -65,9 +67,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
           
           // When signed in, update user status
           if (currentSession?.user) {
-            getUserStatus(currentSession.user.id).then(status => {
+            setTimeout(async () => {
+              const status = await getUserStatus(currentSession.user.id);
               setUserStatus(status);
-            });
+            }, 0);
           }
         } else if (event === 'SIGNED_OUT') {
           setUserStatus(null);
@@ -103,6 +106,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const signup = async (email: string, password: string, metadata?: any) => {
     try {
+      // Log the metadata to help debug
+      console.log("Signup with metadata:", metadata);
+      
       const { error } = await supabase.auth.signUp({
         email,
         password,

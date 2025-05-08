@@ -9,12 +9,27 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 
 const FreelancerOnboardingPage = () => {
-  const { currentUser, loading, userStatus } = useAuth();
+  const { currentUser, loading, userStatus, refreshUserStatus } = useAuth();
   const navigate = useNavigate();
   const [alias, setAlias] = useState<string | null>(null);
   const [aliasLoading, setAliasLoading] = useState(true);
+  const [checkingRole, setCheckingRole] = useState(true);
   
   useEffect(() => {
+    // Force refresh user status on mount to ensure we have the latest data after signup
+    if (currentUser && !loading) {
+      refreshUserStatus().then(() => {
+        setCheckingRole(false);
+      });
+    } else if (!loading) {
+      setCheckingRole(false);
+    }
+  }, [currentUser, loading, refreshUserStatus]);
+
+  useEffect(() => {
+    // Don't redirect until checking role is complete
+    if (checkingRole) return;
+    
     // Redirect if not logged in
     if (!loading && !currentUser) {
       console.log("User not logged in, redirecting to login");
@@ -49,7 +64,7 @@ const FreelancerOnboardingPage = () => {
 
     // Only fetch alias if user is logged in and is a freelancer
     const fetchUserAlias = async () => {
-      if (currentUser) {
+      if (currentUser && userStatus?.role === 'freelancer') {
         try {
           const { data, error } = await supabase
             .from('users')
@@ -70,10 +85,10 @@ const FreelancerOnboardingPage = () => {
     };
 
     fetchUserAlias();
-  }, [currentUser, loading, navigate, userStatus]);
+  }, [currentUser, loading, navigate, userStatus, checkingRole]);
 
-  // Show loading state while auth initializes or alias is loading
-  if (loading || aliasLoading) {
+  // Show loading state while auth initializes or alias is loading or checking role
+  if (loading || aliasLoading || checkingRole) {
     return (
       <Layout>
         <div className="flex items-center justify-center min-h-[calc(100vh-200px)]">

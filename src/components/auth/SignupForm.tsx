@@ -53,10 +53,15 @@ const SignupForm = ({ initialUserType = "freelancer" }: SignupFormProps) => {
     setError(null);
     setLoading(true);
     try {
+      console.log(`Creating account with user type: ${data.userType}`);
+      
       // Include the user type in the metadata
       await signup(data.email, data.password, {
         role: data.userType
       });
+      
+      // Wait a moment for the DB triggers to process
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Refresh user status to get the latest data
       await refreshUserStatus();
