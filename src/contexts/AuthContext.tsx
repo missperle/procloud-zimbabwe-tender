@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,7 +9,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   userStatus: UserStatus | null;
-  refreshUserStatus: () => Promise<void>;
+  refreshUserStatus: () => Promise<UserStatus | null>;
   signup: (email: string, password: string, metadata?: any) => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -36,7 +35,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const refreshUserStatus = async () => {
     if (!currentUser) {
       setUserStatus(null);
-      return;
+      return null;
     }
     
     try {
@@ -46,6 +45,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       return status;
     } catch (error) {
       console.error("Error refreshing user status:", error);
+      return null;
     }
   };
 
