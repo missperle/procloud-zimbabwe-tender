@@ -9,6 +9,33 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      alias_generation_logs: {
+        Row: {
+          attempt_number: number
+          collision: boolean
+          created_at: string
+          generated_alias: string
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          attempt_number: number
+          collision: boolean
+          created_at?: string
+          generated_alias: string
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          attempt_number?: number
+          collision?: boolean
+          created_at?: string
+          generated_alias?: string
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       brief_drafts: {
         Row: {
           client_id: string
@@ -476,6 +503,10 @@ export type Database = {
     Functions: {
       generate_random_alias: {
         Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_unique_alias: {
+        Args: { max_attempts?: number }
         Returns: string
       }
     }
